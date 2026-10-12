@@ -115,12 +115,31 @@ Verificarea de scurgere a gunoaierii: `.obsidian`, `.trash`, `node_modules`,
 
 | | înainte | după |
 |---|---|---|
-| fișiere urmărite | **36** | **50.408** (măsurat la finalizarea indexării) |
-| fișiere rămase neurmărite | 52.913 | 2.541 (toate din cazurile 1–4 de mai sus) |
+| fișiere urmărite | **36** | **50.408** (măsurat după `git add`, nu estimat) |
+| fișiere rămase neadăugate | 52.913 | **0** (`REMAINING_NOT_ADDED=0`) |
+| arbore de lucru | curat | curat (`STATUS_LINES=0`) |
 
-**Nimic nu a fost împins.** Starea finală a remoting-ului: `MĂSURĂTORĂ
-INCOMPLETĂ` pentru volum — commitul local e măsurat, push-ul nu a fost cerut și
-nu a fost făcut.
+**Defect #2, descoperit la executare:** primul `git add -A` a eșuat cu
+`fatal: adding files failed — Filename too long`. Măsurat: **155 căi depășesc
+limita Windows de 260 de caractere** (maxim 329). Reparat cu
+`git config core.longpaths true` în repo-ul vaultului; al doilea `git add` a
+trecut fără nicio eroare, în 657 de secunde.
+
+### Starea finală măsurată a repo-ului
+
+| | valoare |
+|---|---|
+| commit nou | `0ed09f1b` |
+| fișiere urmărite | 50.408 |
+| commituri totale | 91 |
+| commituri **neîmpinse** | **60** — dintre care **59 sunt comituri vechi „Salvare automata"** (13:11–20:06, 2026-10-11, inclusiv bucla de 55 de comituri pe `AI-Kit/raport-autocomit.log`) și **1 este al meu** |
+| volum `.git` | **9,84 GB** |
+| remote | `apvizual-max/pkms-vault-automation` (**private**) |
+
+**Nimic nu a fost împins.** Următorul pas — push-ul celor 9,84 GB — **cere R0
+explicit** și nu a fost cerut. Un push ca acesta trimite conținut personal
+(CV-uri, dosare de clienți, documente de identitate) în istoricul unui repo
+remot: odată împins, nu se mai poate șterge curat. Decizia e a lui Popy.
 
 ## 5. Punctul 2 — ștergerea referințelor la Pull Requests din `CI-NOTES.md` — NEEXECUTAT, din motiv măsurat
 
