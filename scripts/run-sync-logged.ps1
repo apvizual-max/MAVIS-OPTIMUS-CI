@@ -76,13 +76,28 @@ foreach ($l in $output) {
 Scrie ("Cod de iesire al puntii: {0}" -f $code)
 
 # HALT AND REPORT: semnele de conflict trebuie sa se opreasca, nu sa treaca.
-$pericol = $output | Where-Object {
-    [string]$_ -match 'CONFLICT|conflict|fatal:|diverg|abort|error: '
+#
+# ATENTIE LA FALSUL POZITIV: cautam MARCATORI clari, nu cuvinte.
+# Un regex larg ca 'conflict|diverg' s-a declansat pe linia curata
+# "OK - sincronizare fara conflict, fara divergent" - adica exact pe
+# textul NEGAT. Un HALT fals oprit o punte sanatoasa zilnic.
+#
+# Regula: linia e conflict doar daca ARE un marker SI NU contine negare.
+$MARCAJORI = '^(CONFLICT|CONFLICTING)|\bfatal:|Automatic merge failed|error: Your local changes|merge failed|net/merge|refus[ae] to merge|Could not resolve|unmerged'
+$NEGARI    = 'fara conflict|fara divergent|without conflict|no conflict|conflict.*free'
+
+$pericol = @()
+foreach ($l in $output) {
+    $linie = [string]$l
+    $areMarker = [regex]::IsMatch($linie, $MARCAJORI)
+    $areNegare = [regex]::IsMatch($linie, $NEGARI)
+    if ($areMarker -and -not $areNegare) { $pericol += $linie }
 }
 
-if ($pericol -and ($pericol | Measure-Object).Count -gt 0) {
+if ($pericol.Count -gt 0) {
     Scrie '' 'HALT'
-    Scrie ('AU APARUT {0} RINDURI DE CONFLICT/DIVERGENTA.' -f ($pericol | Measure-Object).Count) 'HALT'
+    Scrie ('AU APARUT {0} RINDURI DE CONFLICT/DIVERGENTA.' -f $pericol.Count) 'HALT'
+    foreach ($l in $pericol) { Scrie ('  > ' + $l) 'HALT' }
     Scrie 'PUNTEA SE OPRESTE AICI. Nimic nu se repara automat.' 'HALT'
     Scrie ('Detalii in fisierul: {0}' -f $logFis) 'HALT'
     Scrie 'Actiune ceruta: interventa umana. Nu se ruleaza reset --hard.' 'HALT'

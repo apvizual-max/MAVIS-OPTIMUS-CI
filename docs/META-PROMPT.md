@@ -1,6 +1,6 @@
 # META-PROMPT - prompt de pornire rapida
 
-Generat: 2026-10-12 22:38  |  sursa: C:\Users\apviz\.minimax-agent\projects\Mavis-Optimus-Continuous-Integration\scripts\meta-prompt.ps1
+Generat: 2026-10-12 23:31  |  sursa: C:\Users\apviz\.minimax-agent\projects\Mavis-Optimus-Continuous-Integration\scripts\meta-prompt.ps1
 
 Regulile de mai jos NU sunt aici. Sunt in fisierele-sursa, citite la
 prima accesare. Documentul asta iti spune CE sa citesti, in ce ordine.
@@ -50,7 +50,16 @@ reciproc, una comuna da. Numeste namespace-ul la fiecare folosire de unealta.
 > exit 0. Nu e dezincronizare, e un branch care nu exista. Interogheaza
 > intotdeauna ramura de mai sus.
 
-## 6. Ce sa citesti la pornire
+## 6. Magistrala de date: QUEUE/
+
+QUEUE/ este singurul canal de intrare intre masini. Nu se cauta cross-mediu
+cronuri: taskurile Cloud-ului traiesc pe platforma web, cele locale in
+Task Scheduler. Fiecare scrie acolo, nu in fata celuilalt.
+
+Citeste la pull: QUEUE\TASKS-FOR-CLOUD.md
+Livrare:      QUEUE\DONE\TASK-NNN.md, cu [x] pe bilet
+
+## 7. Ce sa citesti la pornire
 
 - [x] docs/CI-POLICY.md - rol: governanta - OBLIGATORIU
 - [x] docs/BRIDGE-LOCAL-CLOUD.md - rol: punte - OBLIGATORIU
@@ -59,14 +68,14 @@ reciproc, una comuna da. Numeste namespace-ul la fiecare folosire de unealta.
 - [x] docs/RECUPERARE-GIT.md - rol: recuperare - optional
 - [x] docs/CONFLICTE-DOZTRINA.md - rol: diverse - optional
 
-## 7. Ordinea primei sesiuni
+## 8. Ordinea primei sesiuni
 
 1. Nu declara nimic. Citeste sursele de mai sus.
 2. Masoareaza starea reala a celor 4 repo-uri, pe ramura lor.
 3. Verifica ce a fost deja rezolvat si de cine, ca sa nu repeti lucru.
 4. Abia apoi formuleaza obiectivul si propune un plan.
 
-## 8. Cinci reguli care nu se negociaza
+## 9. Cinci reguli care nu se negociaza
 
 1. Un numar pe care nu l-ai masurat, nu il scrii.
 2. Un artefact pe care nu l-ai deschis, nu il aprobi.

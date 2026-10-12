@@ -114,7 +114,16 @@ Add-Line '> CAPCANA MASURATA: git ls-remote origin main pe Vault intoarce VID cu
 Add-Line '> exit 0. Nu e dezincronizare, e un branch care nu exista. Interogheaza'
 Add-Line '> intotdeauna ramura de mai sus.'
 Add-Line
-Add-Line '## 6. Ce sa citesti la pornire'
+Add-Line '## 6. Magistrala de date: QUEUE/'
+Add-Line
+Add-Line 'QUEUE/ este singurul canal de intrare intre masini. Nu se cauta cross-mediu'
+Add-Line 'cronuri: taskurile Cloud-ului traiesc pe platforma web, cele locale in'
+Add-Line 'Task Scheduler. Fiecare scrie acolo, nu in fata celuilalt.'
+Add-Line
+Add-Line 'Citeste la pull: QUEUE\TASKS-FOR-CLOUD.md'
+Add-Line 'Livrare:      QUEUE\DONE\TASK-NNN.md, cu [x] pe bilet'
+Add-Line
+Add-Line '## 7. Ce sa citesti la pornire'
 Add-Line
 
 $absente = @()
@@ -141,14 +150,14 @@ if ($absente.Count -gt 0) {
     Add-Line
 }
 
-Add-Line '## 7. Ordinea primei sesiuni'
+Add-Line '## 8. Ordinea primei sesiuni'
 Add-Line
 Add-Line '1. Nu declara nimic. Citeste sursele de mai sus.'
 Add-Line '2. Masoareaza starea reala a celor 4 repo-uri, pe ramura lor.'
 Add-Line '3. Verifica ce a fost deja rezolvat si de cine, ca sa nu repeti lucru.'
 Add-Line '4. Abia apoi formuleaza obiectivul si propune un plan.'
 Add-Line
-Add-Line '## 8. Cinci reguli care nu se negociaza'
+Add-Line '## 9. Cinci reguli care nu se negociaza'
 Add-Line
 Add-Line '1. Un numar pe care nu l-ai masurat, nu il scrii.'
 Add-Line '2. Un artefact pe care nu l-ai deschis, nu il aprobi.'
