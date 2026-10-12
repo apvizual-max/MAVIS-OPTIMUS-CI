@@ -31,6 +31,37 @@ $ErrorActionPreference = 'Stop'
 $HQ    = 'C:\Users\apviz\.minimax-agent\projects\Mavis-Optimus-Continuous-Integration'
 $CLOUD = Join-Path $HQ 'cloud-ingest\MAVIS-CLOUD'
 
+# INCAPSULA - wrapper pentru apelurile native.
+#
+# Masurat 2026-10-12: cu $ErrorActionPreference='Stop' la nivel de script,
+# PowerShell 5.1 transforma STREAMUL STDERR al unui executabil nativ intr-un
+# error record terminal. `git pull` scrie raportul de progres pe stderr chiar
+# si la un pull reusit ("Already up to date"), deci scriptul cadea cu EXIT=1
+# fara nicio eroare reala. Verdictul era fals: scriptul raportat defect.
+#
+# Regula: pentru un binar nativ, stderr este DATE, nu ERORI. Verdictul vine
+# din $LASTEXITCODE, singurul care apartine executabilului. Wrapperul izoleaza
+# preferinta globala doar pe durata apelului si o restaureaza imediat.
+function Invoke-Git {
+    param([Parameter(Mandatory)][string[]]$Args)
+
+    $precedent = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $rezultat = & git @Args 2>&1
+        $cod = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $precedent
+    }
+
+    return [pscustomobject]@{
+        Cod       = $cod
+        Linie     = ($rezultat | ForEach-Object { "$_" }) -join "`n"
+        Esuese    = ($rezultat | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] })
+    }
+}
+
 # POARTA - construita ca sa POATA si sa esueze.
 #
 # Un control care nu poate esua nu e control. Aceasta citeste propriul fisier
@@ -92,28 +123,33 @@ if (-not (Test-Path (Join-Path $CLOUD '.git'))) {
 }
 
 Set-Location $CLOUD
-$cloudBefore = (git rev-parse --short HEAD).Trim()
-$cloudRemote = (git ls-remote origin HEAD)
-if ($LASTEXITCODE -ne 0 -or -not $cloudRemote) {
+$rHead = Invoke-Git @('rev-parse','--short','HEAD')
+$cloudBefore = $rHead.Linie.Trim()
+$rRemote = Invoke-Git @('ls-remote','origin','HEAD')
+if ($rRemote.Cod -ne 0 -or -not $rRemote.Linie.Trim()) {
     Write-Output "ERROR|remote MAVIS-CLOUD inaccesibil"
     exit 1
 }
-$cloudRemoteShort = ($cloudRemote -split '\s+')[0].Substring(0,8)
+$cloudRemoteShort = ($rRemote.Linie.Trim() -split '\s+')[0].Substring(0,8)
 
 if ($WhatIf) {
     Write-Output ("CE_AR_FI|cloud_local=$cloudBefore|cloud_remote=$cloudRemoteShort")
     exit 0
 }
 
-git pull --ff-only 2>&1 | Select-Object -Last 2
-$cloudAfter = (git rev-parse --short HEAD).Trim()
+$rPull = Invoke-Git @('pull','--ff-only')
+$cloudAfter = (Invoke-Git @('rev-parse','--short','HEAD')).Linie.Trim()
 $schimbat = ($cloudBefore -ne $cloudAfter)
 
-Write-Output ("PAS1_CLOUD|local_inainte=$cloudBefore|local_dupa=$cloudAfter|remote=$cloudRemoteShort|schimbat=$schimbat")
+Write-Output ("PAS1_CLOUD|exit_pull=" + $rPull.Cod + "|local_inainte=$cloudBefore|local_dupa=$cloudAfter|remote=$cloudRemoteShort|schimbat=$schimbat")
+if ($rPull.Linie.Trim()) {
+    Write-Output ("PULL|detail=" + ($rPull.Linie.Trim() -replace "`r?`n",' / '))
+}
 
 if ($schimbat) {
     Write-Output "--- commituri noi din Cloud ---"
-    git log --oneline "$cloudBefore..$cloudAfter" | ForEach-Object { Write-Output ("  " + $_) }
+    (Invoke-Git @('log','--oneline',"$cloudBefore..$cloudAfter")).Linie |
+        ForEach-Object { if ($_.Trim()) { Write-Output ("  " + $_.Trim()) } }
     $handoffs = Get-ChildItem -LiteralPath (Join-Path $CLOUD 'docs') -File -Filter 'HANDOFF-*.md' -ErrorAction SilentlyContinue |
         Sort-Object LastWriteTime -Descending | Select-Object -First 3
     foreach ($h in $handoffs) {
@@ -125,20 +161,22 @@ if ($schimbat) {
 # cloud-ingest\ este in .gitignore: nu se dubleaza continutul personal si nu
 # se ingroapa un repo in alt repo. Se refera prin cale, nu prin copiere.
 Set-Location $HQ
-$modificari = @(git status --porcelain)
+$modificari = @((Invoke-Git @('status','--porcelain')).Linie.Trim() -split "`n" |
+                Where-Object { $_.Trim() })
 
 if ($modificari.Count -eq 0) {
     Write-Output "PAS2_LOCAL|status=curat|nimic de comitat"
 } else {
     Write-Output ("PAS2_LOCAL|modificari=" + $modificari.Count)
-    git add -A
-    git commit -m ("cloud: ingest " + (Get-Date -Format 'yyyy-MM-dd HH:mm') + " (citire read-only din MAVIS-CLOUD)")
-    Write-Output ("PAS2_LOCAL|commit=" + (git rev-parse --short HEAD))
+    [void](Invoke-Git @('add','-A'))
+    $msg = "cloud: ingest " + (Get-Date -Format 'yyyy-MM-dd HH:mm') + " (citire read-only din MAVIS-CLOUD)"
+    [void](Invoke-Git @('commit','-m',$msg))
+    Write-Output ("PAS2_LOCAL|commit=" + (Invoke-Git @('rev-parse','--short','HEAD')).Linie.Trim())
 }
 
-$ramase = @(git rev-list --count '@{u}..HEAD' 2>$null)
-if ($ramase.Count -gt 0 -and [int]$ramase[0] -ge 50) {
-    Write-Output ("REMINDER|" + $ramase[0] + " commituri neimpinse - cere acord explicit lui Popy")
+$ramase = (Invoke-Git @('rev-list','--count','@{u}..HEAD')).Linie.Trim()
+if ($ramase -match '^\d+$' -and [int]$ramase -ge 50) {
+    Write-Output ("REMINDER|" + $ramase + " commituri neimpinse - cere acord explicit lui Popy")
 }
 
-Write-Output ("FINAL|cloud=" + $cloudAfter + "|local=" + (git rev-parse --short HEAD) + "|impingere=NEEXECUTATA|poarta_R0=ramane_la_Popy")
+Write-Output ("FINAL|cloud=" + $cloudAfter + "|local=" + (Invoke-Git @('rev-parse','--short','HEAD')).Linie.Trim() + "|impingere=NEEXECUTATA|poarta_R0=ramane_la_Popy")
