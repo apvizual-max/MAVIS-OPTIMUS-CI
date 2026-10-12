@@ -1,0 +1,14 @@
+﻿# cloud-ingest/ = clonă read-only a lui MAVIS-CLOUD, păstrată local pentru comparație.
+# NU se comite: ar duplica date personale (CV-uri, telefon, clienți) într-un repo nou,
+# și ar îngropa un repo în altul. Se accesează prin cale.
+cloud-ingest/
+
+# Fișiere de stare — se rescriu la fiecare măsurătoare
+push-pending.json
+live-state.json
+*.log
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
