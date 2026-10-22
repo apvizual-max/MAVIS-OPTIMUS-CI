@@ -232,6 +232,19 @@ function Main {
         }
     }
 
+    # The clone must be COMPLETE before anything is measured in it.
+    # Measured: a clone made without long paths holds 14 of 701 tracked
+    # files, and a verdict produced in that tree describes 14 files while
+    # claiming to describe 701.
+    $integrity = Test-CloneIntegrity -Dir $dir
+    if (-not $integrity.Ok) {
+        Write-JulesLog -Message ('clone is incomplete: ' + $integrity.Reason) -Level 'ERROR'
+        Write-JulesOut 'RESULT=INCOMPLETE_CLONE'
+        Write-JulesOut ('REASON=' + $integrity.Reason)
+        return 1
+    }
+    Write-JulesLog -Message ('clone integrity: ' + $integrity.Tracked + ' tracked files, all present') -Level 'STEP'
+
     # A verification clone must measure the pull request's CODE, not a
     # locally modified tree. The repositories' own scripts append to log
     # files, so a previous run leaves the clone dirty. Measured: two

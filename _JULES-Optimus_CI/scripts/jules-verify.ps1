@@ -74,23 +74,66 @@ function Main {
     $dir = Ensure-Clone -RepoName $Repo
     if (-not $dir) { return 2 }
 
+    # The clone must be COMPLETE before anything is measured in it.
+    # Measured: a clone made without long paths holds 14 of 701 tracked
+    # files, and a verdict produced in that tree describes 14 files while
+    # claiming to describe 701.
+    $integrity = Test-CloneIntegrity -Dir $dir
+    if (-not $integrity.Ok) {
+        Write-JulesLog -Message ('clone is incomplete: ' + $integrity.Reason) -Level 'ERROR'
+        Write-JulesOut 'RESULT=INCOMPLETE_CLONE'
+        Write-JulesOut ('REASON=' + $integrity.Reason)
+        Write-JulesOut ('REPO=' + $Repo)
+        Write-JulesOut ('PR=' + $Pr)
+        return 2
+    }
+    Write-JulesLog -Message ('clone integrity: ' + $integrity.Tracked + ' tracked files, all present') -Level 'STEP'
+
     $branchUsed = $entry.branch
 
     if ($Pr -gt 0 -and -not $NoCheckout) {
         Write-JulesLog -Message ('checking out PR #' + $Pr) -Level 'STEP'
-        Push-Location -LiteralPath $dir
-        try {
-            $res = Invoke-Gh -GhArgs @('pr', 'checkout', [string]$Pr, '--repo', ('apvizual-max/' + $Repo), '--force')
-            if (-not $res.Ok) {
-                Write-JulesLog -Message ('pr checkout failed: ' + $res.Err) -Level 'ERROR'
-                return 2
-            }
-            $headRes = Invoke-Native -Program 'git' -Arguments @('rev-parse', '--abbrev-ref', 'HEAD')
-            if ($headRes.Ok -and $headRes.Out) { $branchUsed = $headRes.Out.Trim() }
-        } finally {
-            Pop-Location
+        # The checkout runs in an EXPLICIT directory. `gh pr checkout` acts
+        # on the repository in the current directory and exits 0 even when
+        # that repository is not the one named by --repo.
+        $co = Invoke-Gh -GhArgs @('pr', 'checkout', [string]$Pr, '--repo', ('apvizual-max/' + $Repo), '--force') -WorkingDirectory $dir
+        if (-not $co.Ok) {
+            Write-JulesLog -Message ('pr checkout failed: ' + $co.Err) -Level 'ERROR'
+            Write-JulesOut 'RESULT=NO_CHECKOUT'
+            Write-JulesOut ('REPO=' + $Repo)
+            Write-JulesOut ('PR=' + $Pr)
+            return 2
         }
-        Write-JulesLog -Message ('checked out branch: ' + $branchUsed) -Level 'STEP'
+        # Verify where the checkout landed, against the branch the API
+        # names. A checkout that reports success on the wrong branch turns
+        # a missing test file into a FALSE REJECT.
+        $expectedRef = ''
+        $prRes = Invoke-Gh -GhArgs @('api', ('repos/apvizual-max/' + $Repo + '/pulls/' + $Pr))
+        if ($prRes.Ok) {
+            $prArr = @(ConvertFrom-JulesJson -Json $prRes.Out)
+            if ($prArr.Count -ge 1) {
+                $head = $prArr[0].PSObject.Properties['head']
+                if ($head) {
+                    $refProp = $head.Value.PSObject.Properties['ref']
+                    if ($refProp) { $expectedRef = [string]$refProp.Value }
+                }
+            }
+        }
+        $ownPaths = @()
+        foreach ($f in @(Get-PrFiles -Repo $Repo -Pr $Pr)) {
+            $ownPaths += [string]$f.path
+        }
+        $checkout = Test-CheckoutTarget -Dir $dir -ExpectedRef $expectedRef -OwnPaths $ownPaths
+        if (-not $checkout.Ok) {
+            Write-JulesLog -Message ('checkout not verified: ' + $checkout.Reason) -Level 'ERROR'
+            Write-JulesOut 'RESULT=NO_CHECKOUT'
+            Write-JulesOut ('REASON=' + $checkout.Reason)
+            Write-JulesOut ('REPO=' + $Repo)
+            Write-JulesOut ('PR=' + $Pr)
+            return 2
+        }
+        $branchUsed = $checkout.Branch
+        Write-JulesLog -Message ('checked out branch: ' + $branchUsed + ' (verified)') -Level 'STEP'
     }
 
     # --- Which verification commands apply -------------------------------

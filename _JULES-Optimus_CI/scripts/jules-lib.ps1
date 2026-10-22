@@ -11,6 +11,71 @@ Set-StrictMode -Version 2.0
 
 $script:JulesRoot = Split-Path -Parent $PSScriptRoot
 $script:JulesLogFile = $null
+$script:JulesLongPathsSet = $false
+
+# Enables git long paths for every git invocation made by this process,
+# including the ones `gh` makes internally.
+#
+# MEASURED on this machine: without it, `git clone` of pkms-vault-automation
+# materializes 14 of 701 tracked files and dies with "Filename too long"
+# (MAX_PATH 260). With it: 701 of 701 on disk, `git status` reports a clean
+# tree, `git checkout -- .` succeeds. The setting travels through
+# GIT_CONFIG_* so that gh - which shells out to git - inherits it too.
+#
+# It is set ONCE per process: GIT_CONFIG_COUNT is a counter, so appending on
+# every call would grow it without bound.
+function Enable-JulesLongPaths {
+    if ($script:JulesLongPathsSet) { return }
+    $script:JulesLongPathsSet = $true
+    $count = 0
+    if ($env:GIT_CONFIG_COUNT) {
+        $parsed = 0
+        if ([int]::TryParse($env:GIT_CONFIG_COUNT, [ref]$parsed)) { $count = $parsed }
+    }
+    $idx = $count
+    $env:GIT_CONFIG_COUNT = [string]($count + 1)
+    Set-Item -Path ('Env:GIT_CONFIG_KEY_' + $idx) -Value 'core.longpaths'
+    Set-Item -Path ('Env:GIT_CONFIG_VALUE_' + $idx) -Value 'true'
+}
+
+# Checks that a clone is COMPLETE: every file the repository tracks is
+# actually on disk.
+#
+# MEASURED on this machine: a clone of pkms-vault-automation made WITHOUT
+# long paths materializes 14 of 701 tracked files and dies with "Filename
+# too long". Measuring a pull request in that tree would have produced
+# verdicts about 14 files while claiming to describe 701. A gate that
+# cannot fail is not a gate, so this one fails loudly instead.
+function Test-CloneIntegrity {
+    param([Parameter(Mandatory = $true)][string]$Dir)
+    $result = [PSCustomObject]@{
+        Ok      = $false
+        Tracked = 0
+        OnDisk  = 0
+        Reason  = ''
+    }
+    if (-not (Test-Path -LiteralPath (Join-Path $Dir '.git'))) {
+        $result.Reason = 'not a git clone: ' + $Dir
+        return $result
+    }
+    $ls = Invoke-Native -Program 'git' -Arguments @('-C', $Dir, 'ls-tree', '-r', 'HEAD', '--name-only')
+    if (-not $ls.Ok) {
+        $result.Reason = 'cannot read the HEAD tree: ' + $ls.Err
+        return $result
+    }
+    $tracked = @($ls.Out -split "`r?`n" | Where-Object { $_.Trim().Length -gt 0 })
+    $result.Tracked = $tracked.Count
+    $onDisk = @(Get-ChildItem -LiteralPath $Dir -Recurse -File -Force -ErrorAction SilentlyContinue |
+                Where-Object { $_.FullName -notmatch '\\\.git\\' })
+    $result.OnDisk = $onDisk.Count
+    if ($result.OnDisk -lt $result.Tracked) {
+        $result.Reason = ('incomplete clone: ' + $result.OnDisk + ' of ' + $result.Tracked + ' tracked files are on disk')
+        return $result
+    }
+    $result.Ok = $true
+    $result.Reason = 'clone complete'
+    return $result
+}
 
 function Get-JulesRoot {
     return $script:JulesRoot
@@ -90,6 +155,10 @@ function Invoke-Native {
     $errFile = New-JulesTempFile -Suffix '.err'
     $prevEap = $ErrorActionPreference
     $prevDir = ''
+    # Every git call made from here - directly, or through gh - gets long
+    # paths. Measured: without it, a clone of pkms-vault-automation lands
+    # 14 of 701 files on disk.
+    Enable-JulesLongPaths
     try {
         $ErrorActionPreference = 'Continue'
         if ($WorkingDirectory) {
