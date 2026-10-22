@@ -399,6 +399,48 @@ din `jules-selfcheck.ps1` cere patru cazuri, pe date reale: baza trece →
 `MIXED`; toate eșecurile sunt noi → `ATTRIBUTABLE`; plus extragerea
 numelui verificării căzute dintr-un ieșire reală. Măsurat: `5/5`.
 
+## 3.7 Tabelul final, măsurat cu codul definitiv (2026-10-22, 13:47–14:22)
+
+Rulare completă pe toate cele **99** de PR-uri deschise, cu poarta de
+atribuire activă. `TRIAGE_EXIT=0`.
+
+| Verdict | Verificare | Număr | Ce înseamnă |
+|---|---|---|---|
+| **ACCEPT** | PASS | **12** | adaptat local, verificat fizic aici, raport complet |
+| **ADAPT** | PASS | **40** | trece testele, dar nu are încă raport de adaptare local |
+| **UNVERIFIED** | UNVERIFIED | **46** | nu s-a putut măsura (instrument lipsă) |
+| **UNVERIFIED** | NOT_ATTRIBUTABLE | **1** | eșec măsurat, dar **nu al propunerii** |
+| **REJECT** | FAIL | **0** | niciun verdict de respingere nu mai poate fi emis fără dovadă de imputabilitate |
+
+Pe repo-uri:
+
+| Repo | Total | ACCEPT | ADAPT | UNVERIFIED | REJECT |
+|---|---|---|---|---|---|
+| MAVIS-CLOUD | 34 | 10 | 23 | 1 | 0 |
+| OPTIMUS-Backbone | 37 | 2 | 17 | 18 | 0 |
+| pkms-vault-automation | 25 | 0 | 0 | 25 | 0 |
+| SENTINEL_PRIME | 3 | 0 | 0 | 3 | 0 |
+
+**Singurul REJECT din sesiune a devenit `UNVERIFIED / NOT_ATTRIBUTABLE`**, cu
+`ATTRIBUTION=PREEXISTING` — adică toate cele 10 eșecuri identificate există și
+pe ramura de bază:
+
+```
+FAIL ecosystem_snapshot_fresh: snapshot is #s old (bound #s) - the server is NOT refreshing it
+BrainAndMonitor  :: MCP tools report OK only on a measured handshake: expected OK, got STALE
+EcosystemCollector :: design_cloud_auth / design_cloud_hosts / design_cloud_reach / design_route_loader is present
+McpHandshakeMeasure :: the real record is restored and the check returns OK: expected OK, got STALE
+```
+
+Normalizarea cifrelor (`\d+` → `#`) în semnătură a făcut clasificarea
+**exactă**: înaintea ei, „snapshot is 10774s old" și „snapshot is 12374s old"
+erau două eșecuri diferite, deci verdictul era `MIXED`. Acum e `PREEXISTING`.
+
+**Ce nu s-a schimbat:** cele 46 UNVERIFIED rămân măsurate ca atare — 25 în
+`pkms` (fără runner de teste), 18 în `OPTIMUS-Backbone` (teste pytest-style,
+`pytest` absent) și 1 în `MAVIS-CLOUD`. Nu e deficit de măsurătoare, e
+**instrument lipsă**, și se raportează onest.
+
 ## 4. Defecte găsite și reparate în această sesiune
 1. **`Path.GetTempFileName()`** aruncă „The file exists" pe această mașină →
    înlocuit cu `state/tmp/` + GUID.
@@ -458,7 +500,10 @@ o decizie a lui Popy, nu una a mea.
 Commituri locale, **nimic împins**: `d0f04d6` (platforma, 311 fișiere),
 `c613236` (repararea porților: exit code real, poartă de email
 comparativă, scanner pre-commit), `7518567` (starea + triajul re-rulat),
-plus acest commit (repararea măsurătorilor + adaptările celor 12 PR-uri).
+`025f09c` (repararea măsurătorilor: checkout verificat, conflict scan
+reparat, 12 adaptări), `e76eb4d` (deblocare pkms: long paths + poarta de
+integritate a clonei), `8abca4b` (raport + imputabilitate: cele trei
+porți măsurau altceva) și commitul de tabel final.
 `origin/main` e la `d9a186e`.
 
 **Contaminare reparată, în afara acestui repo:** repo-ul backbone-ului

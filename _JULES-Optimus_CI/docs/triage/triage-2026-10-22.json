@@ -10,11 +10,10 @@
         "files":  2,
         "additions":  74,
         "deletions":  0,
-        "verdict":  "ADAPT",
+        "verdict":  "ACCEPT",
         "verify":  "PASS",
         "reasons":  [
-                        "NOTE: secret scan skipped for test/fixture file: ALEX-KIT/letter-engine.test.js",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
+                        "NOTE: secret scan skipped for test/fixture file: ALEX-KIT/letter-engine.test.js"
                     ]
     },
     {
@@ -28,11 +27,10 @@
         "files":  1,
         "additions":  49,
         "deletions":  0,
-        "verdict":  "ADAPT",
+        "verdict":  "ACCEPT",
         "verify":  "PASS",
         "reasons":  [
-                        "NOTE: secret scan skipped for test/fixture file: ALEX-KIT/letter-engine.test.js",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
+                        "NOTE: secret scan skipped for test/fixture file: ALEX-KIT/letter-engine.test.js"
                     ]
     },
     {
@@ -46,10 +44,10 @@
         "files":  1,
         "additions":  20,
         "deletions":  0,
-        "verdict":  "ADAPT",
+        "verdict":  "ACCEPT",
         "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
+
                     ]
     },
     {
@@ -63,10 +61,10 @@
         "files":  1,
         "additions":  5,
         "deletions":  8,
-        "verdict":  "ADAPT",
+        "verdict":  "ACCEPT",
         "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
+
                     ]
     },
     {
@@ -80,10 +78,10 @@
         "files":  1,
         "additions":  7,
         "deletions":  7,
-        "verdict":  "ADAPT",
+        "verdict":  "ACCEPT",
         "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
+
                     ]
     },
     {
@@ -97,10 +95,10 @@
         "files":  1,
         "additions":  2,
         "deletions":  2,
-        "verdict":  "ADAPT",
+        "verdict":  "ACCEPT",
         "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
+
                     ]
     },
     {
@@ -114,10 +112,10 @@
         "files":  1,
         "additions":  14,
         "deletions":  12,
-        "verdict":  "ADAPT",
+        "verdict":  "ACCEPT",
         "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
+
                     ]
     },
     {
@@ -131,11 +129,10 @@
         "files":  2,
         "additions":  66,
         "deletions":  2,
-        "verdict":  "ADAPT",
+        "verdict":  "ACCEPT",
         "verify":  "PASS",
         "reasons":  [
-                        "NOTE: secret scan skipped for test/fixture file: mavis-tools/tests/google-setup.test.js",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
+                        "NOTE: secret scan skipped for test/fixture file: mavis-tools/tests/google-setup.test.js"
                     ]
     },
     {
@@ -149,11 +146,10 @@
         "files":  1,
         "additions":  59,
         "deletions":  0,
-        "verdict":  "ADAPT",
+        "verdict":  "ACCEPT",
         "verify":  "PASS",
         "reasons":  [
-                        "NOTE: secret scan skipped for test/fixture file: mavis-tools/google-verify.test.js",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
+                        "NOTE: secret scan skipped for test/fixture file: mavis-tools/google-verify.test.js"
                     ]
     },
     {
@@ -167,11 +163,10 @@
         "files":  1,
         "additions":  25,
         "deletions":  0,
-        "verdict":  "ADAPT",
+        "verdict":  "ACCEPT",
         "verify":  "PASS",
         "reasons":  [
-                        "NOTE: secret scan skipped for test/fixture file: mavis-tools/quota.test.js",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
+                        "NOTE: secret scan skipped for test/fixture file: mavis-tools/quota.test.js"
                     ]
     },
     {
@@ -185,11 +180,10 @@
         "files":  1,
         "additions":  9,
         "deletions":  9,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -203,12 +197,11 @@
         "files":  2,
         "additions":  55,
         "deletions":  2,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: mavis-tools/corecteaza.test.js",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -222,11 +215,10 @@
         "files":  2,
         "additions":  18,
         "deletions":  3,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -240,11 +232,10 @@
         "files":  2,
         "additions":  41,
         "deletions":  26,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -258,12 +249,11 @@
         "files":  2,
         "additions":  31,
         "deletions":  2,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: mavis-tools/email-count-exact.test.js",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -277,11 +267,10 @@
         "files":  1,
         "additions":  69,
         "deletions":  36,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -295,11 +284,10 @@
         "files":  1,
         "additions":  5,
         "deletions":  8,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -313,11 +301,10 @@
         "files":  1,
         "additions":  43,
         "deletions":  0,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -331,11 +318,10 @@
         "files":  1,
         "additions":  2,
         "deletions":  2,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -349,11 +335,10 @@
         "files":  1,
         "additions":  32,
         "deletions":  0,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -367,13 +352,12 @@
         "files":  2,
         "additions":  44,
         "deletions":  0,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: mavis-tools/tests/__init__.py",
                         "NOTE: secret scan skipped for test/fixture file: mavis-tools/tests/test_log.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -387,11 +371,10 @@
         "files":  1,
         "additions":  46,
         "deletions":  24,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -405,11 +388,10 @@
         "files":  1,
         "additions":  27,
         "deletions":  10,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -423,12 +405,11 @@
         "files":  2,
         "additions":  74,
         "deletions":  2,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: mavis-tools/google-setup.test.js",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -442,11 +423,10 @@
         "files":  1,
         "additions":  2,
         "deletions":  2,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -460,11 +440,10 @@
         "files":  2,
         "additions":  18,
         "deletions":  18,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -478,12 +457,11 @@
         "files":  1,
         "additions":  37,
         "deletions":  0,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: mavis-tools/google-auth.test.js",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -498,10 +476,10 @@
         "additions":  45,
         "deletions":  81,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -515,11 +493,10 @@
         "files":  1,
         "additions":  18,
         "deletions":  11,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -533,11 +510,10 @@
         "files":  2,
         "additions":  24,
         "deletions":  10,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -551,11 +527,10 @@
         "files":  1,
         "additions":  58,
         "deletions":  1,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -569,12 +544,11 @@
         "files":  1,
         "additions":  110,
         "deletions":  0,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: mavis-tools/google-setup-exchange.test.js",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -588,12 +562,11 @@
         "files":  53,
         "additions":  314,
         "deletions":  162,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "diff too broad: 53 files in one PR",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "diff too broad: 53 files in one PR"
                     ]
     },
     {
@@ -607,12 +580,11 @@
         "files":  2,
         "additions":  32,
         "deletions":  2,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: mavis-tools/google-setup.test.js",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -629,7 +601,7 @@
         "verdict":  "UNVERIFIED",
         "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local adaptation report yet (not yet adapted)",
                         "no local verification could be run"
                     ]
     },
@@ -647,7 +619,7 @@
         "verdict":  "UNVERIFIED",
         "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local adaptation report yet (not yet adapted)",
                         "no local verification could be run"
                     ]
     },
@@ -665,7 +637,7 @@
         "verdict":  "UNVERIFIED",
         "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local adaptation report yet (not yet adapted)",
                         "no local verification could be run"
                     ]
     },
@@ -683,7 +655,7 @@
         "verdict":  "UNVERIFIED",
         "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local adaptation report yet (not yet adapted)",
                         "no local verification could be run"
                     ]
     },
@@ -702,7 +674,7 @@
         "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: 02_Areas/02-2-AI-SOT/02-2-4-AI-Kit/AI-Kit_manual/tests/Human.Tests.ps1",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local adaptation report yet (not yet adapted)",
                         "no local verification could be run"
                     ]
     },
@@ -720,7 +692,7 @@
         "verdict":  "UNVERIFIED",
         "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local adaptation report yet (not yet adapted)",
                         "no local verification could be run"
                     ]
     },
@@ -738,7 +710,7 @@
         "verdict":  "UNVERIFIED",
         "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local adaptation report yet (not yet adapted)",
                         "no local verification could be run"
                     ]
     },
@@ -757,7 +729,7 @@
         "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: 02_Areas/02-2-AI-SOT/02-2-4-AI-Kit/AI-Kit_manual/tests/paths.tests.ps1",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local adaptation report yet (not yet adapted)",
                         "no local verification could be run"
                     ]
     },
@@ -775,7 +747,7 @@
         "verdict":  "UNVERIFIED",
         "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local adaptation report yet (not yet adapted)",
                         "no local verification could be run"
                     ]
     },
@@ -794,7 +766,7 @@
         "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: 02_Areas/02-2-AI-SOT/02-2-4-AI-Kit/AI-Kit_manual/watch.Tests.ps1",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local adaptation report yet (not yet adapted)",
                         "no local verification could be run"
                     ]
     },
@@ -810,10 +782,10 @@
         "additions":  20,
         "deletions":  20,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -828,10 +800,10 @@
         "additions":  9,
         "deletions":  4,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -846,10 +818,10 @@
         "additions":  5,
         "deletions":  5,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -864,10 +836,10 @@
         "additions":  6,
         "deletions":  4,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -882,10 +854,10 @@
         "additions":  5,
         "deletions":  5,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -900,10 +872,10 @@
         "additions":  29,
         "deletions":  16,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -918,11 +890,11 @@
         "additions":  117,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: 02_Areas/02-2-AI-SOT/02-2-4-AI-Kit/AI-Kit_manual/git-autocommit.Tests.ps1",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -937,10 +909,10 @@
         "additions":  1,
         "deletions":  4,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -955,10 +927,10 @@
         "additions":  28,
         "deletions":  10,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -973,10 +945,10 @@
         "additions":  2,
         "deletions":  2,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -991,10 +963,10 @@
         "additions":  6,
         "deletions":  1,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1009,10 +981,10 @@
         "additions":  6,
         "deletions":  4,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1027,10 +999,10 @@
         "additions":  4,
         "deletions":  5,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1045,10 +1017,10 @@
         "additions":  0,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1063,10 +1035,10 @@
         "additions":  3,
         "deletions":  4,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1080,12 +1052,11 @@
         "files":  1,
         "additions":  47,
         "deletions":  0,
-        "verdict":  "UNVERIFIED",
-        "verify":  "UNVERIFIED",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: scripts/tests/test_extract_wayland_workflows.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "no local verification could be run"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -1099,10 +1070,10 @@
         "files":  1,
         "additions":  10,
         "deletions":  4,
-        "verdict":  "ADAPT",
+        "verdict":  "ACCEPT",
         "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
+
                     ]
     },
     {
@@ -1116,12 +1087,11 @@
         "files":  1,
         "additions":  68,
         "deletions":  0,
-        "verdict":  "UNVERIFIED",
-        "verify":  "UNVERIFIED",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/test_extract_wayland_workflows.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "no local verification could be run"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -1139,7 +1109,7 @@
         "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/test_qwen_acp_mcp.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local adaptation report yet (not yet adapted)",
                         "no local verification could be run"
                     ]
     },
@@ -1158,7 +1128,7 @@
         "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/scripts/test_qwen_acp_mcp.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local adaptation report yet (not yet adapted)",
                         "no local verification could be run"
                     ]
     },
@@ -1178,7 +1148,7 @@
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: 20_BRIDGES/minimax/minimax-hermes-bridge/tests/__init__.py",
                         "NOTE: secret scan skipped for test/fixture file: 20_BRIDGES/minimax/minimax-hermes-bridge/tests/test_minimax_hermes_bridge.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local adaptation report yet (not yet adapted)",
                         "no local verification could be run"
                     ]
     },
@@ -1196,7 +1166,7 @@
         "verdict":  "UNVERIFIED",
         "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local adaptation report yet (not yet adapted)",
                         "no local verification could be run"
                     ]
     },
@@ -1215,7 +1185,7 @@
         "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/test_qwen_acp_mcp.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local adaptation report yet (not yet adapted)",
                         "no local verification could be run"
                     ]
     },
@@ -1230,10 +1200,10 @@
         "files":  1,
         "additions":  39,
         "deletions":  32,
-        "verdict":  "ADAPT",
+        "verdict":  "ACCEPT",
         "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
+
                     ]
     },
     {
@@ -1251,7 +1221,7 @@
         "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/test_qwen_doctor.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local adaptation report yet (not yet adapted)",
                         "no local verification could be run"
                     ]
     },
@@ -1266,11 +1236,10 @@
         "files":  1,
         "additions":  9,
         "deletions":  8,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -1285,11 +1254,11 @@
         "additions":  70,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: 20_BRIDGES/minimax/minimax-hermes-bridge/tests/test_h_sync.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1303,11 +1272,10 @@
         "files":  1,
         "additions":  13,
         "deletions":  9,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -1322,11 +1290,11 @@
         "additions":  61,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/scripts/test_extract_wayland_workflows.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1341,11 +1309,11 @@
         "additions":  126,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/test_minimax_client.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1359,11 +1327,10 @@
         "files":  1,
         "additions":  4,
         "deletions":  3,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -1378,10 +1345,10 @@
         "additions":  111,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1395,11 +1362,10 @@
         "files":  2,
         "additions":  51,
         "deletions":  0,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -1414,10 +1380,10 @@
         "additions":  41,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1432,12 +1398,12 @@
         "additions":  47,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/__init__.py",
                         "NOTE: secret scan skipped for test/fixture file: tests/test_qwen_acp_mcp.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1451,11 +1417,10 @@
         "files":  1,
         "additions":  1,
         "deletions":  1,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -1469,11 +1434,10 @@
         "files":  1,
         "additions":  28,
         "deletions":  28,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -1488,12 +1452,12 @@
         "additions":  72,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: scripts/tests/__init__.py",
                         "NOTE: secret scan skipped for test/fixture file: scripts/tests/test_minimax_client.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1507,11 +1471,10 @@
         "files":  2,
         "additions":  22,
         "deletions":  0,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -1526,12 +1489,12 @@
         "additions":  58,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/__init__.py",
                         "NOTE: secret scan skipped for test/fixture file: tests/test_qwen_acp_mcp.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1546,11 +1509,11 @@
         "additions":  99,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/test_qwen_acp_mcp.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1565,10 +1528,10 @@
         "additions":  47,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1582,11 +1545,10 @@
         "files":  1,
         "additions":  14,
         "deletions":  9,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -1601,11 +1563,11 @@
         "additions":  99,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/test_qwen_acp_mcp.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1620,10 +1582,10 @@
         "additions":  34,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1637,11 +1599,10 @@
         "files":  1,
         "additions":  3,
         "deletions":  3,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -1655,11 +1616,10 @@
         "files":  1,
         "additions":  288,
         "deletions":  278,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -1673,11 +1633,10 @@
         "files":  1,
         "additions":  91,
         "deletions":  91,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -1691,11 +1650,10 @@
         "files":  1,
         "additions":  19,
         "deletions":  16,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -1709,11 +1667,10 @@
         "files":  1,
         "additions":  13,
         "deletions":  5,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -1727,11 +1684,10 @@
         "files":  2,
         "additions":  9,
         "deletions":  0,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -1745,11 +1701,10 @@
         "files":  1,
         "additions":  47,
         "deletions":  44,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (10 per repo)"
+                        "no local adaptation report yet (not yet adapted)"
                     ]
     },
     {
@@ -1766,7 +1721,7 @@
         "verdict":  "UNVERIFIED",
         "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local adaptation report yet (not yet adapted)",
                         "no local verification could be run"
                     ]
     },
@@ -1784,7 +1739,7 @@
         "verdict":  "UNVERIFIED",
         "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local adaptation report yet (not yet adapted)",
                         "diff too broad: 21 files in one PR",
                         "no local verification could be run"
                     ]
@@ -1801,10 +1756,12 @@
         "additions":  133,
         "deletions":  132,
         "verdict":  "UNVERIFIED",
-        "verify":  "UNVERIFIED",
+        "verify":  "NOT_ATTRIBUTABLE",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "no local verification could be run"
+                        "no local adaptation report yet (not yet adapted)",
+                        "the same failures are already present on the base branch - not attributable to the proposal",
+                        "ATTRIBUTION=PREEXISTING",
+                        "FAILED=FAIL ecosystem_snapshot_fresh: snapshot is #s old (bound #s) - the server is NOT refreshing it. A panel this old is a snapshot, not a live hub.; FAILED=BrainAndMonitor :: MCP tools report OK only on a measured, argument-confirmed handshake: expected OK, got STALE; FAILED=EcosystemCollector :: design_cloud_auth is present; FAILED=EcosystemCollector :: design_cloud_hosts is present; FAILED=EcosystemCollector :: design_cloud_reach is present; FAILED=EcosystemCollector :: design_route_loader is present; FAILED=McpHandshakeMeasure :: the real record is restored and the check returns OK: expected OK, got STALE; FAILED=STATUS BrainAndMonitor; FAILED=STATUS EcosystemCollector; FAILED=STATUS McpHandshakeMeasure"
                     ]
     }
 ]
