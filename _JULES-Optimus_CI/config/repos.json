@@ -1,0 +1,195 @@
+{
+  "version": "1.1.0",
+  "measuredAt": "2026-10-22",
+  "measurement": "gh api repos/<repo> + gh secret list + gh api labels + gh api contents/.github/workflows + gh pr list --author jules",
+  "owner": "apvizual-max",
+  "quotaPerDay": 100,
+  "fieldSemantics": {
+    "triage": "repo-ul este scanat de jules-triage.ps1 (verdict pe PR-urile deschise)",
+    "dispatch": "repo-ul primeste taskuri noi de la jules-daily.ps1",
+    "jules.label": "eticheta 'jules' exista -> calea AUTOMATA (issue + label) este deschisa",
+    "jules.workflow": "jules.yml exista -> workflow-ul de declansare este instalat",
+    "jules.secret": "JULES_API_KEY exista ca secret de repo -> workflow-ul chiar poate trimite",
+    "jules.openPrs": "PR-uri deschise de la app/google-labs-jules, masurate. Poate fi >0 chiar fara plumbing, pentru ca Jules poate lucra si din interfata lui web"
+  },
+  "defaults": {
+    "axisRotation": ["performance", "design", "security"],
+    "maxTasksPerDay": 15,
+    "maxOpenPrsPerRepo": 3,
+    "maxVerifyPerRepoPerRun": 5
+  },
+  "repos": [
+    {
+      "name": "MAVIS-CLOUD",
+      "remote": "https://github.com/apvizual-max/MAVIS-CLOUD",
+      "branch": "main",
+      "private": false,
+      "triage": true,
+      "dispatch": true,
+      "jules": {
+        "label": true,
+        "workflow": true,
+        "secret": true,
+        "openPrs": 34,
+        "measuredAt": "2026-10-22"
+      },
+      "verify": {
+        "mode": "explicit",
+        "autoDetect": false,
+        "commands": [
+          "node --test ALEX-KIT/cv-mutator.test.js"
+        ]
+      },
+      "notes": "Singurul repo cu calea automata completa: eticheta + jules.yml + JULES_API_KEY. Bucla demonstrata (issue #5 -> PR #8 -> squash merge)."
+    },
+    {
+      "name": "MAVIS-OPTIMUS-CI",
+      "remote": "https://github.com/apvizual-max/MAVIS-OPTIMUS-CI",
+      "branch": "main",
+      "private": false,
+      "triage": true,
+      "dispatch": true,
+      "jules": {
+        "label": false,
+        "workflow": false,
+        "secret": false,
+        "openPrs": 0,
+        "measuredAt": "2026-10-22"
+      },
+      "verify": {
+        "mode": "explicit",
+        "autoDetect": false,
+        "commands": [
+          "node --check scripts/notebooklm-cdp.mjs"
+        ]
+      },
+      "notes": "Repo-ul gazda al platformei. Calea automata lipseste: ruleaza jules-install.ps1 si pune secretul."
+    },
+    {
+      "name": "pkms-vault-automation",
+      "remote": "https://github.com/apvizual-max/pkms-vault-automation",
+      "branch": "master",
+      "private": false,
+      "triage": true,
+      "dispatch": true,
+      "jules": {
+        "label": false,
+        "workflow": false,
+        "secret": false,
+        "openPrs": 25,
+        "measuredAt": "2026-10-22"
+      },
+      "verify": {
+        "mode": "auto",
+        "autoDetect": true,
+        "commands": []
+      },
+      "notes": "Ramura este master, nu main. Jules lucreaza aici prin interfata web, fara plumbing GitHub - de aceea are 25 de PR-uri deschise fara ca eticheta sa existe."
+    },
+    {
+      "name": "Optimus-Mavis-Skills",
+      "remote": "https://github.com/apvizual-max/Optimus-Mavis-Skills",
+      "branch": "main",
+      "private": false,
+      "triage": true,
+      "dispatch": true,
+      "jules": {
+        "label": false,
+        "workflow": false,
+        "secret": false,
+        "openPrs": 0,
+        "measuredAt": "2026-10-22"
+      },
+      "verify": {
+        "mode": "auto",
+        "autoDetect": true,
+        "commands": []
+      },
+      "notes": "Depozit de skill-uri. Criteriu de acceptare: fiecare SKILL.md are frontmatter valid cu name + description nevid."
+    },
+    {
+      "name": "OPTIMUS-Backbone",
+      "remote": "https://github.com/apvizual-max/OPTIMUS-Backbone",
+      "branch": "main",
+      "private": false,
+      "triage": true,
+      "dispatch": true,
+      "jules": {
+        "label": false,
+        "workflow": false,
+        "secret": false,
+        "openPrs": 37,
+        "measuredAt": "2026-10-22"
+      },
+      "verify": {
+        "mode": "auto",
+        "autoDetect": true,
+        "commands": []
+      },
+      "notes": "Cea mai mare backlog de PR-uri Jules: 37 deschise, toate Python si PowerShell."
+    },
+    {
+      "name": "SENTINEL_PRIME",
+      "remote": "https://github.com/apvizual-max/SENTINEL_PRIME",
+      "branch": "main",
+      "private": true,
+      "triage": true,
+      "dispatch": false,
+      "jules": {
+        "label": false,
+        "workflow": false,
+        "secret": false,
+        "openPrs": 3,
+        "measuredAt": "2026-10-22"
+      },
+      "verify": {
+        "mode": "auto",
+        "autoDetect": true,
+        "commands": []
+      },
+      "notes": "Substratul SENTINEL, privat. Se triaza (3 PR-uri deschise), dar NU se trimit taskuri noi: izolarea maxima a doctrinei cere asta. Decizia poate fi schimbata cu o linie."
+    },
+    {
+      "name": "hermes-doctor",
+      "remote": "https://github.com/apvizual-max/hermes-doctor",
+      "branch": "main",
+      "private": false,
+      "triage": false,
+      "dispatch": false,
+      "jules": {
+        "label": false,
+        "workflow": false,
+        "secret": false,
+        "openPrs": 0,
+        "measuredAt": "2026-10-22"
+      },
+      "verify": {
+        "mode": "auto",
+        "autoDetect": true,
+        "commands": []
+      },
+      "notes": "Mostenit de la un alt proiect. Nu se atinge."
+    },
+    {
+      "name": "Qwen-Ecosystem-Dashboard",
+      "remote": "https://github.com/apvizual-max/Qwen-Ecosystem-Dashboard",
+      "branch": "main",
+      "private": true,
+      "triage": false,
+      "dispatch": false,
+      "jules": {
+        "label": false,
+        "workflow": false,
+        "secret": false,
+        "openPrs": 0,
+        "measuredAt": "2026-10-22"
+      },
+      "verify": {
+        "mode": "auto",
+        "autoDetect": true,
+        "commands": []
+      },
+      "notes": "Proiect separat. Nu atinge sistemul nostru."
+    }
+  ]
+}

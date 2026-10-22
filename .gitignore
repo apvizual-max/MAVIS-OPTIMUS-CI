@@ -14,3 +14,22 @@ desktop.ini
 .DS_Store
 
 logs/
+
+# --- Platforma Jules (_JULES-Optimus_CI) -------------------------------
+# Descărcările de repo-uri făcute de Popy NU se comite. Conțin date
+# personale (CV-uri, telefon, nume de clienți) iar MAVIS-OPTIMUS-CI este
+# PUBLIC. Copia veche din commit-uri a fost eliminată prin "git mv catre
+# arhivă"; istoricul public mai conține acele fișiere — asta e o decizie
+# a lui Popy, nu una a mea.
+_JULES-Optimus_CI/_GitHub-Main_Repos-Local/
+
+# Clonele de lucru, folosite doar pentru verificarea locală a PR-urilor
+_JULES-Optimus_CI/work/
+
+# Jurnalele rulării zilnice
+_JULES-Optimus_CI/logs/
+
+# Artefacte temporare și drafturi
+_JULES-Optimus_CI/state/tmp/
+_JULES-Optimus_CI/state/draft-*.md
+_JULES-Optimus_CI/state/verify/

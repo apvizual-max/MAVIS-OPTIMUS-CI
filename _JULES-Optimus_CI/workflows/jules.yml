@@ -1,0 +1,102 @@
+name: Invoke Jules
+
+# Cum se declanseaza Jules - mecanisme reale, verificate:
+#
+#   1. eticheta 'jules' pe un issue      -> "label on, task live"   (AUTOMAT)
+#   2. mentiune @jules pe un comentariu  -> DOAR daca Jules are deja un PR deschis,
+#                                           si DOAR in Reactive Mode
+#   3. jules-action (asta e aici)        -> declanseaza din orice eveniment
+#   4. Jules CLI                         -> jules remote new / task create
+#
+# Doar #1 este folosit de platforma noastra. Localul scrie issue-ul cu
+# contextul complet in corp, eticheta 'jules' porneste Jules.
+#
+# REGULA COTA: 100 taskuri/zi. Programarea saptamanală este doar audit.
+# Zilnic, bucla apartine lui Mavis Local (Task Scheduler pe Windows), pentru
+# ca sa poata tine cont de buget.
+
+on:
+  issues:
+    types: [opened, labeled, reopened]
+  workflow_dispatch:
+    inputs:
+      sarcina:
+        description: 'Instructiunea pentru Jules'
+        required: true
+        default: 'Citeste AGENTS.md si JULES-CONTEXT.md, apoi raporteaza starea. Nu construieste nimic pana nu primeste o sarcina concreta.'
+  schedule:
+    # Sweep saptamanal de datornita tehnica - duminica la 09:00. Nu zilnic: cota e 100/zi.
+    - cron: '0 9 * * 0'
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  jules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # GARD 1 - secretul trebuie sa existe, altfel workflow-ul ar arde cote
+      # fara sa trimita nimic.
+      - name: Gard - secret prezent
+        if: github.event_name == 'issues' || github.event_name == 'workflow_dispatch'
+        env:
+          KEY: ${{ secrets.JULES_API_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::JULES_API_KEY lipseste. Nu se trimite nimic catre Jules."
+            exit 1
+          fi
+          echo "secret prezent"
+
+      # GARD 2 - doar eticheta 'jules' declanseaza agentul. Un issue oarecare
+      # nu trebuie sa consume cota.
+      - name: Gard - doar eticheta jules
+        if: github.event_name == 'issues' && !contains(github.event.issue.labels.*.name, 'jules')
+        run: |
+          echo "fara eticheta 'jules' - nu se trimite nimic catre Jules"
+
+      # PAS 1 - eticheta 'jules' pe issue declanseaza automat.
+      # Corpul issue-ului este canalul de context: acolo Mavis Local pune
+      # regulile, invariantele si criteriile de acceptare.
+      - name: Task din eticheta 'jules'
+        if: github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'jules')
+        uses: google-labs-code/jules-action@v1.0.0
+        with:
+          jules_api_key: ${{ secrets.JULES_API_KEY }}
+          prompt: |
+            Citieste AGENTS.md (daca exista) si JULES-CONTEXT.md (daca exista)
+            inainte de orice lucru. Contextul principal este insa in corpul
+            issue-ului de mai jos - citeste-l intreg, nu sari peste el.
+
+            Issue: ${{ github.event.issue.title }}
+            ${{ github.event.issue.body }}
+
+            Lucreaza pe ramura ${{ github.event.repository.default_branch }},
+            deschide pull request, nu impinge direct pe main.
+            Nu inventa date. Daca o verificare pica, spune-o, nu o ascunde.
+
+      # PAS 2 - invocare manuala, cu instructiune la alegere.
+      - name: Task manual
+        if: github.event_name == 'workflow_dispatch'
+        uses: google-labs-code/jules-action@v1.0.0
+        with:
+          jules_api_key: ${{ secrets.JULES_API_KEY }}
+          prompt: ${{ github.inputs.sarcina }}
+
+      # PAS 3 - sweep saptamanal: audit, nu implementare.
+      - name: Audit saptamanal
+        if: github.event_name == 'schedule'
+        uses: google-labs-code/jules-action@v1.0.0
+        with:
+          jules_api_key: ${{ secrets.JULES_API_KEY }}
+          prompt: |
+            Audit saptamanal. NU construieste nimic.
+            1. Ruleaza verificarea completa a repo-ului si raporteaza ce pica.
+            2. Verifica daca exista secrete in commit-uri.
+            3. Verifica daca exista fisiere generate sau dependinte urcite in commit.
+            4. Scrie un raport in docs/ si deschide un PR cu el.
+            Daca totul e verde, scrie doar "nimic de reparat" si nu deschide PR.
