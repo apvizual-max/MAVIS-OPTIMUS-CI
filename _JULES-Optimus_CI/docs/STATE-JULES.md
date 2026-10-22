@@ -63,11 +63,13 @@ prompt. `config/jules-context.md` e sursa unică și se injectează automat.
 |---|---|---|
 | `jules-dispatch.ps1` | ✅ | dry-run real: ținta aleasă din arborele repo-ului (`SITE/build-hub.py`, 32.574 B), corp de 5.766 caractere |
 | `jules-verify.ps1` | ✅ | clone reală + `node --test ALEX-KIT/cv-mutator.test.js` → **EXIT 0** |
-| `jules-triage.ps1` | ✅ | scanare reală a 99 de PR-uri, verdict cu motiv, buget 5 verificări/repo |
+| `jules-triage.ps1` | ✅ | scanare reală a **99 de PR-uri**, verdict cu motiv, buget 5 verificări/repo |
 | `jules-daily.ps1` | ✅ | bucla completă, ledger de cotă, raport zilnic |
 | `jules-install.ps1` | ✅ | mod PLAN rulat pe MAVIS-OPTIMUS-CI: a detectat eticheta lipsă și secretul lipsă |
-| `jules-lib.ps1` | ✅ | bibliotecă comună, ASCII pur |
+| `jules-lib.ps1` | ✅ | bibliotecă comună, ASCII pur, `Write-JulesOut` (stdout direct) |
 | `run-jules-daily-logged.ps1` | ✅ | rulat cu `-DryRun` → log datat scris, EXIT 0 |
+| `jules-scan-staged.ps1` | ✅ | poartă pre-commit: `STAGED=13 SCANNED=13 BLOCKS=0 SCAN_OK`; control falsificare → **BLOCKS=3, SCAN_BLOCKED, EXIT=1** |
+| `jules-selfcheck.ps1` | ✅ | `FILES=9 PROBLEMS=0`; **proba-idiom**: payload pe stdout ȘI cod de ieșire 3 |
 | Task Windows `JulesDailyLoop` | ✅ | înregistrat, `Ready`, zilnic **09:00**, `RunLevel Limited` |
 
 ### Porțile, cu contra-proba
@@ -77,6 +79,78 @@ prompt. `config/jules-context.md` e sursa unică și se injectează automat.
 | Politică (secrete + căi interzise) | `ghp_…`, `sk-…`, chei PEM, `node_modules/`, `vendor/`, `dist/` | diff curat → **0** încălcare; diff contaminat → **2** (cale + secret) |
 | Buget de verificare | verifică mai mult de 5 PR-uri/repo | PR #14 → marcat `not verified - budget reached`, **nu** ACCEPT |
 | Instrument lipsă | `pytest`/`node` absent | clasificat `TOOL MISSING` → **NO_MEASUREMENT**, nu FAIL |
+
+## 3.1 Rezultatul primului triaj complet (2026-10-22, 10:29–10:33)
+
+**99 de PR-uri scanate** — toate cele deschise, în 4 repo-uri.
+
+| Verdict | Număr | Ce înseamnă |
+|---|---|---|
+| **ADAPT** | **12** | verificate **VERDE** local, dar raportul lipsește cele 3 secțiuni → le refac eu |
+| **UNVERIFIED** | **81** | buget de verificare atins (5/repo). **Nu e ACCEPT.** |
+| **UNVERIFIED** | **6** | instrumentul de verificare nu există în acel repo → fără măsurătoare |
+| **REJECT** | **0** | nicio încălcare reală de politică |
+| **ACCEPT** | **0** | toate cele 12 verificate au raportul incomplet |
+
+Cele 12 ADAPT: 5 în MAVIS-CLOUD, 5 în OPTIMUS-Backbone, 2 în SENTINEL_PRIME.
+
+**Observația care contează:** cele 12 au trecut testele reale pe această
+mașină. Substanța e bună. Ce lipsește e **forma raportului** — Jules nu știa
+formatul, pentru că nu i-a fost spus. De aici vine valoarea contextului
+canonic: de acum înainte îl primește în corpul issue-ului.
+
+Un PR gol (0 fișiere) a fost prins: `pkms-vault-automation` #24.
+
+## 3.2 Defectul care făca toate porțile de nefolosit (măsurat 2026-10-22, după primul commit)
+
+**Orice poartă care scria o linie înainte de a întoarce un cod de eșec
+returna SUCCES.** Probe măsurat pe această mașină:
+
+```
+function F { Write-Output 'X'; return 3 }
+$c = F        ->  $c = @('X', 3)      # Write-Output intră în valoarea returnată
+exit $c       ->  EXIT 0              # exit ia ultimul element; codul 3 se pierde
+```
+
+Controlul: `function F { return 3 }` → `exit 3` → **EXIT 3**, corect.
+
+Cauza: 6 scripturi apelează `$code = Main`, iar `Main` scria payload-ul cu
+`Write-Output`. `Write-Output` scrie în **stream-ul de succes**, deci ajunge
+în valoarea atribuită. Consecința: `jules-verify` (care trebuia să dea
+distincția FAIL vs NO_MEASUREMENT), `jules-triage`, `jules-dispatch`,
+`jules-daily`, `jules-install` și scannerul pre-commit **nu puteau eșua**.
+O poartă care nu poate eșua nu e o poartă.
+
+Reparație: `Write-JulesOut` în `jules-lib.ps1` — `[Console]::Out.WriteLine`,
+scrie direct pe stdout, nu e capturată de atribuire și lasă codul de ieșire
+intact. Măsurat: pe arbore `GATE_EXIT=0`, pe control cu adresă necanonică
+`PROBE_EXIT=1`.
+
+**Poarta de email din `verify.yml` se autotrigea.** Căuta adresa necanonică
+prin literal, dar literalul se afla în `config/jules-context.md` — fișierul
+care *numea* adresa ca s-o interzică. Gate = literal greșit:
+1. nu poate prinde următoarea adresă greșită, fiindcă o caută pe una cunoscută;
+2. se declanșează pe propria declarație de regulă.
+
+Înlocuită cu o poartă de **comparație**: orice adresă găsită trebuie să fie
+canonică. Setul scanat e cel **tracked** (`git ls-files`), deci rulează
+identic în CI și local. Control falsificare: `PROBE_EXIT=1` pe un repo cu
+o adresă necanonică, `GATE_EXIT=0` pe arborele real.
+
+**Măsurătoare corectată:** adresa necanonică nu e într-un singur fișier din
+materialul MAVIS-CLOUD, ci în **9**:
+`PROGRES.md`, `07-SITEURI-NIVEL1/SPECIFICATIE.md`,
+`11-JULES/RAPORT-DE-STARE.md`, `14-LINKEDIN/CATALOG.md`,
+`ALEX-KIT/08-CVURI-NOTARE.md`, `docs/LOG-SISTEM.json`, `docs/NEXT-MAXHERMES.md`,
+`docs/TODO.json`, `docs/arhiva/handoffs-vechi/HANDOFF-COMPLET.md`.
+Într-un al 10-lea (`docs/git-install.md`) apare `alex@ap-id.ro` — adresă
+diferită, pe domeniul lui; poarta o tratează ca permisă.
+
+**Consecință pentru instalare:** poarta de email va fi ROȘIE în MAVIS-CLOUD
+până când cele 9 fișiere sunt corectate. De aceea `jules-install.ps1` trebuie
+să raporteze violările preexistente ca prerechizit, nu să instaleze tăcut o
+poartă roșie. MAVIS-CLOUD rămâne read-only pentru conținut → repararea cere
+R0.
 
 ## 4. Defecte găsite și reparate în această sesiune
 
@@ -95,6 +169,19 @@ prompt. `config/jules-context.md` e sursa unică și se injectează automat.
 6. **6 octeți non-ASCII** în `jules-triage.ps1` (`·`) → parserul PS 5.1 ar
    fi rupt șirurile.
 7. **Pointer rupt** către `docs/HANDOFF-COMPLET.md` (vezi §2).
+8. **`Write-Output` contamină codul de ieșire** în 6 scripturi: orice poartă
+   care scria o linie înainte de `return 3` returna **0**. Probe măsurat în
+   §3.2. Reparat cu `Write-JulesOut`; verificat de o probă care eșuează
+   intenționat, ca poarta să fie demonstrată ca poate eșua.
+9. **Poarta de email din `verify.yml` se autotrigea** pe fișierul care
+   declara regula. Înlocuită cu o poartă de comparație (vezi §3.2).
+10. **Ledgerul de cotă era citit o singură dată**, înainte de bucla zilnică;
+    subprocessul de dispatch îl actualizează, deci verificarea plafonului
+    mintea. Recitit la fiecare iterare.
+11. **Nu exista poartă pre-commit**: scanarea de secrete se făcuse o singură
+    dată, manual, la comitarea lui `d0f04d6`. Acum `jules-scan-staged.ps1`
+    scanează **index-ul** (ce va fi comis, nu ce sta pe disc) și e
+    demonstrat capabil să blocheze.
 
 ## 5. Starea git-ului
 
@@ -111,6 +198,10 @@ personale** (CV-uri, telefon, nume de clienți) comise la rădăcină, în
 Redresarea istoricului cere force-push → **interzis** fără R0 explicit, și e
 o decizie a lui Popy, nu una a mea.
 
+Commituri locale, **nimic împins**: `d0f04d6` (platforma, 311 fișiere),
+`c613236` (repararea porților: exit code real, poartă de email
+comparativă, scanner pre-commit). `origin/main` e la `d9a186e`.
+
 ## 6. Ce rămâne și cine decide
 
 | # | Decizie | Cine |
@@ -120,3 +211,4 @@ o decizie a lui Popy, nu una a mea.
 | 3 | Al 5-lea repo cu Jules activ: `OPTIMUS-Backbone` e propunerea mea | Popy |
 | 4 | Redresarea istoricului public al repo-ului (date personale) | Popy |
 | 5 | R0 pe push-ul platformei în `MAVIS-OPTIMUS-CI` | Popy |
+| 6 | Corectarea adresei necanonice în cele **9** fișiere din MAVIS-CLOUD (material read-only pentru conținut → scriere cerută) | Popy |
