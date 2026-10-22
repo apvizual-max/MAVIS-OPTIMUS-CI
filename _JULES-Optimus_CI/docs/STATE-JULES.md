@@ -255,6 +255,30 @@ măsurătoare nu se rulează** într-un arbore trunchiat. E o poartă care poate
 eșua: raportează `701 de 701` pe clonele complete și ar raporta `14 de 701`
 pe cea trunchiată.
 
+### 3.4.1 Măsurătoarea trebuie să reproducă mediul sistemului pe care îl măsoară
+
+Măsurând starea clonei `pkms-vault-automation` cu un `git status` obișnuit
+din shell, ieșirea a fost: **1227 de fișiere șterse** (` D`), plus 100+
+avertismente „could not open directory … Filename too long". Un verdict
+dramatic: jumătate din clonă ar fi dispărută.
+
+Repetând aceeași măsurătoare **cu `core.longpaths=true`** — configurația
+pe care platforma o propagă prin `GIT_CONFIG_*` la fiecare apel git:
+
+```
+STATUS_WITH_LONGPATHS=0    TRACKED=4524    branch=jules-6988632761374277197-50cee8b5
+```
+
+Clona e **curată**. Cele 1227 de intrări erau un artefact al **măsurătorii**,
+nu al sistemului măsurat: gitul fără long paths nu poate deschide
+directoarele cu nume peste 260 de caractere, deci le raportează ca
+șterse.
+
+**Regula:** o măsurătoare care nu reproduce mediul sistemului pe care îl
+măsoară produce defecte imaginare. `git status` gol într-un shell, și
+`git status` gol în `Invoke-Native` cu long paths, sunt două lucruri
+diferite — și doar al doilea îl descrie pe cel real.
+
 ## 3.5 A treia clasă de defecte: motivul fals care se repeta pe toate rândurile (2026-10-22, după `e76eb4d`)
 
 Triajul complet s-a terminat cu `FINDINGS=99`, `TRIAGE_EXIT=0`, iar
