@@ -69,7 +69,8 @@ prompt. `config/jules-context.md` e sursa unică și se injectează automat.
 | `jules-lib.ps1` | ✅ | bibliotecă comună, ASCII pur, `Write-JulesOut` (stdout direct) |
 | `run-jules-daily-logged.ps1` | ✅ | rulat cu `-DryRun` → log datat scris, EXIT 0 |
 | `jules-scan-staged.ps1` | ✅ | poartă pre-commit: `STAGED=13 SCANNED=13 BLOCKS=0 SCAN_OK`; control falsificare → **BLOCKS=3, SCAN_BLOCKED, EXIT=1** |
-| `jules-selfcheck.ps1` | ✅ | `FILES=9 PROBLEMS=0`; **proba-idiom**: payload pe stdout ȘI cod de ieșire 3 |
+| `jules-selfcheck.ps1` | ✅ | `FILES=10 PROBLEMS=0`; **proba-idiom**: payload pe stdout ȘI cod de ieșire 3; **proba-checkout**: poarta respinge director neclona, ramură greșită, fișier lipsă, commit greșit |
+| `jules-adapt.ps1` | ✅ | 12/12 PR-uri adaptate, toate cu **EXIT 0** real, checkout verificat pe ramură + SHA + fișiere proprii |
 | Task Windows `JulesDailyLoop` | ✅ | înregistrat, `Ready`, zilnic **09:00**, `RunLevel Limited` |
 
 ### Porțile, cu contra-proba
@@ -152,8 +153,89 @@ să raporteze violările preexistente ca prerechizit, nu să instaleze tăcut o
 poartă roșie. MAVIS-CLOUD rămâne read-only pentru conținut → repararea cere
 R0.
 
-## 4. Defecte găsite și reparate în această sesiune
+## 3.3 A doua clasă de defecte: măsurătorile care măsurau altceva (2026-10-22, 11:30–12:10)
 
+**Defectul de rădăcină: `gh pr checkout` acționează asupra repo-ului din
+directorul CURENT și iese cu cod 0 chiar când acel repo nu e cel cerut.**
+
+Măsurat, cu probă de falsificare într-un director de probă:
+
+```
+CWD = repo strain (MAVIS-OPTIMUS-CI)
+gh pr checkout 9 -R apvizual-max/MAVIS-CLOUD
+EXIT=0
+BRANCH_AFTER=jules-detect-pain-coverage-2559261305742346084   # creată ÎN REPO-UL STRAIN
+```
+
+**Consecința, măsurată pe disc:** comanda a fugit în
+`C:\Users\apviz\.minimax-agent\projects` — care e repo-ul **backbone-ului
+OPTIMUS**, nu o simplă zonă de lucru. Acolo au rămas **9 ramuri Jules
+străine**, repo-ul a fost lăsat **în afara `main`**, iar arborele de lucru i-a
+fost înlocuit cu conținut MAVIS-CLOUD: `OPTIMUS_INDEX.md`, `00_INDEX/`,
+`10_BRIDGES/`, `40_REGISTRIES/` au dispărut de pe disc.
+
+Restaurat cu `git checkout main` — fișierele au revenit, ramura rătăcită a
+rămas păstrată (recuperabilă), conținutul nu s-a pierdut.
+
+Aceasta e cauza **FAIL-ului fals** de pe PR #9: clona a rămas pe ramura PR #18,
+fișierul `ALEX-KIT/letter-engine.test.js` nu exista acolo, `node --test` a ieșit
+1, iar raportul a numit propunerea spartă. După reparare: `RESULT=ADAPT`,
+`node --test "ALEX-KIT/letter-engine.test.js"` → **EXIT 0**.
+
+**Al doilea defect: `@($x | ConvertFrom-Json)` colapează un array JSON la un singur
+element în PowerShell 5.1.** Măsurat pe payload-ul real de la GitHub:
+
+```
+34 de PR-uri în payload -> 1 element în @(...)-> fiecare element pică testul de tip
+-> scanarea de conflicte raporta "0 open PR examined" în timp ce API-ul mergea
+```
+
+Reparat cu `ConvertFrom-JulesJson` (atribuie mai întâi, învelește după):
+**34 elemente, 34 cu câmpul `number`**.
+
+**Reparațiile aplicate:**
+1. `Invoke-Native` / `Invoke-Gh` au primit `-WorkingDirectory`. Dacă
+   directorul nu există, ieșirea e **127**, nu o rulare tăcută în altă parte.
+2. `Test-CheckoutTarget` — poartă care poate eșua: director neclona, ramură
+   greșită, SHA greșit sau fișier de test lipsă → toate respingute.
+3. `jules-adapt.ps1` verifică checkout-ul pe **ramură + SHA + existența
+   fișierelor proprii**, și cere ca `origin` să fie repo-ul potrivit.
+4. Clona murdară e restaurată la HEAD înainte de măsurare (măsurat: două
+   `decisions.jsonl` modificate de rularea testelor repo-ului).
+5. **Lanț de runner-e**: `pytest` nu e instalat pe această mașină (măsurat:
+   `No module named pytest`), dar testul PR #11 e `unittest` standard cu
+   `unittest.main()`. Primul runner care pornește măsoară — așa PR #11 a
+   devenit măsurabil fără pip: `python "mavis-tools/test_log.py"` → **EXIT 0**.
+6. **Baseline detectat** când registrul nu declară comenzi: OPTIMUS-Backbone
+   avea **0 comenzi** rulate (raport fără măsurătoare, verdict inconsistent);
+   acum **2** comenzi detectate din repo → EXIT 0.
+7. Verdictul distinge `ADAPT` de `ADAPT_NO_MEASUREMENT` — un PR fără măsurătoare
+   nu e ACCEPT, dar nici REJECT.
+
+**Rezultatul măsurat, toate 12 cu o singură versiune de script:**
+
+| PR | Comenzi rulate | Toate EXIT 0 | Conflicte măsurate |
+|---|---|---|---|
+| MAVIS-CLOUD #9 | 2 | ✅ | 1 (PR #10, același fișier) |
+| MAVIS-CLOUD #10 | 2 | ✅ | 1 (PR #9, același fișier) |
+| MAVIS-CLOUD #11 | 2 | ✅ | 1 |
+| MAVIS-CLOUD #12 | 1 | ✅ | 0 |
+| MAVIS-CLOUD #13 | 1 | ✅ | **5** |
+| MAVIS-CLOUD #14 | 1 | ✅ | 1 |
+| MAVIS-CLOUD #15 | 1 | ✅ | **5** |
+| MAVIS-CLOUD #16 | 2 | ✅ | 2 |
+| MAVIS-CLOUD #17 | 2 | ✅ | 0 |
+| MAVIS-CLOUD #18 | 2 | ✅ | 0 |
+| OPTIMUS-Backbone #2 | 2 | ✅ | 0 |
+| OPTIMUS-Backbone #9 | 2 | ✅ | 0 |
+
+**Limită de mediu, măsurată:** clona `pkms-vault-automation` nu se poate
+materializa pe Windows — gitul eșuează cu *„Filename too long"* (MAX_PATH 260).
+Din 701 de fișiere urmărite, **14** ajung pe disc. De aceea PR-urile pkms
+rămân UNVERIFIED: nu e un defect al platformei, e o limită a mașinii. Pe
+GitHub, PR-urile pkms au și ele conflicte de fișiere între ele.
+
+## 4. Defecte găsite și reparate în această sesiune
 1. **`Path.GetTempFileName()`** aruncă „The file exists" pe această mașină →
    înlocuit cu `state/tmp/` + GUID.
 2. **`$ErrorActionPreference='Stop'` + program nativ care scrie pe stderr** →
@@ -200,15 +282,26 @@ o decizie a lui Popy, nu una a mea.
 
 Commituri locale, **nimic împins**: `d0f04d6` (platforma, 311 fișiere),
 `c613236` (repararea porților: exit code real, poartă de email
-comparativă, scanner pre-commit). `origin/main` e la `d9a186e`.
+comparativă, scanner pre-commit), `7518567` (starea + triajul re-rulat),
+plus acest commit (repararea măsurătorilor + adaptările celor 12 PR-uri).
+`origin/main` e la `d9a186e`.
+
+**Contaminare reparată, în afara acestui repo:** repo-ul backbone-ului
+(`C:\Users\apviz\.minimax-agent\projects`) a fost lăsat pe o ramură străină de
+`gh pr checkout`, cu fișierele lui șterse de pe disc. Restaurat pe `main`;
+fișierele (`OPTIMUS_INDEX.md`, `00_INDEX/`, `10_BRIDGES/`, `40_REGISTRIES/`)
+sunt înapoi. Cele **9 ramuri străine** rămân ca referințe recuperabile — nu
+conțin nimic ce nu există în PR-urile de pe GitHub.
 
 ## 6. Ce rămâne și cine decide
 
 | # | Decizie | Cine |
 |---|---|---|
 | 1 | `JULES_API_KEY` în cele 4 repo-uri fără el — **secretul nu poate fi citit de pe GitHub** | Popy |
-| 2 | R0 pe merge-urile cu verdict ACCEPT | Popy |
-| 3 | Al 5-lea repo cu Jules activ: `OPTIMUS-Backbone` e propunerea mea | Popy |
-| 4 | Redresarea istoricului public al repo-ului (date personale) | Popy |
-| 5 | R0 pe push-ul platformei în `MAVIS-OPTIMUS-CI` | Popy |
-| 6 | Corectarea adresei necanonice în cele **9** fișiere din MAVIS-CLOUD (material read-only pentru conținut → scriere cerută) | Popy |
+| 2 | R0 pe merge-ul celor **12 PR-uri ADAPT** (toate cu EXIT 0 măsurat) | Popy |
+| 3 | R0 pe rezolvarea conflictului **#9 ↔ #10** (ambele adaugă `ALEX-KIT/letter-engine.test.js`) | Popy |
+| 4 | R0 pe **push-ul** platformei în `MAVIS-OPTIMUS-CI` (singura operație externă) | Popy |
+| 5 | Corectarea adresei necanonice în cele **9** fișiere din MAVIS-CLOUD (material read-only pentru conținut → scriere cerută) | Popy |
+| 6 | Redresarea istoricului public al repo-ului (date personale) — cere force-push | Popy |
+| 7 | Al 5-lea repo cu Jules activ: `OPTIMUS-Backbone` e propunerea mea | Popy |
+| 8 | PR-urile **pkms** (25): materializarea clonei e imposibilă pe Windows (MAX_PATH). Fie se activează long paths, fie sunt acceptate ca review fără măsurătoare | Popy |

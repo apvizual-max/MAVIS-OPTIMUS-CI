@@ -97,11 +97,10 @@
         "files":  1,
         "additions":  2,
         "deletions":  2,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
                     ]
     },
     {
@@ -115,11 +114,10 @@
         "files":  1,
         "additions":  14,
         "deletions":  12,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
                     ]
     },
     {
@@ -133,12 +131,11 @@
         "files":  2,
         "additions":  66,
         "deletions":  2,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: mavis-tools/tests/google-setup.test.js",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
                     ]
     },
     {
@@ -152,12 +149,11 @@
         "files":  1,
         "additions":  59,
         "deletions":  0,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: mavis-tools/google-verify.test.js",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
                     ]
     },
     {
@@ -171,12 +167,11 @@
         "files":  1,
         "additions":  25,
         "deletions":  0,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: mavis-tools/quota.test.js",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
                     ]
     },
     {
@@ -194,7 +189,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -213,7 +208,7 @@
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: mavis-tools/corecteaza.test.js",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -231,7 +226,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -249,7 +244,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -268,7 +263,7 @@
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: mavis-tools/email-count-exact.test.js",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -286,7 +281,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -304,7 +299,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -322,7 +317,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -340,7 +335,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -358,7 +353,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -378,7 +373,7 @@
                         "NOTE: secret scan skipped for test/fixture file: mavis-tools/tests/__init__.py",
                         "NOTE: secret scan skipped for test/fixture file: mavis-tools/tests/test_log.py",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -396,7 +391,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -414,7 +409,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -433,7 +428,7 @@
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: mavis-tools/google-setup.test.js",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -451,7 +446,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -469,7 +464,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -488,7 +483,7 @@
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: mavis-tools/google-auth.test.js",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -506,7 +501,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -524,7 +519,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -542,7 +537,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -560,7 +555,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -579,7 +574,7 @@
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: mavis-tools/google-setup-exchange.test.js",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -598,7 +593,7 @@
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
                         "diff too broad: 53 files in one PR",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -617,7 +612,7 @@
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: mavis-tools/google-setup.test.js",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -723,10 +718,10 @@
         "additions":  7,
         "deletions":  7,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "no local verification could be run"
                     ]
     },
     {
@@ -741,10 +736,10 @@
         "additions":  20,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "no local verification could be run"
                     ]
     },
     {
@@ -759,11 +754,11 @@
         "additions":  44,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: 02_Areas/02-2-AI-SOT/02-2-4-AI-Kit/AI-Kit_manual/tests/paths.tests.ps1",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "no local verification could be run"
                     ]
     },
     {
@@ -778,10 +773,10 @@
         "additions":  100,
         "deletions":  100,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "no local verification could be run"
                     ]
     },
     {
@@ -796,11 +791,11 @@
         "additions":  40,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: 02_Areas/02-2-AI-SOT/02-2-4-AI-Kit/AI-Kit_manual/watch.Tests.ps1",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "no local verification could be run"
                     ]
     },
     {
@@ -818,7 +813,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -836,7 +831,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -854,7 +849,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -872,7 +867,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -890,7 +885,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -908,7 +903,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -927,7 +922,7 @@
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: 02_Areas/02-2-AI-SOT/02-2-4-AI-Kit/AI-Kit_manual/git-autocommit.Tests.ps1",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -945,7 +940,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -963,7 +958,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -981,7 +976,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -999,7 +994,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1017,7 +1012,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1035,7 +1030,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1053,7 +1048,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1071,7 +1066,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1085,11 +1080,12 @@
         "files":  1,
         "additions":  47,
         "deletions":  0,
-        "verdict":  "ADAPT",
-        "verify":  "PASS",
+        "verdict":  "UNVERIFIED",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: scripts/tests/test_extract_wayland_workflows.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
+                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1120,11 +1116,12 @@
         "files":  1,
         "additions":  68,
         "deletions":  0,
-        "verdict":  "ADAPT",
-        "verify":  "PASS",
+        "verdict":  "UNVERIFIED",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/test_extract_wayland_workflows.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
+                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1138,11 +1135,12 @@
         "files":  1,
         "additions":  87,
         "deletions":  0,
-        "verdict":  "ADAPT",
-        "verify":  "PASS",
+        "verdict":  "UNVERIFIED",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/test_qwen_acp_mcp.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
+                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1156,11 +1154,12 @@
         "files":  1,
         "additions":  55,
         "deletions":  0,
-        "verdict":  "ADAPT",
-        "verify":  "PASS",
+        "verdict":  "UNVERIFIED",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/scripts/test_qwen_acp_mcp.py",
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
+                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1175,12 +1174,12 @@
         "additions":  65,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: 20_BRIDGES/minimax/minimax-hermes-bridge/tests/__init__.py",
                         "NOTE: secret scan skipped for test/fixture file: 20_BRIDGES/minimax/minimax-hermes-bridge/tests/test_minimax_hermes_bridge.py",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1195,10 +1194,10 @@
         "additions":  66,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1213,11 +1212,11 @@
         "additions":  74,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/test_qwen_acp_mcp.py",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1231,11 +1230,10 @@
         "files":  1,
         "additions":  39,
         "deletions":  32,
-        "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verdict":  "ADAPT",
+        "verify":  "PASS",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
                     ]
     },
     {
@@ -1250,11 +1248,11 @@
         "additions":  123,
         "deletions":  0,
         "verdict":  "UNVERIFIED",
-        "verify":  "BUDGET",
+        "verify":  "UNVERIFIED",
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/test_qwen_doctor.py",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1272,7 +1270,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1291,7 +1289,7 @@
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: 20_BRIDGES/minimax/minimax-hermes-bridge/tests/test_h_sync.py",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1309,7 +1307,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1328,7 +1326,7 @@
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/scripts/test_extract_wayland_workflows.py",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1347,7 +1345,7 @@
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/test_minimax_client.py",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1365,7 +1363,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1383,7 +1381,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1401,7 +1399,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1419,7 +1417,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1439,7 +1437,7 @@
                         "NOTE: secret scan skipped for test/fixture file: tests/__init__.py",
                         "NOTE: secret scan skipped for test/fixture file: tests/test_qwen_acp_mcp.py",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1457,7 +1455,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1475,7 +1473,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1495,7 +1493,7 @@
                         "NOTE: secret scan skipped for test/fixture file: scripts/tests/__init__.py",
                         "NOTE: secret scan skipped for test/fixture file: scripts/tests/test_minimax_client.py",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1513,7 +1511,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1533,7 +1531,7 @@
                         "NOTE: secret scan skipped for test/fixture file: tests/__init__.py",
                         "NOTE: secret scan skipped for test/fixture file: tests/test_qwen_acp_mcp.py",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1552,7 +1550,7 @@
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/test_qwen_acp_mcp.py",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1570,7 +1568,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1588,7 +1586,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1607,7 +1605,7 @@
         "reasons":  [
                         "NOTE: secret scan skipped for test/fixture file: tests/test_qwen_acp_mcp.py",
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1625,7 +1623,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1643,7 +1641,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1661,7 +1659,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1679,7 +1677,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1697,7 +1695,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1715,7 +1713,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1733,7 +1731,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1751,7 +1749,7 @@
         "verify":  "BUDGET",
         "reasons":  [
                         "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
-                        "not verified in this run: verification budget reached (5 per repo)"
+                        "not verified in this run: verification budget reached (10 per repo)"
                     ]
     },
     {
@@ -1765,10 +1763,11 @@
         "files":  18,
         "additions":  2,
         "deletions":  2,
-        "verdict":  "ADAPT",
-        "verify":  "PASS",
+        "verdict":  "UNVERIFIED",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
+                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local verification could be run"
                     ]
     },
     {
@@ -1801,10 +1800,11 @@
         "files":  1,
         "additions":  133,
         "deletions":  132,
-        "verdict":  "ADAPT",
-        "verify":  "PASS",
+        "verdict":  "UNVERIFIED",
+        "verify":  "UNVERIFIED",
         "reasons":  [
-                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat"
+                        "report incomplete, missing sections: Ce am schimbat, De ce, Cum am verificat",
+                        "no local verification could be run"
                     ]
     }
 ]

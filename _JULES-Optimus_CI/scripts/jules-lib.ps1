@@ -84,12 +84,30 @@ function New-JulesTempFile {
 function Invoke-Native {
     param(
         [Parameter(Mandatory = $true)][string]$Program,
-        [string[]]$Arguments = @()
+        [string[]]$Arguments = @(),
+        [string]$WorkingDirectory = ''
     )
     $errFile = New-JulesTempFile -Suffix '.err'
     $prevEap = $ErrorActionPreference
+    $prevDir = ''
     try {
         $ErrorActionPreference = 'Continue'
+        if ($WorkingDirectory) {
+            # NEVER fall back to the current directory.
+            #
+            # MEASURED on this machine: `gh pr checkout 9 -R
+            # apvizual-max/MAVIS-CLOUD` run inside an UNRELATED clone
+            # created the pull request's branch THERE and exited 0. A
+            # tool that acts on "the repository in the current directory"
+            # reports success while doing the wrong thing. So the
+            # directory is named explicitly, and if it does not exist
+            # this fails loudly instead of running somewhere else.
+            if (-not (Test-Path -LiteralPath $WorkingDirectory -PathType Container)) {
+                return @{ ExitCode = 127; Out = ''; Err = ('working directory does not exist: ' + $WorkingDirectory); Ok = $false }
+            }
+            $prevDir = (Get-Location).Path
+            Set-Location -LiteralPath $WorkingDirectory
+        }
         $out = & $Program @Arguments 2> $errFile
         $code = $LASTEXITCODE
         if ($null -eq $code) { $code = 0 }
@@ -108,6 +126,7 @@ function Invoke-Native {
         }
     } finally {
         $ErrorActionPreference = $prevEap
+        if ($prevDir) { Set-Location -LiteralPath $prevDir -ErrorAction SilentlyContinue }
         # Temp file created by this script, seconds ago. Safe to remove.
         if (Test-Path -LiteralPath $errFile) { Remove-Item -LiteralPath $errFile -Force -ErrorAction SilentlyContinue }
     }
@@ -118,9 +137,99 @@ function Invoke-Native {
 function Invoke-Gh {
     param(
         [Parameter(Mandatory = $true)][string[]]$GhArgs,
-        [int]$TimeoutSec = 120
+        [int]$TimeoutSec = 120,
+        [string]$WorkingDirectory = ''
     )
-    return (Invoke-Native -Program 'gh' -Arguments $GhArgs)
+    return (Invoke-Native -Program 'gh' -Arguments $GhArgs -WorkingDirectory $WorkingDirectory)
+}
+
+# Parses a JSON payload that may be an ARRAY or a single OBJECT.
+#
+# MEASURED on Windows PowerShell 5.1: `@($text | ConvertFrom-Json)`
+# returns ONE element when the payload is a top-level JSON array, because
+# ConvertFrom-Json emits the whole array as a single pipeline object and
+# the array subexpression does not unroll it. Measured on the real
+# GitHub payload: 34 pull requests in, 1 element out, and every element
+# then failed the type check - so the conflict scan reported
+# "0 open PR examined" while the API was working perfectly.
+#
+# The fix is to ASSIGN first and wrap afterwards: `@($parsed)` DOES
+# unroll an array held in a variable. Measured: 34 elements, 34 of them
+# carrying a 'number'.
+function ConvertFrom-JulesJson {
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Json)
+    if (-not $Json) { return @() }
+    $parsed = $Json | ConvertFrom-Json
+    return (@($parsed))
+}
+
+# Verifies that a checkout landed where it was supposed to land.
+#
+# WHY THIS EXISTS: `gh pr checkout <n> -R <repo>` exits 0 even when the
+# current directory belongs to a DIFFERENT repository - it creates the
+# pull request's branch there and reports success. Measured on this
+# machine. The consequence was a FALSE REJECT: the clone stayed on an
+# older pull request's branch, the new test file did not exist there,
+# `node --test` exited 1, and the report called the proposal broken.
+#
+# A gate that cannot fail is not a gate, so this one is written to fail:
+# a wrong directory, a wrong branch, or a missing test file all return
+# Ok = $false with the reason.
+function Test-CheckoutTarget {
+    param(
+        [Parameter(Mandatory = $true)][string]$Dir,
+        [Parameter(Mandatory = $true)][string]$ExpectedRef,
+        [string]$ExpectedSha = '',
+        [string[]]$OwnPaths = @()
+    )
+    $result = [PSCustomObject]@{
+        Ok           = $false
+        Branch       = ''
+        HeadSha      = ''
+        MissingPaths = @()
+        Reason       = ''
+    }
+    if (-not (Test-Path -LiteralPath (Join-Path $Dir '.git'))) {
+        $result.Reason = 'not a git clone: ' + $Dir
+        return $result
+    }
+    $branchRes = Invoke-Native -Program 'git' -Arguments @('-C', $Dir, 'rev-parse', '--abbrev-ref', 'HEAD')
+    if (-not $branchRes.Ok) {
+        $result.Reason = 'cannot read HEAD: ' + $branchRes.Err
+        return $result
+    }
+    $branch = $branchRes.Out.Trim()
+    $result.Branch = $branch
+    if ($ExpectedRef -and ($branch -ne $ExpectedRef)) {
+        $result.Reason = ('HEAD is on ' + $branch + ', expected ' + $ExpectedRef)
+        return $result
+    }
+    if ($ExpectedSha) {
+        $shaRes = Invoke-Native -Program 'git' -Arguments @('-C', $Dir, 'rev-parse', 'HEAD')
+        if (-not $shaRes.Ok) {
+            $result.Reason = 'cannot read HEAD commit: ' + $shaRes.Err
+            return $result
+        }
+        $sha = $shaRes.Out.Trim()
+        $result.HeadSha = $sha
+        if ($sha -ne $ExpectedSha) {
+            $result.Reason = ('HEAD is at ' + $sha + ', expected ' + $ExpectedSha)
+            return $result
+        }
+    }
+    $missing = @()
+    foreach ($p in $OwnPaths) {
+        $full = Join-Path $Dir ($p.Replace('/', '\'))
+        if (-not (Test-Path -LiteralPath $full)) { $missing += $p }
+    }
+    if ($missing.Count -gt 0) {
+        $result.MissingPaths = $missing
+        $result.Reason = ('missing on the checked out branch: ' + ($missing -join ', '))
+        return $result
+    }
+    $result.Ok = $true
+    $result.Reason = 'checkout verified'
+    return $result
 }
 
 function Assert-Gh {
@@ -396,7 +505,7 @@ function Get-JulesPrs {
         Write-JulesLog -Message ('pr list failed for ' + $Repo + ': ' + $res.Err) -Level 'ERROR'
         return @()
     }
-    $arr = $res.Out | ConvertFrom-Json
+    $arr = @(ConvertFrom-JulesJson -Json $res.Out)
     $out = @()
     foreach ($p in $arr) {
         if ($p.author.login -match 'jules|google-labs') { $out += $p }
@@ -430,23 +539,38 @@ function Detect-VerifyCommands {
         }
     }
 
+    # Deterministic order, and a preference for conventional test locations.
+    # Get-ChildItem returns filesystem order, so the same repo could produce
+    # different commands on different machines - a measurement that does not
+    # reproduce is not a measurement.
     $nodeTests = @(Get-ChildItem -Path (Join-Path $Dir '*') -Recurse -File -Filter '*.test.js' -ErrorAction SilentlyContinue |
             Where-Object { $_.FullName -notmatch 'node_modules|vendor|dist|arhiva' } |
+            ForEach-Object {
+                $rel = $_.FullName.Substring($Dir.Length).TrimStart([char[]]"\/").Replace('\', '/')
+                [PSCustomObject]@{ Rel = $rel; Conventional = [bool]($rel -match '(^|/)(tests?|specs?)/') }
+            } |
+            Sort-Object -Property @{ Expression = { -not $_.Conventional } }, Rel |
             Select-Object -First 3)
     foreach ($t in $nodeTests) {
-        $rel = $t.FullName.Substring($Dir.Length).TrimStart([char[]]"\/").Replace('\', '/')
-        $cmds += ('node --test ' + $rel)
+        # The path is QUOTED. A repository can contain a directory whose name
+        # has spaces in it - one measured here was
+        # "copy, MINIMAX, agentic, autonomous, operating system, plan" - and an
+        # unquoted path is split into several arguments, so the runner fails on
+        # a path it was given whole. That produced a FALSE REJECT on a pull
+        # request that had never been tested.
+        $cmds += ('node --test "' + $t.Rel + '"')
     }
 
     $pyA = @(Get-ChildItem -Path (Join-Path $Dir '*') -Recurse -File -Filter 'test_*.py' -ErrorAction SilentlyContinue |
             Where-Object { $_.FullName -notmatch 'node_modules|vendor|dist|arhiva|\.venv' } |
-            Select-Object -First 2)
+            ForEach-Object { $_.FullName.Substring($Dir.Length).TrimStart([char[]]"\/").Replace('\', '/') } |
+            Sort-Object | Select-Object -First 2)
     $pyB = @(Get-ChildItem -Path (Join-Path $Dir '*') -Recurse -File -Filter '*_test.py' -ErrorAction SilentlyContinue |
             Where-Object { $_.FullName -notmatch 'node_modules|vendor|dist|arhiva|\.venv' } |
-            Select-Object -First 2)
-    foreach ($t in ($pyA + $pyB)) {
-        $rel = $t.FullName.Substring($Dir.Length).TrimStart([char[]]"\/").Replace('\', '/')
-        $cmds += ('python -m pytest ' + $rel)
+            ForEach-Object { $_.FullName.Substring($Dir.Length).TrimStart([char[]]"\/").Replace('\', '/') } |
+            Sort-Object | Select-Object -First 2)
+    foreach ($rel in ($pyA + $pyB)) {
+        $cmds += ('python -m pytest "' + $rel + '"')
     }
 
     return $cmds
@@ -467,7 +591,7 @@ function Get-PrFiles {
         Write-JulesLog -Message ('pr files failed for ' + $Repo + ' PR ' + $Pr + ': ' + $res.Err) -Level 'ERROR'
         return @()
     }
-    $arr = $res.Out | ConvertFrom-Json
+    $arr = @(ConvertFrom-JulesJson -Json $res.Out)
     $out = @()
     foreach ($f in $arr) {
         $added = @()

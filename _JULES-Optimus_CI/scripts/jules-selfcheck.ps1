@@ -163,6 +163,82 @@ if ($probeCode -ne 3) {
     Write-Output ('OK   proba-idiom - payload pe stdout SI cod de iesire ' + $probeCode + ' (proba esueaza intentionat)')
 }
 
+# --- The checkout-verification probe --------------------------------------
+#
+# `gh pr checkout <n> -R <repo>` acts on the repository in the CURRENT
+# directory and exits 0 even when that is not the repository named by -R.
+# Measured on this machine. That produced a FALSE REJECT: the clone stayed
+# on an older branch, the new test file did not exist there, the test
+# runner exited 1, and the proposal was called broken.
+#
+# Test-CheckoutTarget is the gate that prevents it. A gate that has never
+# been shown able to fail is a gate of unknown quality, so this probe
+# builds a real clone with a real branch and demands that the gate
+# REJECTS three wrong situations and ACCEPTS the one right situation:
+#
+#   a) a directory that is not a clone          -> must reject
+#   b) a branch that is not the expected one     -> must reject
+#   c) a test file missing from the branch       -> must reject
+#   d) the right directory, branch and file      -> must accept
+#
+# If the gate accepts any of a/b/c, the false-reject path is still open
+# and the platform is not trustworthy.
+$checkoutProbeFile = Join-Path $probeDir ('checkout-probe-' + [guid]::NewGuid().ToString('N') + '.ps1')
+$checkoutProbeSrc = @(
+    '$ErrorActionPreference = ''Stop''',
+    ('. ''' + $libLiteral + ''''),
+    '$scratch = Join-Path (Get-JulesRoot) (''state\tmp\checkout-probe-'' + [guid]::NewGuid().ToString(''N''))',
+    'New-Item -ItemType Directory -Path $scratch -Force | Out-Null',
+    'try {',
+    '    $null = Invoke-Native -Program ''git'' -Arguments @(''init'', ''-q'', $scratch)',
+    '    $null = Invoke-Native -Program ''git'' -Arguments @(''-C'', $scratch, ''symbolic-ref'', ''HEAD'', ''refs/heads/probe-branch'')',
+    '    [System.IO.File]::WriteAllText((Join-Path $scratch ''probe-file.txt''), ''ok'')',
+    '    $null = Invoke-Native -Program ''git'' -Arguments @(''-C'', $scratch, ''-c'', ''user.email=probe@local'', ''-c'', ''user.name=probe'', ''-c'', ''commit.gpgsign=false'', ''add'', ''probe-file.txt'')',
+    '    $null = Invoke-Native -Program ''git'' -Arguments @(''-C'', $scratch, ''-c'', ''user.email=probe@local'', ''-c'', ''user.name=probe'', ''-c'', ''commit.gpgsign=false'', ''commit'', ''-q'', ''-m'', ''probe'')',
+    '    $sha = (Invoke-Native -Program ''git'' -Arguments @(''-C'', $scratch, ''rev-parse'', ''HEAD'')).Out.Trim()',
+    '    $a = Test-CheckoutTarget -Dir (Join-Path $scratch ''not-a-clone'') -ExpectedRef ''probe-branch''',
+    '    $b = Test-CheckoutTarget -Dir $scratch -ExpectedRef ''other-branch''',
+    '    $c = Test-CheckoutTarget -Dir $scratch -ExpectedRef ''probe-branch'' -OwnPaths @(''missing-file.txt'')',
+    '    $d = Test-CheckoutTarget -Dir $scratch -ExpectedRef ''probe-branch'' -OwnPaths @(''probe-file.txt'')',
+    '    $e = Test-CheckoutTarget -Dir $scratch -ExpectedRef ''probe-branch'' -ExpectedSha (''deadbeef'' + $sha) -OwnPaths @(''probe-file.txt'')',
+    '    if ($a.Ok) { Write-JulesOut ''PROBE_CHECKOUT_BAD a: a non-clone directory was accepted''; exit 0 }',
+    '    if ($b.Ok) { Write-JulesOut ''PROBE_CHECKOUT_BAD b: a wrong branch was accepted''; exit 0 }',
+    '    if ($c.Ok) { Write-JulesOut ''PROBE_CHECKOUT_BAD c: a missing test file was accepted''; exit 0 }',
+    '    if ($e.Ok) { Write-JulesOut ''PROBE_CHECKOUT_BAD e: a wrong commit was accepted''; exit 0 }',
+    '    if (-not $d.Ok) { Write-JulesOut (''PROBE_CHECKOUT_BAD d: the correct target was rejected - '' + $d.Reason); exit 0 }',
+    '    Write-JulesOut ''PROBE_CHECKOUT_OK''',
+    '} finally {',
+    '    if (Test-Path -LiteralPath $scratch) { Remove-Item -LiteralPath $scratch -Recurse -Force -ErrorAction SilentlyContinue }',
+    '}',
+    'exit 0'
+) -join "`n"
+
+$checkoutProbeOut = ''
+$checkoutProbeCode = -1
+try {
+    [System.IO.File]::WriteAllText($checkoutProbeFile, ($checkoutProbeSrc + "`n"), (New-Object System.Text.UTF8Encoding($false)))
+    $prevEap = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    $raw = & powershell -NoProfile -File $checkoutProbeFile 2>&1
+    $ErrorActionPreference = $prevEap
+    $checkoutProbeCode = $LASTEXITCODE
+    if ($null -eq $checkoutProbeCode) { $checkoutProbeCode = -1 }
+    if ($raw) { $checkoutProbeOut = ($raw -join "`n") }
+} catch {
+    $checkoutProbeOut = [string]$_
+} finally {
+    $ErrorActionPreference = 'Continue'
+    if (Test-Path -LiteralPath $checkoutProbeFile) { Remove-Item -LiteralPath $checkoutProbeFile -Force -ErrorAction SilentlyContinue }
+    $ErrorActionPreference = $prevEap
+}
+
+if ($checkoutProbeOut -match 'PROBE_CHECKOUT_OK') {
+    Write-Output 'OK   proba-checkout - poarta respinge director neclona, ramura gresita si fisier lipsa; accepta tinta corecta'
+} else {
+    $problems++
+    Write-Output ('FAIL proba-checkout - ' + $checkoutProbeOut.Trim())
+}
+
 Write-Output ('FILES=' + $files.Count + ' PROBLEMS=' + $problems)
 if ($problems -gt 0) {
     Write-Output 'POARTA A BLOCAT. Nimic nu ruleaza pana nu se repara.'
