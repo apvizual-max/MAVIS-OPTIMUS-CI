@@ -1,0 +1,18 @@
+{
+  "_nota": "Client ID e un IDENTIFICATOR, nu un secret. Apare in fiecare URL de autorizare, in istoricul browserului, in devtools. Google nu il considera confidential. Secretul e GOOGLE_CLIENT_SECRET_MAVIS_CLOUD, in secret manager. Motivul pentru care sta aici: platforma mascheaza valorile din secret manager in chat, iar un link de autorizare trimis prin chat ajunge la browser cu {{ARCHON_SECRET:...}} in loc de client_id real -> Error 401 invalid_client.",
+  "_regula": "Sursa unica de adevar pentru client_id. Daca se schimba clientul in Cloud Console, se actualizeaza si fisierul asta, sau google-preflight.js raporteaza drift.",
+  "client_id": "1068987308935-bp47aoerh6gu1aohm74blfhnccnku773.apps.googleusercontent.com",
+  "nume_client": "Mavis_Cloud",
+  "tip": "Desktop",
+  "proiect": "gen-lang-client-0284509562",
+  "creat": "2026-10-21T23:49:28+03:00",
+  "redirect_uri": "http://127.0.0.1:8976",
+  "scope_uri": [
+    "https://www.googleapis.com/auth/drive",
+    "https://www.googleapis.com/auth/gmail.modify",
+    "https://www.googleapis.com/auth/calendar",
+    "https://www.googleapis.com/auth/documents",
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/presentations"
+  ]
+}
