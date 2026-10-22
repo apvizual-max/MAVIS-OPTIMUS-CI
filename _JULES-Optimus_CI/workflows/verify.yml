@@ -101,10 +101,47 @@ jobs:
             echo "ok: ALEX-KIT/SABLOANE absent, pas sarit"
           fi
 
-      - name: Email canonic unic
+      - name: Email canonic - nicio adresa necanonica
         run: |
-          HIT=$(grep -ril "apvisual.arond@gmail.com" --include="*.md" --include="*.js" --include="*.json" --include="*.html" . 2>/dev/null | grep -v node_modules | grep -v vendor | head -20 || true)
-          if [ -n "$HIT" ]; then
-            echo "::error::EMAIL NE-CANONIC gasit:"; echo "$HIT"; exit 1
-          fi
-          echo "ok: email canonic pastrat"
+          python3 - <<'PY'
+          import os, re, subprocess, sys
+          # Addresses allowed in this repository. Every OTHER address fails.
+          # Extend this list when a legitimate address is added - one line.
+          ALLOWED = {"apvizual@gmail.com"}
+          ALLOWED_DOMAINS = {"ap-id.ro"}
+          INTERNAL_SUFFIX = ".local"
+          EXT = {".md",".js",".mjs",".cjs",".ts",".json",".html",".css",".py",".ps1",
+                 ".yml",".yaml",".txt",".csv",".sh",".bat",".cmd",".ini",".cfg",
+                 ".xml",".toml",".sql"}
+          # The local part must START with a letter or a digit, so framework
+          # decorators such as "@app.get" are not read as addresses.
+          RX = re.compile(r"[A-Za-z0-9][A-Za-z0-9._%+\-]*@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}")
+          tracked = subprocess.run(["git", "ls-files", "-z"],
+                                   capture_output=True, text=True).stdout.split("\0")
+          bad = []
+          for fn in tracked:
+              if not fn:
+                  continue
+              if os.path.splitext(fn)[1].lower() not in EXT:
+                  continue
+              try:
+                  t = open(fn, encoding="utf-8", errors="replace").read()
+              except Exception:
+                  continue
+              for m in set(RX.findall(t)):
+                  a = m.lower()
+                  if a in ALLOWED:
+                      continue
+                  dom = a.split("@", 1)[1]
+                  if dom in ALLOWED_DOMAINS:
+                      continue
+                  if dom.endswith(INTERNAL_SUFFIX):
+                      continue
+                  bad.append((fn, a))
+          if bad:
+              print("::error::ADRESA DE EMAIL NE-CANONICA:")
+              for fn, a in sorted(set(bad)):
+                  print("  " + fn + ": " + a)
+              sys.exit(1)
+          print("ok: toate adresele de email sunt canonice")
+          PY

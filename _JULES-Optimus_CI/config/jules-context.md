@@ -42,9 +42,9 @@ lucrează. Dar nu împinge niciodată direct pe `main`. Deschide pull request.
 
 ## 3. Invariantele de conținut
 
-- **Email canonic: `apvizual@gmail.com`.** Un singur email. Nu
-  `apvisual.arond@gmail.com`, nu altul. Dacă găsești unul greșit în cod,
-  **corectează-l** și notează în raport.
+- **Email canonic: `apvizual@gmail.com`.** Un singur email, nicăieri altul.
+  Dacă găsești orice altă adresă de e-mail în cod, **corectează-o** și
+  notează în raport.
 - **Branduri interzise:** `Creafac` — nu apare nicăieri. Brandul corect în
   contextul Smite este `Ducray`.
 - **Skin Media** = Nikon / Aiper / Ninja. **Smite** = City Grill / Aderma

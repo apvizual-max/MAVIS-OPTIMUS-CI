@@ -104,15 +104,15 @@ function Main {
 
     if ($cmds.Count -eq 0) {
         Write-JulesLog -Message 'NO VERIFICATION AVAILABLE for this repo - verdict cannot be PASS' -Level 'ERROR'
-        Write-Output 'RESULT=NO_VERIFICATION'
-        Write-Output ('REPO=' + $Repo)
+        Write-JulesOut 'RESULT=NO_VERIFICATION'
+        Write-JulesOut ('REPO=' + $Repo)
         return 2
     }
 
     if ($DetectOnly) {
-        Write-Output 'RESULT=DETECT_ONLY'
-        Write-Output ('REPO=' + $Repo)
-        Write-Output ('COMMANDS=' + ($cmds -join ' ;; '))
+        Write-JulesOut 'RESULT=DETECT_ONLY'
+        Write-JulesOut ('REPO=' + $Repo)
+        Write-JulesOut ('COMMANDS=' + ($cmds -join ' ;; '))
         return 0
     }
 
@@ -199,13 +199,13 @@ function Main {
     if (-not $allOk) { $final = 1 }
     if ($anyMissing) { $final = 2 }
 
-    Write-Output ('RESULT=' + $(if ($final -eq 0) { 'PASS' } elseif ($final -eq 1) { 'FAIL' } else { 'NO_MEASUREMENT' }))
-    Write-Output ('REPO=' + $Repo)
-    Write-Output ('PR=' + $Pr)
-    Write-Output ('BRANCH=' + $branchUsed)
-    Write-Output ('FILE=' + $outFile)
+    Write-JulesOut ('RESULT=' + $(if ($final -eq 0) { 'PASS' } elseif ($final -eq 1) { 'FAIL' } else { 'NO_MEASUREMENT' }))
+    Write-JulesOut ('REPO=' + $Repo)
+    Write-JulesOut ('PR=' + $Pr)
+    Write-JulesOut ('BRANCH=' + $branchUsed)
+    Write-JulesOut ('FILE=' + $outFile)
     foreach ($r in $results) {
-        Write-Output ('CMD=' + $r.command + ' EXIT=' + $r.exitCode + ' TOOLMISSING=' + $r.toolMissing)
+        Write-JulesOut ('CMD=' + $r.command + ' EXIT=' + $r.exitCode + ' TOOLMISSING=' + $r.toolMissing)
     }
     return $final
 }

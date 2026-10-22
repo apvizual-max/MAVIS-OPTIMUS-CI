@@ -168,11 +168,11 @@ function Main {
 
     $mode = 'PLAN'
     if ($Apply) { $mode = 'APPLIED' }
-    Write-Output ('MODE=' + $mode)
-    Write-Output ('REPO=' + $Repo)
-    Write-Output ('BRANCH=' + $branch)
-    Write-Output ('LABEL=' + $(if ($hasLabel) { 'exista' } else { 'creat' }))
-    Write-Output ('SECRET=' + $(if ($hasSecret) { 'prezent' } else { 'LIPSASTE' }))
+    Write-JulesOut ('MODE=' + $mode)
+    Write-JulesOut ('REPO=' + $Repo)
+    Write-JulesOut ('BRANCH=' + $branch)
+    Write-JulesOut ('LABEL=' + $(if ($hasLabel) { 'exista' } else { 'creat' }))
+    Write-JulesOut ('SECRET=' + $(if ($hasSecret) { 'prezent' } else { 'LIPSASTE' }))
     return 0
 }
 

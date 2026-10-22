@@ -61,6 +61,10 @@ function Main {
         }
 
         foreach ($c in $ordered) {
+            # Re-read the ledger every iteration. The dispatch subprocess
+            # updates the file, so a copy taken before the loop is stale and
+            # the cap check would lie about how much of the day is spent.
+            $ledger = Get-QuotaLedger
             if ([int]$ledger.tasksDispatched -ge $cap) {
                 $skipped += ($c.Repo + '/' + $c.Axis + ': daily cap reached (' + $cap + ')')
                 continue
@@ -88,7 +92,7 @@ function Main {
             } else {
                 $reason = 'exit ' + $code
                 foreach ($line in ($text -split "`r?`n")) {
-                    if ($line -match '\[ERROR\]') { $reason = $line.Trim(); break }
+                    if ($line -match '\[ERROR\]|\[WARN\]') { $reason = $line.Trim(); break }
                 }
                 $skipped += ($c.Repo + '/' + $c.Axis + ': ' + $reason)
                 Write-JulesLog -Message ('dispatch failed ' + $c.Repo + '/' + $c.Axis + ' - ' + $reason) -Level 'WARN'
@@ -182,11 +186,11 @@ function Main {
     [System.IO.File]::WriteAllText($reportFile, (($L -join "`n") + "`n"), $enc)
     Write-JulesLog -Message ('daily report: ' + $reportFile) -Level 'STEP'
 
-    Write-Output ('REPORT=' + $reportFile)
-    Write-Output ('DISPATCHED=' + $dispatched.Count)
-    Write-Output ('SKIPPED=' + $skipped.Count)
-    Write-Output ('FINDINGS=' + $findings)
-    Write-Output ('USED=' + $ledger.tasksDispatched)
+    Write-JulesOut ('REPORT=' + $reportFile)
+    Write-JulesOut ('DISPATCHED=' + $dispatched.Count)
+    Write-JulesOut ('SKIPPED=' + $skipped.Count)
+    Write-JulesOut ('FINDINGS=' + $findings)
+    Write-JulesOut ('USED=' + $ledger.tasksDispatched)
     return 0
 }
 

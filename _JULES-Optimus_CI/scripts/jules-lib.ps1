@@ -31,6 +31,23 @@ function Write-JulesLog {
     }
 }
 
+# Writes a machine-readable line to the real stdout.
+#
+# WHY NOT Write-Output: a script does `$code = Main`, and Write-Output inside
+# Main is part of Main's return value. Measured on this machine:
+#   function F { Write-Output 'X'; return 3 }   ->  $c = F  ->  $c = @('X', 3)
+#   exit $c                                      ->  EXIT 0   (the 3 is lost)
+# So every gate that printed a line before returning a failure code returned
+# SUCCESS. That is a check that cannot fail. [Console]::Out.WriteLine writes
+# straight to stdout, is not captured by the assignment, and leaves the exit
+# code intact.
+#
+# Logs go to stderr (Write-JulesLog). Payload goes here. Nothing else may.
+function Write-JulesOut {
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Message)
+    [Console]::Out.WriteLine($Message)
+}
+
 function Start-JulesLog {
     param([Parameter(Mandatory = $true)][string]$Name)
     $logDir = Join-Path (Get-JulesRoot) 'logs'

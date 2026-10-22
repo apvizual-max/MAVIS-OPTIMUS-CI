@@ -174,7 +174,7 @@ function Main {
         $enc = New-Object System.Text.UTF8Encoding($false)
         [System.IO.File]::WriteAllText($outFile, ('# ' + $title + "`n`n" + $body), $enc)
         Write-JulesLog -Message ('DRY RUN - body written to ' + $outFile + ' (' + $body.Length + ' chars)') -Level 'STEP'
-        Write-Output ('TITLE: ' + $title)
+        Write-JulesOut ('TITLE: ' + $title)
         return 0
     }
 
@@ -202,11 +202,11 @@ function Main {
         $ledgerPath = Save-QuotaLedger -Ledger $ledger
         Write-JulesLog -Message ('quota ledger updated: ' + $ledgerPath + ' used=' + $ledger.tasksDispatched) -Level 'STEP'
 
-        Write-Output ('ISSUE=' + $issueNumber)
-        Write-Output ('URL=' + $issueUrl)
-        Write-Output ('TARGET=' + $target.Path)
-        Write-Output ('AXIS=' + $Axis)
-        Write-Output ('USED=' + $ledger.tasksDispatched)
+        Write-JulesOut ('ISSUE=' + $issueNumber)
+        Write-JulesOut ('URL=' + $issueUrl)
+        Write-JulesOut ('TARGET=' + $target.Path)
+        Write-JulesOut ('AXIS=' + $Axis)
+        Write-JulesOut ('USED=' + $ledger.tasksDispatched)
         return 0
     } finally {
         if (Test-Path -LiteralPath $titleFile) { Remove-Item -LiteralPath $titleFile -Force -ErrorAction SilentlyContinue }

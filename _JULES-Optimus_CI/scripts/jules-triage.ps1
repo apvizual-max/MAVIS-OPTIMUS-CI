@@ -210,11 +210,11 @@ function Main {
     [System.IO.File]::WriteAllText($jsonFile, (($findings | ConvertTo-Json -Depth 6)), $enc)
 
     Write-JulesLog -Message ('triage written: ' + $mdFile) -Level 'STEP'
-    Write-Output ('TRIAGE_FILE=' + $mdFile)
-    Write-Output ('TRIAGE_JSON=' + $jsonFile)
-    Write-Output ('FINDINGS=' + $findings.Count)
+    Write-JulesOut ('TRIAGE_FILE=' + $mdFile)
+    Write-JulesOut ('TRIAGE_JSON=' + $jsonFile)
+    Write-JulesOut ('FINDINGS=' + $findings.Count)
     foreach ($f in $findings) {
-        Write-Output ('PR=' + $f.repo + '#' + $f.pr + ' VERDICT=' + $f.verdict + ' VERIFY=' + $f.verify)
+        Write-JulesOut ('PR=' + $f.repo + '#' + $f.pr + ' VERDICT=' + $f.verdict + ' VERIFY=' + $f.verify)
     }
     return 0
 }
