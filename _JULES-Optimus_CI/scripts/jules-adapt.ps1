@@ -176,9 +176,18 @@ function Main {
             $ownSpecs += [PSCustomObject]@{ Path = $p; Candidates = @(('node --test "' + $p + '"')) }
         } elseif ($p -match '(^|/)(test_[^/]+\.py|[^/]+_test\.py)$') {
             $ownTestPaths += $p
+            $cands = @(('python -m pytest "' + $p + '"'))
+            # The standard library fallback is added ONLY when the file
+            # really has a runner entry point. A pytest-style file invoked
+            # directly exits 0 having run NOTHING - a false pass, which is
+            # worse than no measurement at all.
+            $abs = Join-Path $dir ($p.Replace('/', '\'))
+            if (Test-JulesStdlibRunnable -Path $abs) {
+                $cands += ('python "' + $p + '"')
+            }
             $ownSpecs += [PSCustomObject]@{
                 Path       = $p
-                Candidates = @(('python -m pytest "' + $p + '"'), ('python "' + $p + '"'))
+                Candidates = $cands
             }
         }
     }
@@ -365,9 +374,9 @@ function Main {
     $conflicts = @(Get-ConflictingPrs -RepoName $Repo -Paths $paths -Exclude $Pr)
 
     # --- Write the report -------------------------------------------------
-    if (-not $OutDir) { $OutDir = Join-Path (Get-JulesRoot) 'docs\adaptari' }
+    if (-not $OutDir) { $OutDir = Split-Path -Parent (Get-AdaptReportPath -Repo $Repo -Pr $Pr) }
     if (-not (Test-Path -LiteralPath $OutDir)) { New-Item -ItemType Directory -Path $OutDir -Force | Out-Null }
-    $outFile = Join-Path $OutDir ('adapt-' + $Repo + '-pr' + $Pr + '.md')
+    $outFile = Get-AdaptReportPath -Repo $Repo -Pr $Pr
 
     $L = @()
     $L += ('# JULES ' + $Repo + ' #' + $Pr)

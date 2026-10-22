@@ -87,7 +87,7 @@ function Main {
             $notes = @($rawViolations | Where-Object { $_.StartsWith('NOTE:') })
             $violations = @($rawViolations | Where-Object { -not $_.StartsWith('NOTE:') })
 
-            $reportCheck = Test-ReportComplete -Body ([string]$view.body)
+            $reportCheck = Get-AdaptReportState -Repo $r.name -Pr $pr.number
             $tooBroad = ($files.Count -gt 20)
 
             # --- physical verification -----------------------------------
@@ -104,9 +104,15 @@ function Main {
             }
 
             if ($verdict -ne 'REJECT') {
-                if (-not $reportCheck.Complete) {
+                if (-not $reportCheck.Exists) {
+                    # No local adaptation report yet. That is a truthful state of
+                    # the pipeline, not a defect in the proposal: the proposal
+                    # still has to be adapted locally, so it cannot be ACCEPTed.
                     $verdict = 'ADAPT'
-                    $reasons += ('report incomplete, missing sections: ' + ($reportCheck.Missing -join ', '))
+                    $reasons += 'no local adaptation report yet (not yet adapted)'
+                } elseif (-not $reportCheck.Complete) {
+                    $verdict = 'ADAPT'
+                    $reasons += ('adaptation report incomplete, missing sections: ' + ($reportCheck.Missing -join ', '))
                 }
                 if ($tooBroad) {
                     $verdict = 'ADAPT'
@@ -137,6 +143,27 @@ function Main {
                         $verdict = 'REJECT'
                         $reasons += 'local verification failed (exit 1)'
                         $reasons += (($vText -split "`r?`n" | Where-Object { $_ -match '^CMD=' }) -join '; ')
+                    } elseif ($vCode -eq 3) {
+                        # The failure was measured but is NOT attributable to the
+                        # proposal: it did not reproduce, or it already existed
+                        # on the base branch. This is NOT a REJECT. Reporting it
+                        # as one would close a proposal that is not the cause,
+                        # and would repeat forever on any repo whose suite is
+                        # already broken.
+                        $verifyResult = 'NOT_ATTRIBUTABLE'
+                        $verdict = 'UNVERIFIED'
+                        $attr = (($vText -split "`r?`n" | Where-Object { $_ -match '^ATTRIBUTION=' }) -join '')
+                        if ($attr -match 'FLAKY') {
+                            $reasons += 'verification failed once but did not reproduce on a second run in the same tree - not attributable to the proposal'
+                        } else {
+                            $reasons += 'the same failures are already present on the base branch - not attributable to the proposal'
+                        }
+                        $reasons += $attr
+                        $reasons += (($vText -split "`r?`n" | Where-Object { $_ -match '^FAILED=' }) -join '; ')
+                        $newFails = @(($vText -split "`r?`n" | Where-Object { $_ -match '^NEWFAIL=' }) | ForEach-Object { $_ -replace '^NEWFAIL=', '' })
+                        if ($newFails.Count -gt 0) {
+                            $reasons += ('failures present on the head but not on the base (judged by Mavis Local, not auto-rejected): ' + ($newFails -join '; '))
+                        }
                     } else {
                         $verifyResult = 'UNVERIFIED'
                         $verdict = 'UNVERIFIED'

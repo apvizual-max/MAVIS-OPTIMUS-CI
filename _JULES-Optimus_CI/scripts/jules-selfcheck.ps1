@@ -239,6 +239,201 @@ if ($checkoutProbeOut -match 'PROBE_CHECKOUT_OK') {
     Write-Output ('FAIL proba-checkout - ' + $checkoutProbeOut.Trim())
 }
 
+# --- The python-runner probe ----------------------------------------------
+#
+# A pytest-style file invoked directly exits 0 after running NOTHING. That
+# is a FALSE PASS - it clears a proposal that was never tested, which is
+# the most dangerous direction a check can break in.
+#
+# The standard library fallback is therefore allowed only for a file that
+# really has a runner entry point. This probe demands that the gate:
+#   a) ACCEPTS a file with a `__main__` block and a runner   -> true
+#   b) REJECTS a pytest-style file with no runner entry point -> false
+#   c) REJECTS a file that does not exist                     -> false
+# If it accepts b, the platform would clear untested proposals.
+$runnerProbeFile = Join-Path $probeDir ('runner-probe-' + [guid]::NewGuid().ToString('N') + '.ps1')
+$runnerProbeSrc = @(
+    '$ErrorActionPreference = ''Stop''',
+    ('. ''' + $libLiteral + ''''),
+    '$scratch = Join-Path (Get-JulesRoot) (''state\tmp\runner-probe-'' + [guid]::NewGuid().ToString(''N''))',
+    'New-Item -ItemType Directory -Path $scratch -Force | Out-Null',
+    'try {',
+    '    $withRunner = Join-Path $scratch ''with_runner.py''',
+    '    [System.IO.File]::WriteAllText($withRunner, "import unittest`nclass T(unittest.TestCase):`n    def test_x(self):`n        self.assertTrue(True)`nif __name__ == ''__main__'':`n    unittest.main()`n")',
+    '    $pytestStyle = Join-Path $scratch ''pytest_style.py''',
+    '    [System.IO.File]::WriteAllText($pytestStyle, "def test_something():`n    assert True`n")',
+    '    $missing = Join-Path $scratch ''not_here.py''',
+    '    $a = Test-JulesStdlibRunnable -Path $withRunner',
+    '    $b = Test-JulesStdlibRunnable -Path $pytestStyle',
+    '    $c = Test-JulesStdlibRunnable -Path $missing',
+    '    if (-not $a) { Write-JulesOut ''PROBE_RUNNER_BAD a: a file with a runner was rejected''; exit 0 }',
+    '    if ($b) { Write-JulesOut ''PROBE_RUNNER_BAD b: a pytest-style file was accepted - that is a false pass''; exit 0 }',
+    '    if ($c) { Write-JulesOut ''PROBE_RUNNER_BAD c: a missing file was accepted''; exit 0 }',
+    '    Write-JulesOut ''PROBE_RUNNER_OK''',
+    '} finally {',
+    '    if (Test-Path -LiteralPath $scratch) { Remove-Item -LiteralPath $scratch -Recurse -Force -ErrorAction SilentlyContinue }',
+    '}',
+    'exit 0'
+) -join "`n"
+
+$runnerProbeOut = ''
+try {
+    [System.IO.File]::WriteAllText($runnerProbeFile, ($runnerProbeSrc + "`n"), (New-Object System.Text.UTF8Encoding($false)))
+    $prevEap = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    $raw = & powershell -NoProfile -File $runnerProbeFile 2>&1
+    $ErrorActionPreference = $prevEap
+    if ($raw) { $runnerProbeOut = ($raw -join "`n") }
+} catch {
+    $runnerProbeOut = [string]$_
+} finally {
+    $ErrorActionPreference = 'Continue'
+    if (Test-Path -LiteralPath $runnerProbeFile) { Remove-Item -LiteralPath $runnerProbeFile -Force -ErrorAction SilentlyContinue }
+    $ErrorActionPreference = $prevEap
+}
+
+if ($runnerProbeOut -match 'PROBE_RUNNER_OK') {
+    Write-Output 'OK   proba-runner - accepta doar fisierele cu runner real; un fisier pytest-style ar produce un PASS fals'
+} else {
+    $problems++
+    Write-Output ('FAIL proba-runner - ' + $runnerProbeOut.Trim())
+}
+
+# --- The adaptation-report probe ------------------------------------------
+#
+# The triage used to look for the canonical report sections in the JULES PR
+# BODY. Jules never writes those sections, so the check failed on all 99
+# proposals and told Popy that every report was incomplete - including the
+# 12 that carry a complete report on disk. The reader has to read the file
+# the WRITER produced, and the two have to agree on the path.
+#
+# This probe demands that the reader/writer pair:
+#   a) FINDS a complete report that exists on disk      -> must accept
+#   b) REPORTS no report for a PR that has none         -> must not invent one
+#   c) AGREES with the writer on the path               -> one source of truth
+#   d) NAMES the missing section of a partial report    -> must not pass it
+#
+# If (a) fails, the false "report incomplete" defect returns for every
+# proposal that WAS correctly adapted.
+$reportProbeFile = Join-Path $probeDir ('report-probe-' + [guid]::NewGuid().ToString('N') + '.ps1')
+$reportProbeSrc = @(
+    '$ErrorActionPreference = ''Stop''',
+    ('. ''' + $libLiteral + ''''),
+    '$fail = 0',
+    '$a = Get-AdaptReportState -Repo ''MAVIS-CLOUD'' -Pr ''9''',
+    'if (-not $a.Exists) { Write-JulesOut ''PROBE_REPORT_BAD a: an existing report was not found''; exit 0 }',
+    'if (-not $a.Complete) { Write-JulesOut (''PROBE_REPORT_BAD a: a complete report was judged incomplete, missing='' + ($a.Missing -join ''|'')); exit 0 }',
+    '$b = Get-AdaptReportState -Repo ''MAVIS-CLOUD'' -Pr ''36''',
+    'if ($b.Exists) { Write-JulesOut ''PROBE_REPORT_BAD b: a report was invented for a PR that has none''; exit 0 }',
+    '$w = Get-AdaptReportPath -Repo ''MAVIS-CLOUD'' -Pr ''9''',
+    'if ($w -ne $a.Path) { Write-JulesOut ''PROBE_REPORT_BAD c: reader and writer disagree on the path''; exit 0 }',
+    '$tmpDir = Join-Path (Get-JulesRoot) ''state\tmp''',
+    '$tmp = Join-Path $tmpDir (''probe-partial-'' + [guid]::NewGuid().ToString(''N'') + ''.md'')',
+    '[System.IO.File]::WriteAllText($tmp, "# probe`n## Ce am schimbat`ntext`n")',
+    'try {',
+    '    $body = [System.IO.File]::ReadAllText($tmp)',
+    '    $needed = @(''Ce am schimbat'', ''De ce'', ''Cum am verificat'')',
+    '    $missing = @()',
+    '    foreach ($n in $needed) { if ($body -notmatch [regex]::Escape($n)) { $missing += $n } }',
+    '    if ($missing.Count -ne 2) { Write-JulesOut (''PROBE_REPORT_BAD d: expected 2 missing sections, got '' + $missing.Count); exit 0 }',
+    '} finally {',
+    '    if (Test-Path -LiteralPath $tmp) { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue }',
+    '}',
+    'Write-JulesOut ''PROBE_REPORT_OK'''
+) -join "`n"
+
+$reportProbeOut = ''
+try {
+    [System.IO.File]::WriteAllText($reportProbeFile, ($reportProbeSrc + "`n"), (New-Object System.Text.UTF8Encoding($false)))
+    $prevEap = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    $raw = & powershell -NoProfile -File $reportProbeFile 2>&1
+    $ErrorActionPreference = $prevEap
+    $reportProbeCode = $LASTEXITCODE
+    if ($null -eq $reportProbeCode) { $reportProbeCode = -1 }
+    if ($raw) { $reportProbeOut = ($raw -join "`n") }
+} catch {
+    $reportProbeOut = [string]$_
+} finally {
+    $ErrorActionPreference = 'Continue'
+    if (Test-Path -LiteralPath $reportProbeFile) { Remove-Item -LiteralPath $reportProbeFile -Force -ErrorAction SilentlyContinue }
+    $ErrorActionPreference = $prevEap
+}
+
+if ($reportProbeOut -match 'PROBE_REPORT_OK') {
+    Write-Output 'OK   proba-raport - raportul de adaptare existent este recunoscut, cel absent nu e inventat, scriitorul si cititorul au aceeasi cale'
+} else {
+    $problems++
+    Write-Output ('FAIL proba-raport - ' + $reportProbeOut.Trim())
+}
+
+# --- The attribution probe -----------------------------------------------
+#
+# A gate that blames a proposal for a failure that was already there - or
+# for a failure that does not reproduce - rejects work that is fine. That
+# is the direction a check must never break in.
+#
+# MEASURED on SENTINEL_PRIME PR #3, same commit 6f0a391b:
+#   work/SENTINEL_PRIME  -> 62 passed / 1 failed  (EXIT 1)
+#   clean clone           -> 63 passed / 0 failed  (EXIT 0)
+# and `test_suite.py` reports 479 passed / 6 failed on the BASE branch too.
+#
+# This probe demands that the attribution logic:
+#   a) NAMES the failing check from a real output
+#   b) says ATTRIBUTABLE when the base passed
+#   c) says PREEXISTING  when the base failed the same way
+#   d) says MIXED        when the base failed only part of it
+#   e) says ATTRIBUTABLE when every head failure is new
+$attrProbeFile = Join-Path $probeDir ('attr-probe-' + [guid]::NewGuid().ToString('N') + '.ps1')
+$attrProbeSrc = @(
+    '$ErrorActionPreference = ''Stop''',
+    ('. ''' + $libLiteral + ''''),
+    '$real = @(',
+    '  ''=== BrainAndMonitor ==='',',
+    '  ''Status: FAIL'',',
+    '  ''Passed: 46/47'',',
+    '  ''Errors:'',',
+    '  ''  - MCP tools report OK only on a measured handshake: expected OK, got STALE''',
+    ') -join "`n"',
+    '$sig = @(Get-JulesFailureSignature -Text $real)',
+    'if ($sig.Count -eq 0) { Write-JulesOut ''PROBE_ATTR_BAD a: no failing check was named''; exit 0 }',
+    'if (-not (@($sig | Where-Object { $_ -like ''STATUS BrainAndMonitor*'' }).Count -ge 1)) { Write-JulesOut ''PROBE_ATTR_BAD a: the failing section was not named''; exit 0 }',
+    '$b = Compare-JulesFailureSets -Head @(''A'') -Base @() -BasePassed $true',
+    'if ($b -ne ''ATTRIBUTABLE'') { Write-JulesOut (''PROBE_ATTR_BAD b: expected ATTRIBUTABLE, got '' + $b); exit 0 }',
+    '$c = Compare-JulesFailureSets -Head @(''A'',''B'') -Base @(''A'',''B'') -BasePassed $false',
+    'if ($c -ne ''PREEXISTING'') { Write-JulesOut (''PROBE_ATTR_BAD c: expected PREEXISTING, got '' + $c); exit 0 }',
+    '$d = Compare-JulesFailureSets -Head @(''A'',''B'') -Base @(''A'') -BasePassed $false',
+    'if ($d -ne ''MIXED'') { Write-JulesOut (''PROBE_ATTR_BAD d: expected MIXED, got '' + $d); exit 0 }',
+    '$e = Compare-JulesFailureSets -Head @(''A'') -Base @(''B'') -BasePassed $false',
+    'if ($e -ne ''ATTRIBUTABLE'') { Write-JulesOut (''PROBE_ATTR_BAD e: expected ATTRIBUTABLE, got '' + $e); exit 0 }',
+    '$vol = @(Get-JulesFailureSignature -Text (''[FAIL] snapshot is 10774s old (bound 600s)'' + "`n" + ''[FAIL] snapshot is 12374s old (bound 600s)''))',
+    'if ($vol.Count -ne 1) { Write-JulesOut (''PROBE_ATTR_BAD f: a volatile number made the signature unstable, count='' + $vol.Count); exit 0 }',
+    'Write-JulesOut ''PROBE_ATTR_OK'''
+) -join "`n"
+
+$attrProbeOut = ''
+try {
+    [System.IO.File]::WriteAllText($attrProbeFile, ($attrProbeSrc + "`n"), (New-Object System.Text.UTF8Encoding($false)))
+    $prevEap = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    $raw = & powershell -NoProfile -File $attrProbeFile 2>&1
+    $ErrorActionPreference = $prevEap
+    if ($raw) { $attrProbeOut = ($raw -join "`n") }
+} catch {
+    $attrProbeOut = [string]$_
+} finally {
+    $ErrorActionPreference = 'Continue'
+    if (Test-Path -LiteralPath $attrProbeFile) { Remove-Item -LiteralPath $attrProbeFile -Force -ErrorAction SilentlyContinue }
+    $ErrorActionPreference = $prevEap
+}
+
+if ($attrProbeOut -match 'PROBE_ATTR_OK') {
+    Write-Output 'OK   proba-atribuire - esecul preexistent e PREEXISTING, cel nou e ATTRIBUTABLE, cel nemaiplicabil e MIXED'
+} else {
+    $problems++
+    Write-Output ('FAIL proba-atribuire - ' + $attrProbeOut.Trim())
+}
+
 Write-Output ('FILES=' + $files.Count + ' PROBLEMS=' + $problems)
 if ($problems -gt 0) {
     Write-Output 'POARTA A BLOCAT. Nimic nu ruleaza pana nu se repara.'

@@ -12,7 +12,7 @@ Niciun pull request nu trece fără să se lovească de toate patru.
 | Poartă | Ce verifică | Cine măsoară |
 |---|---|---|
 | **P1 — Politică** | cai interzise (`node_modules/`, `vendor/`, `dist/`, lockfile-uri), secrete în diff, PR-uri prea late | `Test-DiffPolicy` în `jules-lib.ps1` |
-| **P2 — Raport** | cele trei secțiuni obligatorii: *Ce am schimbat / De ce / Cum am verificat* | `Test-ReportComplete` |
+| **P2 — Raport** | cele trei secțiuni obligatorii: *Ce am schimbat / De ce / Cum am verificat*, citite din raportul local de adaptare | `Get-AdaptReportState` în `jules-lib.ps1` |
 | **P3 — Verificare fizică** | suita de teste a repo-ului, rulată **aici, acum**, pe codul propus | `jules-verify.ps1` |
 | **P4 — Verdict** | ACCEPT / ADAPT / REJECT / UNVERIFIED, cu motiv scris | `jules-triage.ps1` |
 
@@ -22,8 +22,15 @@ Niciun pull request nu trece fără să se lovească de toate patru.
 |---|---|---|
 | **ACCEPT** | P1 curat, P2 complet, P3 verde | stă la coadă pentru merge cu R0 |
 | **ADAPT** | substanța e bună, dar raportul sau forma trebuie refăcută | Local îl corectează și îl adaptază, **nu** îl acceptă ca atare |
-| **REJECT** | P1 găsit o încălcare, sau P3 pică | Local închide PR-ul cu motiv scris |
-| **UNVERIFIED** | nu s-a putut verifica | **nu e ACCEPT.** Rămâne în coadă. Zero de la o măsurătoare care n-a măsurat nu e zero |
+| **REJECT** | P1 găsit o încălcare, sau P3 pică **reproductibil** și **nu exista în bază** | Local închide PR-ul cu motiv scris |
+| **UNVERIFIED** | nu s-a putut verifica, sau eșecul **nu e imputabil** propunerii | **nu e ACCEPT.** Rămâne în coadă. Zero de la o măsurătoare care n-a măsurat nu e zero |
+
+**Regula imputabilității.** O propunere poate fi blamată doar pentru un
+eșec care (a) se reproduce în același arbore și (b) nu există și pe ramura
+de bază. Un eșec care nu se reproduce sau care exista înainte este
+**măsurat și raportat**, dar **nu închide** propunerea. Măsurat pe
+`SENTINEL_PRIME#3`: același SHA, două arbori, rezultate diferite; iar
+`test_suite.py` pica la fel și pe `main`.
 
 ## 3. Regula cifrelor
 

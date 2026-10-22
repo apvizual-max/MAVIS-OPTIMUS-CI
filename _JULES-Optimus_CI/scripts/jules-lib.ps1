@@ -232,6 +232,64 @@ function ConvertFrom-JulesJson {
     return (@($parsed))
 }
 
+# Decides whether a Python test file can be run WITHOUT pytest.
+#
+# A pytest-style file - plain `def test_*` functions and no runner entry
+# point - exits 0 after running NOTHING when invoked directly. That is a
+# FALSE PASS, and it is worse than having no measurement at all: it clears
+# a proposal that was never tested. So the standard library fallback is
+# allowed only when the file actually contains a runner.
+#
+# Measured: 08_SELF_IMPROVEMENT/test_suite.py in SENTINEL_PRIME has a
+# `__main__` block and calls run_all_tests(), so it runs directly.
+function Test-JulesStdlibRunnable {
+    param([Parameter(Mandatory = $true)][string]$Path)
+    if (-not (Test-Path -LiteralPath $Path)) { return $false }
+    try {
+        $text = [System.IO.File]::ReadAllText($Path)
+    } catch {
+        return $false
+    }
+    if ($text -notmatch '__main__') { return $false }
+    $markers = @('unittest.main', 'unittest.TestLoader', 'pytest.main', 'TestSuite(',
+                 'run_all_tests', 'sys.exit(0 if success')
+    foreach ($m in $markers) {
+        if ($text -match [regex]::Escape($m)) { return $true }
+    }
+    return $false
+}
+
+# The chain of runners to try for one test command.
+#
+# MEASURED on this machine: pytest is NOT installed, so `python -m pytest`
+# exits 1 with "No module named pytest" - a missing INSTRUMENT, not a
+# failing test. But a test written as plain unittest with a
+# `unittest.main()` block runs on the standard library runner. Declaring
+# one runner throws away a measurable proposal; the chain measures it.
+#
+# The first runner that actually STARTS is the one that measures. The
+# standard library fallback is added ONLY for a file that really has a
+# runner entry point - otherwise a pytest-style file would exit 0 having
+# run nothing, which is a false pass.
+function Get-JulesRunnerChain {
+    param(
+        [Parameter(Mandatory = $true)][string]$Command,
+        [string]$Dir = ''
+    )
+    $chain = @()
+    $chain += $Command
+    $m = [regex]::Match($Command, '^python\s+-m\s+pytest\s+(?:"([^"]+)"|(\S+))$')
+    if (-not $m.Success) { return $chain }
+    $path = ''
+    if ($m.Groups[1].Success) { $path = $m.Groups[1].Value } else { $path = $m.Groups[2].Value }
+    if (-not $Dir) { return $chain }
+    $full = Join-Path $Dir ($path.Replace('/', '\'))
+    if (Test-JulesStdlibRunnable -Path $full) {
+        $chain += ('python "' + $path + '"')
+    }
+    return $chain
+}
+
 # Verifies that a checkout landed where it was supposed to land.
 #
 # WHY THIS EXISTS: `gh pr checkout <n> -R <repo>` exits 0 even when the
@@ -244,6 +302,63 @@ function ConvertFrom-JulesJson {
 # A gate that cannot fail is not a gate, so this one is written to fail:
 # a wrong directory, a wrong branch, or a missing test file all return
 # Ok = $false with the reason.
+# Extracts the identity of the failing checks from a test run's output.
+#
+# A verdict that cannot name WHICH check failed cannot tell a proposal's
+# failure apart from a failure that was already there. Measured on
+# SENTINEL_PRIME PR #3: `test_suite.py` reports 479 passed / 6 failed on
+# the BASE branch as well, identically to the proposal head - six failures
+# that predate it. Without a signature the gate charges all six to the
+# proposal and rejects every future proposal on that repo.
+function Get-JulesFailureSignature {
+    param([string]$Text)
+    $sig = @()
+    if (-not $Text) { return $sig }
+    $header = ''
+    $inErrors = $false
+    foreach ($line in @($Text -split "`r?`n")) {
+        $t = $line.Trim()
+        if ($t -match '^===\s*(.+?)\s*===$') { $header = $Matches[1]; $inErrors = $false; continue }
+        if ($t -match '^Status:\s*FAIL') { if ($header) { $sig += ('STATUS ' + $header) }; $inErrors = $false; continue }
+        if ($t -match '^(Errors|Failures|FAILED|FAILURES)\s*:?\s*$') { $inErrors = $true; continue }
+        if ($t -match '^FAIL:\s*(\S+)') { $sig += ('UNITTEST ' + $Matches[1]); $inErrors = $false; continue }
+        if ($t -match '^not ok\s+\d+\s*-?\s*(.+)$') { $sig += ('TAP ' + $Matches[1].Trim()); $inErrors = $false; continue }
+        if ($t -match '^\[FAIL\]\s*(.+)$') { $sig += ('FAIL ' + $Matches[1]); $inErrors = $false; continue }
+        if ($inErrors -and ($t -match '^[-*]\s+(.+)$')) { $sig += ($header + ' :: ' + $Matches[1]); continue }
+    }
+    # Normalise volatile numbers. MEASURED: a failure message carries the age
+    # of a snapshot ("snapshot is 10774s old"), so the same failure reads
+    # differently one minute later and the two runs cannot be compared. A
+    # signature that changes with the clock is not a signature.
+    $norm = @()
+    foreach ($s in @($sig)) { $norm += ([string]$s -replace '\d+', '#') }
+    return @($norm | Sort-Object -Unique)
+}
+
+# Decides whether the failures measured on a proposal head are attributable
+# to the proposal, or whether they were already there.
+#
+#   ATTRIBUTABLE - the base passed, or the head failed something the base
+#                  did not. The proposal is the cause.
+#   PREEXISTING  - every failure on the head is also a failure on the base.
+#                  The proposal is NOT the cause.
+#   MIXED        - some failures are new, some are not.
+function Compare-JulesFailureSets {
+    param(
+        [string[]]$Head = @(),
+        [string[]]$Base = @(),
+        [bool]$BasePassed = $false
+    )
+    $h = @($Head | Where-Object { $_ })
+    if ($BasePassed) { return 'ATTRIBUTABLE' }
+    if ($h.Count -eq 0) { return 'ATTRIBUTABLE' }
+    $b = @($Base | Where-Object { $_ })
+    $onlyHead = @($h | Where-Object { $b -notcontains $_ })
+    if ($onlyHead.Count -eq 0) { return 'PREEXISTING' }
+    if ($onlyHead.Count -eq $h.Count) { return 'ATTRIBUTABLE' }
+    return 'MIXED'
+}
+
 function Test-CheckoutTarget {
     param(
         [Parameter(Mandatory = $true)][string]$Dir,
@@ -586,6 +701,50 @@ function Get-RepoLocalPath {
     param([Parameter(Mandatory = $true)][string]$Repo)
     $base = Join-Path (Get-JulesRoot) 'work'
     return (Join-Path $base $Repo)
+}
+
+# The single source of truth for where a local adaptation report lives.
+# Both the writer (jules-adapt.ps1) and the reader (jules-triage.ps1) must
+# agree on this path, otherwise the triage reads a file that does not exist
+# and reports a defect that is not there.
+function Get-AdaptReportPath {
+    param(
+        [Parameter(Mandatory = $true)][string]$Repo,
+        [Parameter(Mandatory = $true)][string]$Pr
+    )
+    $dir = Join-Path (Get-JulesRoot) 'docs\adaptari'
+    return (Join-Path $dir ('adapt-' + $Repo + '-pr' + $Pr + '.md'))
+}
+
+# The adaptation report is the LOCAL artifact that records how a Jules
+# proposal was corrected. Its canonical sections are produced by
+# jules-adapt.ps1, never by Jules itself, so a Jules PR body can never
+# contain them. Checking the PR body for those strings produced a FALSE
+# DEFECT on all 99 proposals ("report incomplete") even for the 12 that
+# carry a complete report on disk.
+#
+# The reader must therefore read the file the writer produced, and must
+# distinguish three states that used to be collapsed into one:
+#   Exists   - a local report is on disk
+#   Complete - it carries every canonical section
+#   Missing  - it is on disk but a section is absent
+function Get-AdaptReportState {
+    param(
+        [Parameter(Mandatory = $true)][string]$Repo,
+        [Parameter(Mandatory = $true)][string]$Pr
+    )
+    $path = Get-AdaptReportPath -Repo $Repo -Pr $Pr
+    if (-not (Test-Path -LiteralPath $path)) {
+        return [PSCustomObject]@{ Exists = $false; Complete = $false; Missing = @(); Path = $path }
+    }
+    $body = ''
+    try { $body = [System.IO.File]::ReadAllText($path) } catch { $body = '' }
+    $needed = @('Ce am schimbat', 'De ce', 'Cum am verificat')
+    $missing = @()
+    foreach ($n in $needed) {
+        if ($body -notmatch [regex]::Escape($n)) { $missing += $n }
+    }
+    return [PSCustomObject]@{ Exists = $true; Complete = ($missing.Count -eq 0); Missing = $missing; Path = $path }
 }
 
 # Detects the verification commands a repo actually has, from its own tree.

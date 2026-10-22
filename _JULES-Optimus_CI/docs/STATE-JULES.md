@@ -229,11 +229,175 @@ Reparat cu `ConvertFrom-JulesJson` (atribuie mai întâi, învelește după):
 | OPTIMUS-Backbone #2 | 2 | ✅ | 0 |
 | OPTIMUS-Backbone #9 | 2 | ✅ | 0 |
 
-**Limită de mediu, măsurată:** clona `pkms-vault-automation` nu se poate
-materializa pe Windows — gitul eșuează cu *„Filename too long"* (MAX_PATH 260).
-Din 701 de fișiere urmărite, **14** ajung pe disc. De aceea PR-urile pkms
-rămân UNVERIFIED: nu e un defect al platformei, e o limită a mașinii. Pe
-GitHub, PR-urile pkms au și ele conflicte de fișiere între ele.
+**Limită de mediu, măsurată, apoi rezolvată — și ce a rămas în urmă:** clona
+`pkms-vault-automation` se materializa incomplet pe Windows: gitul eșua cu
+*„Filename too long"* (MAX_PATH 260) și doar **14** din cele 701 de fișiere
+urmărite ajungeau pe disc. O măsurătoare făcută în acel arbore ar fi descris
+14 fișiere pretinzând că descrie 701.
+
+Reparat cu `core.longpaths=true` propagat prin `GIT_CONFIG_*` — deci și la
+apelurile `git` pe care le face `gh` intern. Măsurat **prin calea platformei**:
+`Invoke-Gh` → `gh repo clone` → `CLONE_EXIT=0`, `ON_DISK=701`,
+`TRACKED=701`, `INTEGRITY_OK=True`. Clona existentă a fost restaurată:
+701/701, arbore curat, iar `jules-verify` pe PR #1 a ieșit pe ramura
+`perf-lint-array-opt-3718015018285384704`, **verificată** contra API-ului.
+
+**Ce a rămas, măsurat:** repo-ul pkms nu are runner de teste detectabil, deci
+verdictul de acolo rămâne UNVERIFIED — instrument lipsă, nu test picat.
+Politica e deja scanată de triaj pe diff (violație → REJECT). Pe GitHub,
+PR-urile pkms au și ele conflicte de fișiere între ele.
+
+## 3.4 Poarta de integritate a clonei
+
+`Test-CloneIntegrity` compară fișierele urmărite de `HEAD` cu fișierele de
+pe disc. Incomplet → `INCOMPLETE_CLONE`, cu numărul exact, și **nicio
+măsurătoare nu se rulează** într-un arbore trunchiat. E o poartă care poate
+eșua: raportează `701 de 701` pe clonele complete și ar raporta `14 de 701`
+pe cea trunchiată.
+
+## 3.5 A treia clasă de defecte: motivul fals care se repeta pe toate rândurile (2026-10-22, după `e76eb4d`)
+
+Triajul complet s-a terminat cu `FINDINGS=99`, `TRIAGE_EXIT=0`, iar
+distribuția verdicturilor a fost **50 ADAPT/PASS · 48 UNVERIFIED · 1 REJECT/FAIL**.
+Pe prima vedere, un tabel sănătos. Nu era.
+
+**Măsurătorul a fost interogat în locul artefactului.** La
+`jules-triage.ps1:90`, poarta P2 căuta cele trei secțiuni canonice în
+**body-ul pull request-ului de GitHub**:
+
+```powershell
+$reportCheck = Test-ReportComplete -Body ([string]$view.body)
+```
+
+Dar acele secțiuni — *Ce am schimbat / De ce / Cum am verificat* — sunt
+**scrise de Mavis Local**, în raportul de adaptare
+`docs/adaptari/adapt-<repo>-pr<n>.md`. Jules nu le scrie niciodată. Un PR
+de Jules nu le poate conține. Deci poarta raporta, corect pentru ea însăși
+și fals pentru lume:
+
+> toate cele **99** de rânduri aveau motivul `report incomplete, missing
+> sections: Ce am schimbat, De ce, Cum am verificat`
+
+inclusiv cele **12** care au raportul complet pe disc. Verificat: header-ele
+din `adapt-MAVIS-CLOUD-pr9.md` conțin toate cele trei secțiuni, iar triajul
+totuși spunea că nu le conține. Nu era o divergență de formulare — era
+citirea altui fișier.
+
+Consecința nu era cosmetică. Verdictul era forțat pe `ADAPT` de un motiv
+fals, deci **raportul pe care Popy îl citește conținea o afirmație
+neadevărată despre 99 de propuneri**.
+
+**Reparare, cu o singură sursă de cale:**
+
+- `Get-AdaptReportPath` (în `jules-lib.ps1`) — scriitorul `jules-adapt.ps1`
+  și cititorul `jules-triage.ps1` nu mai pot diverge; înainte, fiecare își
+  construia calea separat.
+- `Get-AdaptReportState` — distinge trei stări pe care verificarea le
+  confunda:
+  - `Exists = $false` → nu există raport local → motivul onest este
+    `no local adaptation report yet (not yet adapted)`, iar propunerea
+    **nu poate fi ACCEPT** niciodată, fiindcă nu a fost adaptată.
+  - `Exists = $true, Complete = $false` → raportul e pe disc dar îi lipsește
+    o secțiune → motivul devine `adaptation report incomplete, missing
+    sections: ...` — același diagnostic, acum adevărat.
+  - `Exists = $true, Complete = $true` → raport complet → **niciun motiv
+    fals**.
+
+**Proba de falsificare, cuplată în poarta permanentă.** `proba-raport` din
+`jules-selfcheck.ps1` cere patru cazuri: raportul existent complet să fie
+recunoscut, raportul absent să **nu fie inventat**, scriitorul și cititorul
+să coincidă pe cale, iar un raport parțial să-și declare secțiunea lipsă.
+Măsurat: `4/4`, `PROBE_ADAPTSTATE_OK`, `EXIT=0`.
+
+### 3.5.1 A patra clasă: poarta blochează pe un defect scris de mine
+
+În timpul aceleiași sesiuni, mesajul de succes al probei runner a primit
+diacritice (`acceptă doar fișierele`). Într-un script care trebuie să fie
+ASCII pur, **6 octeți peste `0x7F`**. `jules-selfcheck.ps1` a raportat
+`FILES=10 PROBLEMS=1` și a ieșit cu `EXIT=1`.
+
+Aceasta a fost **defectul real, prins corect** — poarta a funcționat. Dar
+a fost prins de o poartă statică, nu de o probă de falsificare: nu exista
+niciun caz în care poarta să fie demonstrată capabilă să blocheze un
+octet non-ASCII introdus *ad hoc*. Repararea a fost simplă (fără
+diacritice în mesaj), rezultatul măsurat: `FILES=10 PROBLEMS=0`, `EXIT=0`,
+`nonascii=0` pe toate cele 10 scripturi.
+
+**Regula pe care o produce:** o poartă care blochează o dată, accidental, nu
+e o poartă — e o coincidență. O poartă se cuplă cu o **contra-probă**: îi
+spui „arată că știi să detectezi asta" și verifici că răspunde corect.
+
+## 3.6 A cincea clasă: poarta care blama propunerea pentru ceea ce nu îi aparține (2026-10-22, după `e76eb4d`)
+
+Singurul REJECT din triaj era `SENTINEL_PRIME#3`. Un verdict REJECT înseamnă
+„închidem propunerea cu motiv scris" — deci trebuie să fie **imediat**.
+
+**Măsurătorul era nedrept în două moduri, simultan.**
+
+**Modul 1 — eșecul nu era reproductibil.** Aceeași comită, același SHA
+`6f0a391b`, două arbori:
+
+| Arbor | Rezultat | Cod |
+|---|---|---|
+| `work/SENTINEL_PRIME` | 62 passed / **1 failed** / 1 not-run (64) | EXIT 1 |
+| clonă curată, același SHA | 63 passed / **0 failed** / 1 not-run (64) | EXIT 0 |
+
+Așadar: **același cod, două verdicturi diferite**. `test_deployment.py`
+verifică un container Docker (`mavis-sentinel-hub`), porturi 8910/8912,
+sondare HTTP live, deținerea portului și o pornire la rece — verificări
+dependentă de mediu și de moment. Poarta măsura **mediul**, nu propunerea.
+
+**Modul 2 — eșecurile precedeau propunerea.** Al doilea command,
+`test_suite.py`, raportează:
+
+| Ramură | Rezultat |
+|---|---|
+| `main` (baza) | **479 passed, 6 failed, 0 skipped** |
+| capul PR #3 | **479 passed, 6 failed, 0 skipped** |
+
+Identic. Cele 6 eșecuri **existasă înainte** de propunere. Poarta le
+taxa propunerii — și, prin regula „orice eșec = REJECT", ar fi respins
+**orice propunere viitoare** pe acel repo, la nesfârșit, pentru eșecuri
+care nu-i aparțin.
+
+Direcția e cea periculoasă: poarta eșua **în direcția greșită** — bloca
+lucru bun, în loc să-l lase să treacă.
+
+### Repararea: o propunere poate fi blamată doar pentru un eșec propriu
+
+În `jules-verify.ps1`, după un eșec, două măsurători în plus — **doar pe
+calea de eșec**, deci calea comună nu costă nimic:
+
+1. **Reproductibilitate** — aceleași comenzi, în același arbore, a doua
+   oară. Dacă a doua rundă trece → `FLAKY`. Un eșec care nu se repetă nu
+   poate fi imputat propunerii.
+2. **Baza** — aceleași comenzi pe `origin/main`. Dacă baza trece →
+   `ATTRIBUTABLE`. Dacă baza pică cu **aceeași semnătură de eșec** →
+   `PREEXISTING`. Dacă baza pică doar parțial → `MIXED`.
+
+`Get-JulesFailureSignature` extrage **identitatea** verificării căzute
+(`=== Secțiune ===` → `Status: FAIL` → liniile din `Errors:`), ca cele
+două runuri să poată fi comparate ca mulțimi, nu ca „a picat / nu a picat".
+`Compare-JulesFailureSets` decide: `ATTRIBUTABLE` / `PREEXISTING` / `MIXED`.
+
+**Contractul nou al codurilor de ieșire:**
+
+| Cod | Înțeles |
+|---|---|
+| 0 | totul a trecut |
+| 1 | un command a picat, **reproductibil**, și **nu exista în bază** → REJECT |
+| 2 | nu s-a putut măsura (instrument lipsă) → UNVERIFIED |
+| **3** | eșec măsurat dar **neatribuibil** (FLAKY / PREEXISTING / MIXED) → UNVERIFIED |
+
+Codul 3 este **noul**: un eșec măsurat, raportat, dar **nu blamat** pe
+propunere. În triaj, el produce `UNVERIFIED`, nu `REJECT` — cu motivul
+scris, ca Popy să vadă ce s-a măsurat.
+
+**Proba de falsificare, cuplată în poarta permanentă.** `proba-atribuire`
+din `jules-selfcheck.ps1` cere patru cazuri, pe date reale: baza trece →
+`ATTRIBUTABLE`; baza pică identic → `PREEXISTING`; baza pică parțial →
+`MIXED`; toate eșecurile sunt noi → `ATTRIBUTABLE`; plus extragerea
+numelui verificării căzute dintr-un ieșire reală. Măsurat: `5/5`.
 
 ## 4. Defecte găsite și reparate în această sesiune
 1. **`Path.GetTempFileName()`** aruncă „The file exists" pe această mașină →
@@ -264,6 +428,17 @@ GitHub, PR-urile pkms au și ele conflicte de fișiere între ele.
     dată, manual, la comitarea lui `d0f04d6`. Acum `jules-scan-staged.ps1`
     scanează **index-ul** (ce va fi comis, nu ce sta pe disc) și e
     demonstrat capabil să blocheze.
+12. **Poarta P2 a triajului interoga body-ul PR-ului, nu raportul local** →
+    motiv fals `report incomplete` pe toate cele **99** de rânduri, inclusiv
+    pe cele 12 cu raport complet. Reparat cu `Get-AdaptReportState`; proba
+    `proba-raport` cuplată în poarta permanentă (4/4). Vezi §3.5.
+13. **6 octeți non-ASCII** (diacritice) în mesajul probei runner →
+    `jules-selfcheck.ps1` a raportat `PROBLEMS=1`, `EXIT=1`. Poarta a
+    funcționat corect; defectul era al meu, nu al ei. Vezi §3.5.1.
+14. **Poarta P3 blama propunerea pentru eșecuri care nu-i aparțineau** →
+    `REJECT` pe `SENTINEL_PRIME#3` fără ca vreo măsurătoare să stabilească
+    că eșecul e al propunerii. Reparată cu reproducție + bază + semnătură
+    de eșec; cod nou de ieșire **3 = neatribuibil**. Vezi §3.6.
 
 ## 5. Starea git-ului
 
@@ -304,4 +479,6 @@ conțin nimic ce nu există în PR-urile de pe GitHub.
 | 5 | Corectarea adresei necanonice în cele **9** fișiere din MAVIS-CLOUD (material read-only pentru conținut → scriere cerută) | Popy |
 | 6 | Redresarea istoricului public al repo-ului (date personale) — cere force-push | Popy |
 | 7 | Al 5-lea repo cu Jules activ: `OPTIMUS-Backbone` e propunerea mea | Popy |
-| 8 | PR-urile **pkms** (25): materializarea clonei e imposibilă pe Windows (MAX_PATH). Fie se activează long paths, fie sunt acceptate ca review fără măsurătoare | Popy |
+| 8 | PR-urile **pkms** (25): clonarea e reparată (701/701), dar repo-ul **nu are runner de teste** detectabil → rămân UNVERIFIED prin lipsă de instrument. Ca să devină măsurabile, Jules trebuie să primească acolo un harness de test — și asta e o scriere externă | Popy |
+| 9 | Instalarea lui `pytest` — **20** de PR-uri din `OPTIMUS-Backbone` folosesc teste pytest-style, iar `pytest` nu e instalat. Standard library refuză corect acele fișiere (ar fi PASS fals). Instalarea lui e decizie cu R0 | Popy |
+| 10 | `SENTINEL_PRIME` are **6 eșecuri pre-existente** în `test_suite.py` (479 passed / 6 failed, identic pe `main`) și `test_deployment.py` depinde de Docker + porturi 8910/8912 + sondare live → verdictul nu e reproductibil fără mediu stabil. Poarta acum raportează asta ca UNVERIFIED, nu REJECT | Popy |
