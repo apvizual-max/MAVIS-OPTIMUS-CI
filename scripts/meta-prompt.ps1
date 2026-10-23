@@ -36,6 +36,11 @@ param(
     [switch]$Show
 )
 
+if ($Output -match '\.\.' -or [System.IO.Path]::IsPathRooted($Output)) {
+    Write-Error "ERROR: Invalid output path '$Output'. As a security measure, absolute paths and directory traversal ('../') are not allowed."
+    exit 1
+}
+
 $ErrorActionPreference = 'Stop'
 
 $BASE = Split-Path -Parent $PSScriptRoot
