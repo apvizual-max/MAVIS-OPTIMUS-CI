@@ -103,6 +103,24 @@ const AUTH_PROBE = `(() => {
   };
 })()`;
 
+/**
+ * Asteapta activ pana cand functia returneaza o valoare "truthy" sau expira timpul.
+ * Inlocuieste setTimeout-urile fixe care irosesc timp cand paginile se incarca rapid.
+ */
+async function waitFor(fn, timeout = 5000, interval = 100) {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    try {
+      const result = await fn();
+      if (result) return result;
+    } catch (e) {
+      // ignoram erorile de evaluare intermediare
+    }
+    await new Promise((r) => setTimeout(r, interval));
+  }
+  throw new Error(`Timeout de ${timeout}ms depasit in waitFor`);
+}
+
 async function main() {
   const [cmd, ...rest] = process.argv.slice(2);
   const page = await tab();
@@ -111,9 +129,12 @@ async function main() {
     if (cmd === 'auth') {
       await evaluate(client, `location.href.startsWith('https://notebook.google.com')
         ? true : (location.href = 'https://notebook.google.com/', false)`).catch(() => {});
-      // daca am navigat, dam timp paginii sa se aseze
-      await new Promise((r) => setTimeout(r, 2500));
-      console.log(JSON.stringify(await evaluate(client, AUTH_PROBE), null, 2));
+      // daca am navigat, asteptam activ pana cand pagina raspunde la probe
+      const res = await waitFor(async () => {
+        const probeRes = await evaluate(client, AUTH_PROBE);
+        return (probeRes && (probeRes.signedIn || probeRes.stillOfferedSignIn)) ? probeRes : null;
+      });
+      console.log(JSON.stringify(res, null, 2));
     } else if (cmd === 'list') {
       console.log(JSON.stringify(await evaluate(client, AUTH_PROBE), null, 2));
     } else if (cmd === 'rename') {
@@ -122,7 +143,11 @@ async function main() {
       await client.send('Page.navigate', {
         url: `https://notebook.google.com/notebook/${id}`,
       });
-      await new Promise((r) => setTimeout(r, 3000));
+
+      // Asteptam activ elementul in loc sa dormim o perioada fixa
+      await waitFor(async () => {
+        return await evaluate(client, '!!document.querySelector("input.title-input")');
+      });
 
       // APASAM pe input ca sa-l focusam, apoi scriem prin insertText.
       // NU folosim fill si NU folosim Control+A: pe acest input Angular
