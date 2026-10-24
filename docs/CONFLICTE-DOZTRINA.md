@@ -133,6 +133,13 @@ Tot `BRIDGE.md` propune un `while true; do git pull; git push; sleep 300; done`
 `git-autopush.ps1 -Acord`, care **are** poarta. O punte care ocolește
 poarta nu e o punte, e o scurgere.
 
+**STARE — 2026-10-24: hotărârea e aplicată.** Puntea rulează zilnic la
+**08:30** prin `MavisSyncBridge` (`LastTaskResult=0`, `exit_pull=0`,
+`local_dupa == remote`, `impingere=NEEXECUTATA`). Poarta de push e legată
+**per repo** — `core.hooksPath` local + hook `pre-push` cu martor
+`PUSH-ACORD`, globalul **gol** — și e probată **în ambele sensuri**. Vezi
+`docs/GIT-GITHUB-PROCEDURI.md` și `docs/STARE-MASURATA-CI.md` §1.
+
 ---
 
 ## Rezumat — ce e adevărat din Cloud

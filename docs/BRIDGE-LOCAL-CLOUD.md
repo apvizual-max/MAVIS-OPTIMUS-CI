@@ -43,8 +43,14 @@ ajungă pe GitHub fără acordul lui.
    (următorul pas)                                 │ push doar cu -Acord
 ```
 
-**Cerințele** intră în `docs/INTENTII.md` — acolo le scrie Popy cu
-cuvintele lui, fără jargon.
+**Cerințele** intră în **două canale**, măsurate în `MAVIS-CLOUD`:
+
+| Canal | Format | Cine scrie |
+|---|---|---|
+| `QUEUE/TASKS-FOR-CLOUD.md` | structurat: `### [id] titlu` + `cerut de / data / scope / ce trebuie / livrare` | Local (agent) |
+| `docs/INTENTII.md` | liber, cu cuvintele lui Popy, fără jargon | Popy |
+
+Cloud citește ambele și livrează în `QUEUE/DONE/`, marcând `[x]`.
 
 ---
 
@@ -126,7 +132,18 @@ oprește.
 
 ---
 
-**Stare curentă:** puntea e **specificată, neimplementată**. Cloud a
-recunoscut-o în raportul lui. O construiesc la Pasul 4 al planului, după
-ce infrastructura de poartă e rezolvată — pentru că o punte construită
-peste o poartă care nu există e o scurgere, nu o punte.
+**Stare curentă — măsurată 2026-10-24:** puntea e **construită și
+funcțională**. `scripts/mavis-sync.ps1` rulează zilnic la **08:30** prin
+taskul `MavisSyncBridge`; `LastTaskResult=0`, iar logul arată
+`exit_pull=0`, `local_dupa == remote`, `PAS2_LOCAL|status=curat`,
+`impingere=NEEXECUTATA|poarta_R0=ramane_la_Popy`. **12 loguri consecutive**
+(2026-10-12 → 2026-10-23), fără gol. Auto-verificarea azi:
+`mavis-sync.ps1 -SelfTest` → `POARTA|TRECUT` (EXIT 0).
+
+**Și merge prin poartă, nu prin `git push` direct** — vezi
+`docs/GIT-GITHUB-PROCEDURI.md`: `core.hooksPath` local, hook `pre-push` cu
+martor `PUSH-ACORD`, probat în ambele sensuri.
+
+Cloud a propus `mavis-sync.sh` cu `git push` în buclă. **Nu a fost construit
+așa**, pentru că acolo ocolește poarta R0. Detalii în
+`docs/CONFLICTE-DOZTRINA.md` C7.

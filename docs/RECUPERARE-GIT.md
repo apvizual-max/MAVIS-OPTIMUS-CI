@@ -132,5 +132,5 @@ folder nou, se compară, și abia apoi se decide.
 | Vault: 52.933 → istoric | ❌ **neatins** |
 | Config global stricat | ❌ neatins |
 | `autocrlf` pe ~70 repo-uri | ❌ neatins |
-| Puntea Local↔Cloud | ❌ neimplementată |
-| Starea Jules | ❌ NECUNOSUT |
+| Puntea Local↔Cloud | ✅ **construită și măsurată** (2026-10-24) — rulează 08:30, `LastTaskResult=0` |
+| Starea Jules | ⚠️ **parțial măsurată**: triajul e complet (99 PR-uri, verdict definitiv); starea din panoul Jules (Memories / Setup script / Env vars) rămâne **NECUNOSUT** |
