@@ -1,107 +1,97 @@
-# CI POLICY — Live Review + Jules
+# CI POLICY — puntea, guvernanța Git, și verificarea
 
-> Politica de integrare continuă. **Nu se schimbă fără R0.**
+> Politica de integrare continuă a **CI**. **Nu se schimbă fără R0.**
+>
+> **Suprapunere rezolvată:** politica anterioară amesteca Live Review +
+> Jules (care sunt **CD**) cu puntea și guvernanța Git (care sunt **CI**).
+> Live Review și Jules au plecat în folderul CD, la
+> `docs/POLITICA-LIVE-REVIEW-JULES.md` al acestuia. **Un document trăiește
+> în folderul sistemului pe care îl guvernează.**
 
 ---
 
-## Live Review
+## 1. Puntea Local ↔ Cloud
 
-### Poziția lui în sistem
+### 1.1 Principiul
 
-**NICIODATĂ pe push. NICIODATĂ la comit. Doar după ce serverul a
-confirmat, și doar o dată pe zi sau la cerere.**
+**Repo-ul e puntea.** Nu un server, nu un webhook, nu un API. Git are diff,
+istoric, rollback, și nu pica.
 
-Ordinea fixă:
+### 1.2 Singura diferență între cele două părți
+
+| | Mavis Cloud | Mavis Local |
+|---|---|---|
+| Unde rulez | container MiniMax, volatil | calculatorul lui Popy |
+| Văd discul | **nu** | **da** |
+| Rulez când laptopul e închis | **da** | nu |
+| Rol | cercetare, date, CV-uri, rapoarte | producție, cod, sistem |
+| **PUSH** | **automat, fără R0** | **doar cu R0** |
+
+Atât. Cloudul împinge fără să întrebe fiindcă altfel pierde datele la
+oprirea containerului. Local nu poate face asta, fiindcă Popy nu vrea nimic
+să ajungă pe GitHub fără acordul lui.
+
+### 1.3 Canalul
 
 ```
-1. măsoară    HEAD local, server prin git ls-remote, comituri neîmpinse
-2. decide     sub prag? nu se atinge nimic
-3. push       git push PUR — fără LiveReview, fără review, fără poartă
-4. verifică   git ls-remote; SHA server == SHA HEAD
-5. review     LiveReview — DOAR ACUM, pe ce e deja pe GitHub
+   Mavis Cloud (server MiniMax)        Mavis Local (calculatorul lui Popy)
+            |                                      |
+            |  git push automat                     |
+            |-------------------------------------->|
+            |                                      | git pull (MavisSyncBridge 08:30)
+            |<--------------------------------------|
+            |  git pull                             | commit pe main
+   (următorul pas)                                 | push doar cu -Acord
 ```
 
-### De ce
+**Cerințele** intră în `QUEUE/TASKS-FOR-CLOUD.md` — canalul unic către
+Cloud. Cloud livrează în `QUEUE/DONE/` și marchează `[x]`.
 
-LiveReview verifică codul care **pleacă de la mașină și ajunge pe
-GitHub**. Deci se declanșează la push, pe ce tocmai a ajuns.
+### 1.4 Fluxul zilnic
 
-**Rolul lui e să raporteze, nu să oprească.** `--range` e read-only: nu
-atinge comiturile, nu scrie atestări, nu poate bloca nimic.
+```
+1. Local scrie ce vrea în QUEUE/TASKS-FOR-CLOUD.md
+2. Local: pull (MavisSyncBridge 08:30), citește
+3. Dacă e cerință de date → lasă cererea pentru Cloud
+4. Cloud: pull, face cercetarea, scrie datele în repo, push
+5. Local: pull, ia datele
+6. Popy nu face niciun pas intermediar
+```
 
-### Trigger
+### 1.5 Starea — măsurată 2026-10-24
+
+`MavisSyncBridge` rulat, `LastTaskResult=0`:
+`exit_pull=0`, `local_dupa == remote`, `PAS2_LOCAL|status=curat`,
+`impingere=NEEXECUTATA|poarta_R0=ramane_la_Popy`, ieșire 0.
+
+**Puntea e vie și nu împinge.** Detalii: `docs/STARE-MASURATA-CI.md` §1.
+
+### 1.6 Riscurile, tratate
+
+| Risc | Tratament |
+|---|---|
+| Editare concurentă pe același fișier | `git pull` înainte de orice scriere |
+| Conflict de merge | `git pull --abort`, se raportează, **nu se forțează** |
+| Un agent moare la mijloc | nimic necomandat nu se pierde; se reia de la ultimul commit |
+| Rate limit pe API | quota manager cu backoff exponențial |
+
+---
+
+## 2. Guvernanța Git
 
 | | |
 |---|---|
-| **Nu** | `on: push` — arde cotele și pune o poartă în calea lui Popy |
-| **Da** | `workflow_dispatch` — la cerere explicită |
-| **Da** | `schedule: cron '0 3 * * *'` — o dată pe zi, noaptea |
+| **COMMIT** | automat, pe `main`, **fără R0** |
+| **PUSH** | **singurul** cu R0 |
+| **≥50 neîmpinse** | alertă la fiecare răspuns, până dă R0 |
+| **Changes** | gol, permanent, peste tot |
+| **Instanța Cloud** | singura care împinge fără R0 |
 
-Măsurat: `MAVIS-CLOUD\.github\workflows\verify.yml` implementează deja
-exact asta, cu 7 verificări reale. **Îl folosim ca template.**
-
-### Cele două căi
-
-| | Calea 1 | Calea 2 |
-|---|---|---|
-| Când | totul funcționează | limită de cont, rate limit, LRC căzut |
-| Push | identic | **identic** |
-| Review | după push | **nu** |
-| Mesaj de eroare pentru Popy | niciunul | **niciunul** |
-
-**Un review lipsă nu e un push eșuat** și nu apare ca unul în panoul lui.
-
-Măsurat asta chiar azi, pe un push real: contul a răspuns negativ, scriptul
-a intrat în calea 2, pushul a rămas confirmat, **zero mesaje de eroare**.
+Mecanismul complet, cu măsurătorile: **`docs/GIT-GITHUB-PROCEDURI.md`**.
 
 ---
 
-## Jules
-
-### Ce este
-
-Auditor de cod asincron, secundar, de nivel înalt. Google AI Pro.
-**100 de cereri pe zi, maxim 5 repo-uri.**
-
-### Rol
-
-**Nu** verifică fiecare virgulă la fiecare push — pentru asta n-are rost și
-arde cota. E apelat **la cerere sau pe sarcini dedicate**, când un modul
-s-a stabilit și merită un audit de profunzime.
-
-### Ce știm, și cât de bine
-
-| Element | Stare |
-|---|---|
-| Repo conectat | ✅ |
-| Suggestions BETA | ✅ pornit |
-| Network access | ✅ |
-| Knowledge → Memories | **NECUNOSUT** — documente contradictorii |
-| Environment → Setup script | **NECUNOSUT** — la fel |
-| Environment variables | **NECUNOSUT** — la fel |
-| Consum | 0/100 sesiuni |
-
-**Nu se raportează verde până nu se măsură în panoul Jules.** Vezi
-`CONFLICTE-DOZTRINA.md` C6.
-
-### Ce a găsit deja, și e corect
-
-Jules a raportat, corect: blocaje de I/O async în buclă, apeluri secvențiale
-în `kit.js` și `email-sort.js`, lipsă de escaping în `cv-mutator.js`, import
-nefolosit, și **zero teste automate**.
-
-Concluzia lui Cloud, și e cea corectă: **nu e suficient să-l atașez —
-trebuie făcut să prindă ce eu uit.**
-
-### Secrete
-
-**Nu se pun secrete în Environment variables** din repo. Cheile stau în
-managerul de secrete și nu ajung în istoric. `git log` e citibil de oricine
-are acces.
-
----
-
-## Workflow-ul de verificare — cel 7 verificări
+## 3. Workflow-ul de verificare — cele 7 verificări
 
 Moștenit din MAVIS-CLOUD, extins pentru OPTIMUS:
 
@@ -111,7 +101,7 @@ Moștenit din MAVIS-CLOUD, extins pentru OPTIMUS:
 4. sintaxă Python
 5. build-ul proiectului reușește
 6. regulile de business (ex: șabloanele nu conțin nume de firmă)
-7. puntea e vie (mesajul pentru celălalt agent)
+7. **puntea e vie** (mesajul pentru celălalt agent)
 
 Toate în `on: schedule` + `on: workflow_dispatch`. **Niciuna pe push.**
 
@@ -122,3 +112,29 @@ INCOMPLETĂ"** și ieșirea e `2`.
 
 Un senzor mort care raportează sănătate e mai prost decât un senzor care
 lipsește.
+
+---
+
+## 4. Ce a plecat în CD — și unde se găsește acum
+
+| Subiect | Unde trăiește acum |
+|---|---|
+| Platforma Jules (10 scripturi) | folder CD → `JULES - Optimus CD\scripts\` |
+| Politica Live Review | folder CD → `docs\POLITICA-LIVE-REVIEW-JULES.md` |
+| Trigger-ul `jules.yml` / `verify.yml` | folder CD → `JULES - Optimus CD\workflows\` |
+| Registrul repo-urilor pentru Jules | folder CD → `JULES - Optimus CD\config\repos.json` |
+| Contextul canonic trimis lui Jules | folder CD → `JULES - Optimus CD\config\jules-context.md` |
+| Triajul, adaptările, rapoartele | folder CD → `JULES - Optimus CD\docs\` |
+
+**Regula rămâne:** `MAVIS-CLOUD` e sursă read-only pentru conținut.
+Instanța Cloud nu are rol în CD.
+
+---
+
+## 5. Reguli care nu se negociază
+
+- **Merge = push = R0.** Triajul produce verdict, nu merge.
+- **Niciodată ștergere definitivă.** Arhivare prin mutare în `docs/arhiva/`.
+- **Zero cifre nereproductibile.** Tot ce se raportează e măsurat acum.
+- **Un verdict care acuză trebuie să dovedească imputabilitatea.**
+- **Instrument lipsă ≠ test picat** → `NO_MEASUREMENT`.

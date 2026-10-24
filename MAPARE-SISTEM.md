@@ -78,3 +78,29 @@ prompt, Popy îl duce în sesiunea aceea, care are contextul complet.
 **Aceasta e și motivul pentru care nu ating repo-urile altor proiecte:** nu
 am contextul lor, și un agent fără context într-un repo străin e exact
 defectul pe care îl reparăm.
+
+---
+
+## Celălalt cartier — CD
+
+Sesiunea CD e **paralelă**, cu folderul, repo-ul și bugetul lui:
+
+```
+C:\Users\apviz\.minimax-agent\projects\Mavis-Optimus-Continuous-Development\
+├── README.md · DOCTRINA-CD.md · HANDOFF-CD.md · PRIMING-CD.md
+├── docs\                       ARHITECTURA · SPEC · MAPARE · WORKFLOWS · PROTOCOALE
+└── JULES - Optimus CD\         platforma Jules (10 scripturi, config, workflows)
+```
+
+| | CI (aici) | CD (acolo) |
+|---|---|---|
+| Puntea Local↔Cloud | ✅ | — |
+| Ingest read-only din Cloud | ✅ | — |
+| Canalul `QUEUE/` | ✅ | — |
+| Platforma Jules | — | ✅ |
+| Live Review | — | ✅ |
+| Cota 100 taskuri/zi | — | ✅ |
+
+**Nu ne atingem.** CD nu scrie în `MAVIS-CLOUD`; CI nu rulează triajul.
+
+Conventția care explică tot: `docs/ARHITECTURA-CI-CD.md`.
