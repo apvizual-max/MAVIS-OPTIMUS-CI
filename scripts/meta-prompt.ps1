@@ -187,6 +187,12 @@ if (-not $fullDest.StartsWith($fullBase, [System.StringComparison]::OrdinalIgnor
     exit 1
 }
 
+$relativePath = $fullDest.Substring($fullBase.Length).TrimStart('\', '/')
+if ($relativePath -match '^\.git[\\/]' -or $relativePath -match '^\.github[\\/]' -or $relativePath -match '^\.jules[\\/]' -or $relativePath -match '^scripts[\\/]' -or $relativePath -match '\.ps1$') {
+    Write-Output "SECURITY ERROR: Output path writes to a restricted directory or overrides an executable script."
+    exit 1
+}
+
 $dir = Split-Path -Parent $fullDest
 if ($dir -and -not (Test-Path $dir)) {
     New-Item -ItemType Directory -Force -Path $dir | Out-Null
