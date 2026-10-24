@@ -25,6 +25,8 @@ foreach ($j in $jobs) {
               $rc.ExitCode, $before.Count, $after.Count, ($before.Sum/1MB), ($after.Sum/1MB), $match)
 }
 
-$report | ForEach-Object { Write-Output $_ }
-$report | Set-Content -LiteralPath "$ROOT\SNAPSHOT-REPORT.txt" -Encoding UTF8
+# ⚡ Bolt: Removed pipeline | ForEach-Object to eliminate overhead
+foreach ($line in $report) { Write-Output $line }
+# ⚡ Bolt: Removed pipeline | Set-Content and used -Value parameter directly for faster array writing
+Set-Content -LiteralPath "$ROOT\SNAPSHOT-REPORT.txt" -Value $report -Encoding UTF8
 Write-Output "DONE|root=$ROOT"
