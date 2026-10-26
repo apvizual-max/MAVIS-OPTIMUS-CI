@@ -90,6 +90,63 @@ DriveFS și **nu** e accesibilă.
 restart explică cea mai mare parte a lag-ului. **Lag-ul în regim normal nu
 e măsurat** — și nu e presupus nici el.
 
+### 4.1 Re-măsurare 2026-10-27, ~01:15 local — propagarea nu a pornit
+
+| Ce | Măsurat |
+|---|---|
+| Ultima confirmare în indice | `LAST_CONFIRMED_UPLOAD_MS=1793020483545` → **26 oct, 15:12 local** (era fișierul `.git`, scris la mutarea sursei) |
+| Cea mai recentă scriere locală publicabilă | `LAST_LOCAL_WRITE_MS=1793056605455` → **27 oct, 01:16 local** |
+| Lag | **602 min** |
+| `BRIDGE-DRIVE` în indicele Drive | **FOUND=0** — nu e acolo |
+| `PENDING_OPERATIONS` | **0** |
+| `MIRROR_ROOT_STATE` | **`true`** — rădăcina e conectată |
+
+**Rădăcina e conectată, dar nu încarcă.** Nu e o măsurătoare defectă: motorul
+de sync al DriveFS scrie singur, în `drive_fs.txt`:
+
+```
+sync_engine.cc:2636: Sync engine activity state:
+operation_queue_size: 0
+all_downloads: 0
+change_ids_up_to_date: true
+largest_local_change_id: 9281302
+fetching_changes: false
+```
+
+`change_ids_up_to_date: true` + `operation_queue_size: 0` = **DriveFS nu
+vede scrierile mele locale**. Nu e o întârziere: e o lipsă de activitate —
+`largest_local_change_id` nu s-a mișcat.
+
+În plus, `drive_fs.txt` arată o eroare IPC repetată la fiecare 60 de secunde,
+activă și la momentul măsurării:
+
+```
+ipc_socket_win.cc:272: GetOverlappedResult() failed:
+shell_ipc_server.cc:256: OnRequestArrived Failed to receive/deserialize
+ShellIpcRequest: FAILED_PRECONDITION ... The pipe has been ended
+```
+
+**Verdictul instrumentului, reparat în acest proces:** o rădăcină
+conectată nu e un transport care încarcă. `mavis-drive-bridge.ps1 -Status`
+raporta `TRANSPORT=UP` și `ACTIVE_CHANNEL=DRIVE` cât timp nu exista
+confirmare — un **fals pozitiv**. Acum raportează separat:
+
+| Câmp | Semnificație |
+|---|---|
+| `TRANSPORT=UP` | rădăcina mirrorului e conectată |
+| `PROPAGATION=OK` | ultima scriere locală e confirmată în indice |
+| `PROPAGATION=STALE` | scrieri locale mai noi decât ultima confirmare |
+| `ACTIVE_CHANNEL` | `DRIVE` doar dacă propagarea e `OK`; altfel `GITHUB` |
+
+Codul de ieșire al `-Status` e **4** (nu 0) când propagarea e `STALE`:
+„scris, neconfirmat". Iar măsurătoarea lag-ului **nu mai numără `state/`**,
+care e scratch ignorat de git — altfel orice fișier de probă ar face lag-ul
+să pară infinit, ceea ce ar fi o măsurătoare falsă, nu o întârziere reală.
+
+Poarta verifică acum **concordanța** raport–măsurătoare, cu 5 probe de
+falsificare: un raport doctorit cu `PROPAGATION=STALE` dar
+`ACTIVE_CHANNEL=DRIVE` este **respingat**.
+
 Consecință de proiectare: **cerințele care cer răspuns imediat nu merg pe
 Drive.** Ele merg pe canalul secundar (GitHub), care are R0 la push.
 
@@ -127,7 +184,7 @@ Drive.** Ele merg pe canalul secundar (GitHub), care are R0 la push.
 | # | Ce | De ce nu l-am făcut eu |
 |---|---|---|
 | 1 | Re-consent pentru tokenul Drive (`gdrive-oauth.js`) | cere browserul lui Popy — ACCESS |
-| 2 | Verificarea DriveFS: rădăcina mirrorului e `connected=true` la startup, dar propagarea nu e confirmată pentru fișierele noi | DriveFS e procesul lui; un restart e decizie pe mașina lui |
+| 2 | Verificarea DriveFS: rădăcina e `connected=true`, dar motorul de sync nu vedea scrierile locale (`change_ids_up_to_date: true`, `operation_queue_size: 0`), iar logul arată o eroare IPC activă la fiecare 60s | DriveFS e procesul lui; un restart / re-login e decizie pe mașina lui |
 | 3 | Re-măsurarea lag-ului în regim normal | nevoie de o propagare completă, ~1h+ |
 | 4 | Push-ul celor 12 commituri locale în `MAVIS-OPTIMUS-CI` | **R0**, și remote-ul a avansat între timp |
 

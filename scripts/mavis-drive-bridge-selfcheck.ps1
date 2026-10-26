@@ -166,20 +166,54 @@ foreach ($line in ($resRoot.Out -split "`n")) {
 $resC = Invoke-Native -Program 'powershell' -Arguments @('-NoProfile', '-File', $Orchestrator, '-Status')
 $transport = 'UNKNOWN'
 $channel = 'UNKNOWN'
+$propagation = 'UNKNOWN'
 foreach ($line in ($resC.Out -split "`n")) {
     if ($line -match '^TRANSPORT=(\S+)') { $transport = $Matches[1] }
     if ($line -match '^ACTIVE_CHANNEL=(\S+)') { $channel = $Matches[1] }
+    if ($line -match '^PROPAGATION=(\S+)') { $propagation = $Matches[1] }
 }
+
+# The expectation lives HERE, the report is produced by the script. Their
+# agreement is the evidence - and a doctored report must be rejected, so the
+# expectation can fail.
+function Test-BridgeConcordance {
+    param([string]$RootState, [string]$Transport, [string]$Propagation, [string]$Channel)
+    if ($RootState -eq 'false' -and $Transport -ne 'DOWN') { return $false }
+    if ($RootState -eq 'true' -and $Transport -ne 'UP') { return $false }
+    if ($Propagation -eq 'OK' -and $Channel -ne 'DRIVE') { return $false }
+    if (($Propagation -eq 'STALE' -or $Propagation -eq 'UNKNOWN') -and $Channel -ne 'GITHUB') { return $false }
+    return $true
+}
+
+# --- falsification: doctored reports must be rejected ---------------------
+$doctored = @(
+    @{ Label = 'raport fals: propagare STALE dar canal DRIVE'; Root = 'true'; Trans = 'UP'; Prop = 'STALE'; Chan = 'DRIVE'; MustReject = $true },
+    @{ Label = 'raport fals: radacina deconectata dar transport UP'; Root = 'false'; Trans = 'UP'; Prop = 'OK'; Chan = 'DRIVE'; MustReject = $true },
+    @{ Label = 'raport fals: propagare OK dar canal GITHUB'; Root = 'true'; Trans = 'UP'; Prop = 'OK'; Chan = 'GITHUB'; MustReject = $true },
+    @{ Label = 'raport adevarat: conectat, propagare OK, canal DRIVE'; Root = 'true'; Trans = 'UP'; Prop = 'OK'; Chan = 'DRIVE'; MustReject = $false },
+    @{ Label = 'raport adevarat: conectat, propagare STALE, canal GITHUB'; Root = 'true'; Trans = 'UP'; Prop = 'STALE'; Chan = 'GITHUB'; MustReject = $false }
+)
+$falsified = 0
+foreach ($d in $doctored) {
+    $concordant = Test-BridgeConcordance -RootState $d.Root -Transport $d.Trans -Propagation $d.Prop -Channel $d.Chan
+    $rejected = -not $concordant
+    if ($rejected -eq $d.MustReject) {
+        $falsified++
+        Write-Output ('OK   proba-concordanta - ' + $d.Label)
+    } else {
+        $problems++
+        Write-Output ('FAIL proba-concordanta - ' + $d.Label + ' (asteptat ' + $(if ($d.MustReject) { 'respingere' } else { 'acceptare' }) + ')')
+    }
+}
+
 if ($rootState -eq 'UNKNOWN') {
     $unknown++
-    Write-Output ('UNKNOWN proba-transport - starea radacinii mirrorului nu s-a putut citi')
-} elseif ($rootState -eq 'false' -and $transport -eq 'DOWN') {
-    Write-Output ('OK   proba-transport - radacina mirrorului e deconectata si raportul spune exact asa; canal activ: ' + $channel)
-} elseif ($rootState -eq 'true' -and $transport -eq 'UP') {
-    Write-Output ('OK   proba-transport - radacina mirrorului e conectata si raportul spune exact asa; canal activ: ' + $channel)
+    Write-Output 'UNKNOWN proba-transport - starea radacinii mirrorului nu s-a putut citi'
+} elseif (Test-BridgeConcordance -RootState $rootState -Transport $transport -Propagation $propagation -Channel $channel) {
+    Write-Output ('OK   proba-transport - raportul si masuratoarea sunt concordante; radacina=' + $rootState + ' transport=' + $transport + ' propagare=' + $propagation + ' canal activ: ' + $channel)
 } else {
     $problems++
-    Write-Output ('FAIL proba-transport - raportul si masuratoarea se contrazic: root_state=' + $rootState + ' transport=' + $transport)
+    Write-Output ('FAIL proba-transport - raportul si masuratoarea se contrazic: root_state=' + $rootState + ' transport=' + $transport + ' propagare=' + $propagation + ' canal=' + $channel)
 }
 
 # --- 5. PROBE D: the orchestrator must REFUSE an empty publish -----------

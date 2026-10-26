@@ -18,8 +18,11 @@
 #   NOT_UPLOADED - the mirror root is disconnected, so it cannot reach Drive
 #   UNVERIFIED - the state could not be read at all
 #
-# And when the transport is down, the GITHUB fallback is engaged, because a
-# bridge with one leg is not a bridge.
+# And when the transport is down - OR when it is connected but not actually
+# uploading - the GITHUB fallback is engaged, because a bridge with one leg is
+# not a bridge. Measured 2026-10-27: connected=true while the DriveFS sync
+# engine showed operation_queue_size=0 and change_ids_up_to_date=true, so no
+# local write was being uploaded at all.
 #
 # Usage:
 #   powershell -NoProfile -File mavis-drive-bridge.ps1 -Status
@@ -27,10 +30,11 @@
 #   powershell -NoProfile -File mavis-drive-bridge.ps1 -Verify -Title "<subject>"
 #
 # Exit codes:
-#   0 = measured and healthy
+#   0 = measured and healthy: connected AND the latest write is confirmed
 #   2 = a required input is missing (python, DriveFS, a title)
 #   3 = the bridge target was not found in Drive
-#   4 = written but NOT confirmed - the honest "unknown"
+#   4 = written but NOT confirmed, or the propagation is stale - the honest
+#       "unknown"; the GitHub channel is the live one for new content
 #   5 = the Drive transport is DOWN - the GitHub fallback is the live channel
 #
 # ASCII ONLY: executed by Windows PowerShell 5.1.
@@ -188,17 +192,41 @@ function Invoke-Status {
         if ($line -match 'NEWEST title=.* modified=(\d+)') { $newestMs = [int64]$Matches[1]; break }
     }
     $localMs = 0
+    # Only writes that SHOULD reach Drive count. state/ is gitignored scratch
+    # and is not published: counting it would make the lag look infinite after
+    # any probe, which is a false measurement, not a real delay.
+    $statePrefix = $StateDir + '\'
     $localFile = Get-ChildItem -LiteralPath $ScriptRoot -Recurse -File -Force -ErrorAction SilentlyContinue |
+        Where-Object { -not $_.FullName.StartsWith($statePrefix, [System.StringComparison]::OrdinalIgnoreCase) } |
         Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
     if ($localFile) {
         $localMs = [int64](($localFile.LastWriteTimeUtc - [datetime]'1970-01-01').TotalMilliseconds)
     }
+    # A connected root is NOT the same thing as an uploading transport.
+    # Measured 2026-10-27: the mirror root reported connected=true while the
+    # DriveFS sync engine showed operation_queue_size=0 and
+    # change_ids_up_to_date=true - it did not see the local writes at all.
+    # So the report separates "connected" from "confirmed", and the active
+    # channel follows the propagation, not the connection.
+    $staleThresholdMin = 120
+    $propagation = 'UNKNOWN'
     if ($newestMs -gt 0) {
+        $lagMin = [math]::Round((($localMs - $newestMs) / 60000), 1)
         Write-Out ('LAST_CONFIRMED_UPLOAD_MS=' + $newestMs)
         Write-Out ('LAST_LOCAL_WRITE_MS=' + $localMs)
-        Write-Out ('PROPAGATION_LAG_MIN=' + [math]::Round((($localMs - $newestMs) / 60000), 1))
+        Write-Out ('PROPAGATION_LAG_MIN=' + $lagMin)
+        Write-Out ('PROPAGATION_STALE_THRESHOLD_MIN=' + $staleThresholdMin)
+        if ($lagMin -gt $staleThresholdMin) {
+            $propagation = 'STALE'
+            Write-Out 'PROPAGATION=STALE - scrieri locale mai noi decat ultima confirmare in indice'
+        } else {
+            $propagation = 'OK'
+            Write-Out 'PROPAGATION=OK - ultima scriere locala e confirmata in indice'
+        }
     } else {
         Write-Out 'PROPAGATION_LAG_MIN=UNKNOWN - niciun item nou confirmat in indice'
+        Write-Out 'PROPAGATION=UNKNOWN - nu se poate confirma nimic in indice'
+        $propagation = 'UNKNOWN'
     }
 
     if ($root.State -eq 'false') {
@@ -207,8 +235,16 @@ function Invoke-Status {
         return 5
     }
     Write-Out 'TRANSPORT=UP'
-    Write-Out 'ACTIVE_CHANNEL=DRIVE'
-    return 0
+    if ($propagation -eq 'OK') {
+        Write-Out 'ACTIVE_CHANNEL=DRIVE'
+        return 0
+    }
+    if ($propagation -eq 'STALE') {
+        Write-Out 'ACTIVE_CHANNEL=GITHUB - propagarea Drive e intarziata; pentru continut nou, canalul activ e GitHub'
+        return 4
+    }
+    Write-Out 'ACTIVE_CHANNEL=GITHUB - propagarea nu poate fi masurata'
+    return 4
 }
 
 function Invoke-Publish {

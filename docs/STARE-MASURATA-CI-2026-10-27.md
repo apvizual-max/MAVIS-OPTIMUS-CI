@@ -121,6 +121,11 @@ Canalul **secundar** al punții. Nu e atins de acest rând.
 | Falsificarea lanțului de porți | `GATE_PROBLEMS=0`, **EXIT 0** — commit curat permis · commit cu secret **refuzat** · secret **absent** din istoric · push fără acord **refuzat** · push cu acord permis |
 | Puntea `mavis-sync -SelfTest` | `POARTA|TRECUT`, EXIT 0 |
 | Puntea `run-sync-logged -DryRun` | EXIT 0 |
+| Propagare Drive | **`PROPAGATION=STALE`** — lag **602 min**, `BRIDGE-DRIVE` `FOUND=0` în indice |
+| Motor sync DriveFS | `operation_queue_size: 0` · `change_ids_up_to_date: true` · `largest_local_change_id: 9281302` — **nu vede scrierile locale** |
+| Canal activ | **`GITHUB`** (pentru conținut nou) — `TRANSPORT=UP`, dar propagarea nu e confirmată |
+| Cod de ieșire `-Status` | **4** când propagarea e `STALE` (nu 0) |
+| Eroare IPC DriveFS | `ipc_socket_win.cc:272` „The pipe has been ended", repetată la 60s, activă la măsurare |
 
 ---
 
@@ -140,6 +145,8 @@ Canalul **secundar** al punții. Nu e atins de acest rând.
 | 10 | Falsificarea lanțului de porți, în repo izolat, GitHub neatins | ✅ |
 | 11 | Primul handoff publicat pe **ambele** canale | ⚠️ `TASK-2026-10-27-0103-…` · `SYNC_STATE=UNVERIFIED` (scris, neconfirmat în indice) |
 | 12 | Folderul fantomă `…\projects\Mavis-Optimus-Continuous-Integration` | ✅ eliminat prin Trash recuperabil, 3 niveluri, EXIT 0 |
+| 13 | Instrumentul reparat: `TRANSPORT` separat de `PROPAGATION`, `state/` exclus din măsurătoarea de lag, canalul activ urmează propagarea | ✅ |
+| 14 | Poarta extinsă: 5 probe de falsificare a concordanței raport–măsurătoare | ✅ |
 
 **Nepropus, intenționat:** push-ul celor 12 commituri locale (R0, plus
 divergența cu remote-ul avansat).
