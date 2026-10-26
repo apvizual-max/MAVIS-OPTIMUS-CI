@@ -6,17 +6,26 @@
 ## Proiectul ăsta
 
 ```
-C:\Users\apviz\.minimax-agent\projects\Mavis-Optimus-Continuous-Integration\
+E:\Google\GDrive\GDrive-Second_Brain_PKMS\02_Areas\02-2-AI-SOT\CASA\OPTIMUS - Prime\Optimus_CI (by Mavis)\
 ├── README.md                    punct de intrare, cold-boot
 ├── DOCTRINA-CI.md               cum lucrez
 ├── MAPARE-SISTEM.md             acest fișier
 ├── docs\
+│   ├── MAPARE-FOLDERE.md        ce e în fiecare folder, măsurat
+│   ├── WORKFLOWS.md             fluxurile, porțile, codurile de ieșire
 │   ├── CONFLICTE-DOZTRINA.md    7 conflicte găsite + hotărâri  ← CITESTE
-│   ├── STATE-CLOUD.md           ce am înglobat din MAVIS-CLOUD
-│   ├── CI-POLICY.md             Live Review + Jules
+│   ├── CI-POLICY.md             politica CI: puntea, guvernanța, porțile
 │   ├── BRIDGE-LOCAL-CLOUD.md    puntea, adaptată la R0
+│   ├── PUNTE-DRIVE-PRIMARA.md   canalul primar Drive, cu măsurătorile
+│   ├── GIT-GITHUB-PROCEDURI.md  procedurile Git/GitHub, cu mecanism și probe
+│   ├── ARHITECTURA-CI-CD.md     convenția care separă CI de CD
+│   ├── PROTOCOL-DENUMIRE-LOCAL-CLOUD.md  protocolul de denumire
 │   ├── INVENTAR-REPO-URI.md     toate repo-urile
-│   └── RECUPERARE-GIT.md        starea măsurată a mașinii
+│   ├── RECUPERARE-GIT.md        starea măsurată a mașinii
+│   └── arhiva\handoffs-vechi\   handoff-uri consumate — **mutate, nu șterse**
+├── BRIDGE-DRIVE\                canalul primar (Google Drive)
+├── QUEUE\                       canalul secundar (GitHub)
+├── scripts\                     instrumentele
 ├── blueprint\
 │   └── BLUEPRINT-PLAN-CI.md     planul de execuție           ← CITESTE
 └── cloud-ingest\

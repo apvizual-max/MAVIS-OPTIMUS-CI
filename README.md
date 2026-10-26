@@ -117,6 +117,8 @@ Inventarul complet, măsurat: `docs/INVENTAR-REPO-URI.md`.
 | `docs/STARE-MASURATA-CI.md` | **starea măsurată azi, cu cifre și metode** |
 | `docs/INVENTAR-REPO-URI.md` | toate repo-urile, locale și GitHub |
 | `docs/BRIDGE-LOCAL-CLOUD.md` | puntea, în detaliu |
+| `docs/MAPARE-FOLDERE.md` | **ce e în fiecare folder al proiectului**, măsurat |
+| `docs/WORKFLOWS.md` | **cum se lucrează**: fluxuri, porți, coduri de ieșire |
 | `docs/PROTOCOL-DENUMIRE-LOCAL-CLOUD.md` | protocolul de denumire |
 | `docs/META-PROMPT.md` | generarea meta-promptului |
 | `docs/RECUPERARE-GIT.md` | starea măsurată a mașinii, cu cifre |
@@ -131,14 +133,14 @@ Inventarul complet, măsurat: `docs/INVENTAR-REPO-URI.md`.
 
 ## Starea acum
 
-Repo: **public**, ramura `main`, HEAD `f5fb3f3`, **10 commituri neîmpinse**
-peste `origin/main` (`d9a186e`). **Nimic împins** — corect, push-ul e
-blocat de poarta R0.
+Repo: **public**, ramura `main`, HEAD `7227a8b`, **15 commituri neîmpinse**
+peste `origin/main` (`3da55ff`, ultim push `2026-10-24T23:55:56Z`).
+**Nimic împins** — corect, push-ul e blocat de poarta R0.
 
 **Puntea e vie:** `MavisSyncBridge` 08:30, `LastTaskResult=0`,
 `exit_pull=0`, `local_dupa == remote`, `impingere=NEEXECUTATA`.
 
-Cifrele complete: `docs/STARE-MASURATA-CI.md`.
+Cifrele complete: `docs/STARE-MASURATA-CI-2026-10-27.md`.
 
 ---
 
@@ -153,7 +155,7 @@ Cifrele complete: `docs/STARE-MASURATA-CI.md`.
 | Folderul proiectului | `E:\Google\GDrive\…\CASA\OPTIMUS - Prime\Optimus_CI (by Mavis)` |
 | Joncțiune pe C: | `C:\Users\apviz\.minimax-agent\projects\Optimus_CI (by Mavis)` |
 | cloud_id în Drive | `1V87h9Pbw52chSVNkxQ_NNuMh-CLfZeuI` |
-| Lag de propagare | **≈ 80 min**, măsurat |
+| Lag de propagare | **≈ 80 min** pe exemplul istoric — dar măsurarea de azi e mai severă: vezi secțiunea de mai jos |
 
 **Ce s-a schimbat:** canalul principal nu mai e repo-ul GitHub, ci un
 folder Google Drive pe care ambele instanțe îl văd. GitHub rămâne, ca
@@ -169,3 +171,37 @@ Detalii: `docs/PUNTE-DRIVE-PRIMARA.md` · `docs/STARE-MASURATA-CI-2026-10-27.md`
 
 **Observație de guvernanță:** repo-ul `MAVIS-OPTIMUS-CI` e lucrat acum de
 sesiunea CD. Noi ținem copia și referința — `docs/STARE-MAVIS-OPTIMUS-CI-REMOTE.md`.
+
+---
+
+## Starea canalului primar, măsurată 2026-10-27
+
+> **Aditiv.** Nimic din secțiunile de mai sus nu se rescrie.
+
+**Canalul Drive e construit, dar nu încarcă conținut nou.** Măsurătoarea
+directă, nu o presupunere:
+
+| Ce | Măsurat |
+|---|---|
+| Rădăcina mirrorului | `MIRROR_ROOT_STATE=true` — **conectată** |
+| Coada de operațiuni | `PENDING_OPERATIONS=0` |
+| Motor sync DriveFS | `change_ids_up_to_date: true` · `operation_queue_size: 0` — **nu vede scrierile locale** |
+| Vârsta copiei din cloud | **`CLOUD_TRACKED_AGE_DAYS=2.91`** (pentru `MAPARE-SISTEM.md`) |
+| Fișierul canalului în cloud | **`CLOUD_CHANNEL_FILE_PRESENT=false`** |
+| Verdictul instrumentului | `PROPAGATION=STALE` · `ACTIVE_CHANNEL=GITHUB` · **exit 4** |
+
+**Consecința, spusă fără cosmetizare:** arborele CI **există în cloud**, cu
+`cloud_id`-uri și la calea corectă — dar cu **conținutul de dinaintea mutării
+din 26 oct**. „Folderul e în Drive" și „conținutul de azi e în Drive" sunt două
+lucruri diferite, iar al doilea e fals.
+
+**Deci, până la un restart/re-login al DriveFS:** pentru conținut **nou**, canalul
+activ e **GitHub** (push cu R0). Canalul Drive rămâne *structura*, nu
+*transportul*.
+
+Instrumentul nu mai raportează fals: separă `TRANSPORT` (conectat) de
+`PROPAGATION` (confirmat), iar poarta verifică **concordanța**
+raport–măsurătoare, cu probe de falsificare.
+
+Detalii: `docs/PUNTE-DRIVE-PRIMARA.md` §4.1–§4.2 ·
+`docs/STARE-MASURATA-CI-2026-10-27.md`
