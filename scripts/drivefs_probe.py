@@ -39,6 +39,7 @@ import os
 import re
 import sqlite3
 import sys
+import time
 
 DRIVEFS_ROOT = os.path.join(
     os.environ.get("LOCALAPPDATA", os.path.expanduser("~/AppData/Local")),
@@ -168,9 +169,71 @@ def print_items(con, rows):
         print("    path: " + " > ".join(list(reversed(ancestors(con, row[0]))) + [row[4]]))
 
 
+def report_staleness(con, title, folder_title, local_dir):
+    """How old is the copy the Cloud would actually read?
+
+    The lag proxy compares the newest confirmed upload with the newest local
+    write. That is an approximation. This is the direct measurement: the
+    cloud-side item (its modified_date) compared with the local file's mtime.
+    A positive LOCAL_NEWER_MIN means the cloud copy is OLDER than what is on
+    disk - the Cloud instance would read a stale snapshot.
+    """
+    rows = con.execute(
+        "WITH RECURSIVE d(stable_id) AS ("
+        "  SELECT stable_id FROM items WHERE local_title = ?"
+        "  UNION"
+        "  SELECT p.item_stable_id FROM stable_parents p JOIN d"
+        "    ON p.parent_stable_id = d.stable_id"
+        ") SELECT i.stable_id, i.id, i.modified_date, i.file_size, i.local_title"
+        " FROM items i JOIN d ON i.stable_id = d.stable_id"
+        " WHERE i.local_title = ? AND i.is_folder = 0",
+        (folder_title, title),
+    ).fetchall()
+
+    print("LOOKUP=staleness")
+    print("NEEDLE=" + safe(title, 400))
+    print("FOLDER=" + safe(folder_title, 300))
+
+    chosen = None
+    for r in rows:
+        chain = ancestors(con, r[0])
+        if folder_title in chain:
+            chosen = r
+            break
+    if chosen is None:
+        print("CLOUD_PRESENT=false")
+        print("CLOUD_AGE_DAYS=UNKNOWN - nu exista in indexul de cloud")
+        return 2
+
+    cloud_ms = chosen[2] or 0
+    print("CLOUD_PRESENT=true")
+    print("CLOUD_MODIFIED_MS=" + str(cloud_ms))
+    print("CLOUD_SIZE=" + safe(chosen[3], 20))
+    print("CLOUD_ID=" + safe(chosen[1], 80))
+
+    local_path = None
+    if local_dir and os.path.isdir(local_dir):
+        for dirpath, _dirnames, filenames in os.walk(local_dir):
+            if title in filenames:
+                local_path = os.path.join(dirpath, title)
+                break
+    if local_path is None:
+        print("LOCAL_MTIME_MS=UNKNOWN - fisierul nu a fost gasit local")
+        print("LOCAL_NEWER_MIN=UNKNOWN")
+        return 0
+
+    local_ms = int(os.path.getmtime(local_path) * 1000)
+    now_ms = int(time.time() * 1000)
+    print("LOCAL_MTIME_MS=" + str(local_ms))
+    print("LOCAL_PATH=" + safe(local_path, 400))
+    print("CLOUD_AGE_DAYS=" + ("%.2f" % ((now_ms - cloud_ms) / 86400000.0)))
+    print("LOCAL_NEWER_MIN=" + ("%.1f" % ((local_ms - cloud_ms) / 60000.0)))
+    return 0
+
+
 def main(argv):
     if len(argv) < 2:
-        print("USAGE drivefs_probe.py [--pending | --title T | --root-state]")
+        print("USAGE drivefs_probe.py [--pending | --title T | --root-state | --staleness T --folder F --local D]")
         return 3
 
     if "--root-state" in argv:
@@ -193,6 +256,22 @@ def main(argv):
             print("PENDING_OPERATIONS=" + str(n))
             print("DB=" + db)
             return 0
+
+        if "--staleness" in argv:
+            sidx = argv.index("--staleness")
+            if sidx + 1 >= len(argv):
+                print("ERROR=--staleness needs a title")
+                return 3
+            folder = ""
+            local = ""
+            if "--folder" in argv:
+                folder = argv[argv.index("--folder") + 1]
+            if "--local" in argv:
+                local = argv[argv.index("--local") + 1]
+            if not folder:
+                print("ERROR=--staleness needs --folder")
+                return 3
+            return report_staleness(con, argv[sidx + 1], folder, local)
 
         if "--title" in argv:
             idx = argv.index("--title")

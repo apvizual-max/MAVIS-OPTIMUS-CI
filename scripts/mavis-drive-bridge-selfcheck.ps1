@@ -167,35 +167,42 @@ $resC = Invoke-Native -Program 'powershell' -Arguments @('-NoProfile', '-File', 
 $transport = 'UNKNOWN'
 $channel = 'UNKNOWN'
 $propagation = 'UNKNOWN'
+$channelPresent = 'UNKNOWN'
 foreach ($line in ($resC.Out -split "`n")) {
     if ($line -match '^TRANSPORT=(\S+)') { $transport = $Matches[1] }
     if ($line -match '^ACTIVE_CHANNEL=(\S+)') { $channel = $Matches[1] }
     if ($line -match '^PROPAGATION=(\S+)') { $propagation = $Matches[1] }
+    if ($line -match '^CLOUD_CHANNEL_FILE_PRESENT=(\S+)') { $channelPresent = $Matches[1] }
 }
 
 # The expectation lives HERE, the report is produced by the script. Their
 # agreement is the evidence - and a doctored report must be rejected, so the
 # expectation can fail.
 function Test-BridgeConcordance {
-    param([string]$RootState, [string]$Transport, [string]$Propagation, [string]$Channel)
+    param([string]$RootState, [string]$Transport, [string]$Propagation, [string]$Channel, [string]$ChannelPresent)
     if ($RootState -eq 'false' -and $Transport -ne 'DOWN') { return $false }
     if ($RootState -eq 'true' -and $Transport -ne 'UP') { return $false }
     if ($Propagation -eq 'OK' -and $Channel -ne 'DRIVE') { return $false }
     if (($Propagation -eq 'STALE' -or $Propagation -eq 'UNKNOWN') -and $Channel -ne 'GITHUB') { return $false }
+    # The channel file is the thing the Cloud reads. If it is not in the
+    # cloud index, the propagation CANNOT be OK. A report that says otherwise
+    # is accusing the transport of being healthy when it is not.
+    if ($ChannelPresent -eq 'false' -and $Propagation -eq 'OK') { return $false }
     return $true
 }
 
 # --- falsification: doctored reports must be rejected ---------------------
 $doctored = @(
-    @{ Label = 'raport fals: propagare STALE dar canal DRIVE'; Root = 'true'; Trans = 'UP'; Prop = 'STALE'; Chan = 'DRIVE'; MustReject = $true },
-    @{ Label = 'raport fals: radacina deconectata dar transport UP'; Root = 'false'; Trans = 'UP'; Prop = 'OK'; Chan = 'DRIVE'; MustReject = $true },
-    @{ Label = 'raport fals: propagare OK dar canal GITHUB'; Root = 'true'; Trans = 'UP'; Prop = 'OK'; Chan = 'GITHUB'; MustReject = $true },
-    @{ Label = 'raport adevarat: conectat, propagare OK, canal DRIVE'; Root = 'true'; Trans = 'UP'; Prop = 'OK'; Chan = 'DRIVE'; MustReject = $false },
-    @{ Label = 'raport adevarat: conectat, propagare STALE, canal GITHUB'; Root = 'true'; Trans = 'UP'; Prop = 'STALE'; Chan = 'GITHUB'; MustReject = $false }
+    @{ Label = 'raport fals: propagare STALE dar canal DRIVE'; Root = 'true'; Trans = 'UP'; Prop = 'STALE'; Chan = 'DRIVE'; Present = 'true'; MustReject = $true },
+    @{ Label = 'raport fals: radacina deconectata dar transport UP'; Root = 'false'; Trans = 'UP'; Prop = 'OK'; Chan = 'DRIVE'; Present = 'true'; MustReject = $true },
+    @{ Label = 'raport fals: propagare OK dar canal GITHUB'; Root = 'true'; Trans = 'UP'; Prop = 'OK'; Chan = 'GITHUB'; Present = 'true'; MustReject = $true },
+    @{ Label = 'raport fals: fisierul canalului absent din cloud dar propagare OK'; Root = 'true'; Trans = 'UP'; Prop = 'OK'; Chan = 'DRIVE'; Present = 'false'; MustReject = $true },
+    @{ Label = 'raport adevarat: conectat, propagare OK, canal DRIVE'; Root = 'true'; Trans = 'UP'; Prop = 'OK'; Chan = 'DRIVE'; Present = 'true'; MustReject = $false },
+    @{ Label = 'raport adevarat: conectat, propagare STALE, canal GITHUB'; Root = 'true'; Trans = 'UP'; Prop = 'STALE'; Chan = 'GITHUB'; Present = 'false'; MustReject = $false }
 )
 $falsified = 0
 foreach ($d in $doctored) {
-    $concordant = Test-BridgeConcordance -RootState $d.Root -Transport $d.Trans -Propagation $d.Prop -Channel $d.Chan
+    $concordant = Test-BridgeConcordance -RootState $d.Root -Transport $d.Trans -Propagation $d.Prop -Channel $d.Chan -ChannelPresent $d.Present
     $rejected = -not $concordant
     if ($rejected -eq $d.MustReject) {
         $falsified++
@@ -209,11 +216,11 @@ foreach ($d in $doctored) {
 if ($rootState -eq 'UNKNOWN') {
     $unknown++
     Write-Output 'UNKNOWN proba-transport - starea radacinii mirrorului nu s-a putut citi'
-} elseif (Test-BridgeConcordance -RootState $rootState -Transport $transport -Propagation $propagation -Channel $channel) {
-    Write-Output ('OK   proba-transport - raportul si masuratoarea sunt concordante; radacina=' + $rootState + ' transport=' + $transport + ' propagare=' + $propagation + ' canal activ: ' + $channel)
+} elseif (Test-BridgeConcordance -RootState $rootState -Transport $transport -Propagation $propagation -Channel $channel -ChannelPresent $channelPresent) {
+    Write-Output ('OK   proba-transport - raportul si masuratoarea sunt concordante; radacina=' + $rootState + ' transport=' + $transport + ' propagare=' + $propagation + ' fisierul canalului in cloud=' + $channelPresent + ' canal activ: ' + $channel)
 } else {
     $problems++
-    Write-Output ('FAIL proba-transport - raportul si masuratoarea se contrazic: root_state=' + $rootState + ' transport=' + $transport + ' propagare=' + $propagation + ' canal=' + $channel)
+    Write-Output ('FAIL proba-transport - raportul si masuratoarea se contrazic: root_state=' + $rootState + ' transport=' + $transport + ' propagare=' + $propagation + ' canal=' + $channel + ' fisierul canalului in cloud=' + $channelPresent)
 }
 
 # --- 5. PROBE D: the orchestrator must REFUSE an empty publish -----------

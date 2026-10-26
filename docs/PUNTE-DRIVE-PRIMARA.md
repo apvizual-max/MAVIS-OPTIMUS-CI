@@ -147,6 +147,44 @@ Poarta verifică acum **concordanța** raport–măsurătoare, cu 5 probe de
 falsificare: un raport doctorit cu `PROPAGATION=STALE` dar
 `ACTIVE_CHANNEL=DRIVE` este **respingat**.
 
+### 4.2 Cât de veche e copia din cloud — măsurătoarea directă
+
+Lag-ul de mai sus e un **proxy**: compară ultima confirmare cu ultima scriere.
+Însă ce contează pentru Cloud e altceva — **cât de veche e conținutul pe care
+l-ar citi**. Am adăugat măsurătoarea directă: `drivefs_probe.py --staleness`,
+care ia itemul din indexul de cloud și îl compară cu fișierul local.
+
+| Fișier | În cloud? | Vârsta copiei din cloud | Local mai nou cu |
+|---|---|---|---|
+| `MAPARE-SISTEM.md` (urmărit, în cloud) | **da** — `cloud_id 1I2W52G0Z0YALe-L5TAR68nQkkmx6zper` | **2,91 zile** | **4158,7 min** (≈ 69 h) |
+| `DOCTRINA-CI.md` (urmărit, în cloud) | **da** — `cloud_id 1yP_8u-nC7wIpn1y05GuZ6u1O_RYCC-ni` | **~15 zile** (12 oct) | — |
+| `TASKURI-PENTRU-CLOUD.md` (canalul primar) | **NU** | — | — |
+
+**Ce înseamnă asta, fără cosmetizare:** arborele CI **există în cloud**, cu
+`cloud_id`-uri și la calea corectă — dar cu **conținutul dinainte de mutarea
+din 26 oct**. Mutarea a fost la nivel de metadată: itemii de cloud și-au
+păstrat identificatorii, iar conținutul **nu s-a reîncărcat niciodată**.
+
+Deci, dacă Mavis Cloud ar citi acum folderul din Drive, ar citi **un
+instantaneu vechi**, nu conținutul de azi. „Folderul e în Drive" și „conținutul
+de azi e în Drive" sunt două lucruri diferite — și al doilea e fals.
+
+Instrumentul raportează acum asta direct, nu prin proxy:
+
+```
+CLOUD_TRACKED_AGE_DAYS=2.91
+CLOUD_TRACKED_LOCAL_NEWER_MIN=4158.7
+CLOUD_CHANNEL_FILE_PRESENT=false
+PROPAGATION=STALE
+ACTIVE_CHANNEL=GITHUB
+```
+
+iar poarta are acum și invariantul care leagă aceste cifre: **dacă fișierul
+canalului nu e în cloud, propagarea NU poate fi `OK`**. Un raport care ar
+spune altceva ar acuza fals transportul. Probe doctorat în acest sens:
+`raport fals: fisierul canalului absent din cloud dar propagare OK` —
+**respingut**.
+
 Consecință de proiectare: **cerințele care cer răspuns imediat nu merg pe
 Drive.** Ele merg pe canalul secundar (GitHub), care are R0 la push.
 

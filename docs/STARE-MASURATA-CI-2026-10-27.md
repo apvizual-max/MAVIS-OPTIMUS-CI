@@ -121,7 +121,10 @@ Canalul **secundar** al punții. Nu e atins de acest rând.
 | Falsificarea lanțului de porți | `GATE_PROBLEMS=0`, **EXIT 0** — commit curat permis · commit cu secret **refuzat** · secret **absent** din istoric · push fără acord **refuzat** · push cu acord permis |
 | Puntea `mavis-sync -SelfTest` | `POARTA|TRECUT`, EXIT 0 |
 | Puntea `run-sync-logged -DryRun` | EXIT 0 |
-| Propagare Drive | **`PROPAGATION=STALE`** — lag **602 min**, `BRIDGE-DRIVE` `FOUND=0` în indice |
+| Propagare Drive | **`PROPAGATION=STALE`** — lag **611,7 min**, `BRIDGE-DRIVE` `FOUND=0` în indice |
+| **Vârsta copiei din cloud** | **`CLOUD_TRACKED_AGE_DAYS=2.91`** pentru `MAPARE-SISTEM.md`; localul e cu **4158,7 min** mai nou |
+| Fișierul canalului primar în cloud | **`CLOUD_CHANNEL_FILE_PRESENT=false`** — `TASKURI-PENTRU-CLOUD.md` nu e în cloud |
+| Conținutul arborelui CI în cloud | **dinainte de mutarea din 26 oct** (`DOCTRINA-CI.md` — 12 oct, `MAPARE-SISTEM.md` — 24 oct). Mutarea a fost la nivel de metadată, cu `cloud_id`-uri păstrate |
 | Motor sync DriveFS | `operation_queue_size: 0` · `change_ids_up_to_date: true` · `largest_local_change_id: 9281302` — **nu vede scrierile locale** |
 | Canal activ | **`GITHUB`** (pentru conținut nou) — `TRANSPORT=UP`, dar propagarea nu e confirmată |
 | Cod de ieșire `-Status` | **4** când propagarea e `STALE` (nu 0) |
@@ -147,6 +150,7 @@ Canalul **secundar** al punții. Nu e atins de acest rând.
 | 12 | Folderul fantomă `…\projects\Mavis-Optimus-Continuous-Integration` | ✅ eliminat prin Trash recuperabil, 3 niveluri, EXIT 0 |
 | 13 | Instrumentul reparat: `TRANSPORT` separat de `PROPAGATION`, `state/` exclus din măsurătoarea de lag, canalul activ urmează propagarea | ✅ |
 | 14 | Poarta extinsă: 5 probe de falsificare a concordanței raport–măsurătoare | ✅ |
+| 15 | Măsurătoare directă a vârstei copiei din cloud (`drivefs_probe.py --staleness`) + invariantul „fișierul canalului absent ⇒ propagarea nu poate fi OK" (6 probe de concordanță) | ✅ |
 
 **Nepropus, intenționat:** push-ul celor 12 commituri locale (R0, plus
 divergența cu remote-ul avansat).

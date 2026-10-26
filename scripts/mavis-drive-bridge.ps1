@@ -210,23 +210,63 @@ function Invoke-Status {
     # channel follows the propagation, not the connection.
     $staleThresholdMin = 120
     $propagation = 'UNKNOWN'
+
+    # --- the DIRECT measurement ------------------------------------------------
+    # The lag proxy above compares the newest confirmed upload with the newest
+    # local write. That is an approximation. What matters to the Cloud is
+    # different: HOW OLD is the copy it would read. So measure the cloud-side
+    # item against the local file, for the channel file itself and for one
+    # tracked file that is known to be in the cloud.
+    $folderName = Split-Path -Leaf $ScriptRoot
+    $trackedTitle = 'MAPARE-SISTEM.md'
+    $channelTitle = 'TASKURI-PENTRU-CLOUD.md'
+
+    $trackedRes = Invoke-Probe -ProbeArgs @('--staleness', $trackedTitle, '--folder', $folderName, '--local', $ScriptRoot)
+    $trackedAge = ''
+    $trackedNewer = ''
+    foreach ($line in ($trackedRes.Out -split "`n")) {
+        if ($line -match '^CLOUD_AGE_DAYS=([0-9.]+)') { $trackedAge = $Matches[1] }
+        if ($line -match '^LOCAL_NEWER_MIN=([0-9.]+)') { $trackedNewer = $Matches[1] }
+    }
+    if ($trackedAge) {
+        Write-Out ('CLOUD_TRACKED_FILE=' + $trackedTitle)
+        Write-Out ('CLOUD_TRACKED_AGE_DAYS=' + $trackedAge)
+        if ($trackedNewer) { Write-Out ('CLOUD_TRACKED_LOCAL_NEWER_MIN=' + $trackedNewer) }
+    } else {
+        Write-Out 'CLOUD_TRACKED_AGE_DAYS=UNKNOWN'
+    }
+
+    $channelRes = Invoke-Probe -ProbeArgs @('--staleness', $channelTitle, '--folder', $folderName, '--local', $ScriptRoot)
+    $channelPresent = 'UNKNOWN'
+    foreach ($line in ($channelRes.Out -split "`n")) {
+        if ($line -match '^CLOUD_PRESENT=(true|false)') { $channelPresent = $Matches[1] }
+    }
+    Write-Out ('CLOUD_CHANNEL_FILE=' + $channelTitle)
+    Write-Out ('CLOUD_CHANNEL_FILE_PRESENT=' + $channelPresent)
+
+    $stale = $false
+    if ($channelPresent -eq 'false') { $stale = $true }
+    if ($trackedNewer -and ([double]$trackedNewer -gt $staleThresholdMin)) { $stale = $true }
+
     if ($newestMs -gt 0) {
         $lagMin = [math]::Round((($localMs - $newestMs) / 60000), 1)
         Write-Out ('LAST_CONFIRMED_UPLOAD_MS=' + $newestMs)
         Write-Out ('LAST_LOCAL_WRITE_MS=' + $localMs)
         Write-Out ('PROPAGATION_LAG_MIN=' + $lagMin)
         Write-Out ('PROPAGATION_STALE_THRESHOLD_MIN=' + $staleThresholdMin)
-        if ($lagMin -gt $staleThresholdMin) {
-            $propagation = 'STALE'
-            Write-Out 'PROPAGATION=STALE - scrieri locale mai noi decat ultima confirmare in indice'
-        } else {
-            $propagation = 'OK'
-            Write-Out 'PROPAGATION=OK - ultima scriere locala e confirmata in indice'
-        }
     } else {
         Write-Out 'PROPAGATION_LAG_MIN=UNKNOWN - niciun item nou confirmat in indice'
-        Write-Out 'PROPAGATION=UNKNOWN - nu se poate confirma nimic in indice'
+    }
+
+    if ($stale) {
+        $propagation = 'STALE'
+        Write-Out 'PROPAGATION=STALE - copia din cloud e mai veche decat ce e pe disc'
+    } elseif ($newestMs -gt 0) {
+        $propagation = 'OK'
+        Write-Out 'PROPAGATION=OK - ultima scriere locala e confirmata in indice'
+    } else {
         $propagation = 'UNKNOWN'
+        Write-Out 'PROPAGATION=UNKNOWN - nu se poate confirma nimic in indice'
     }
 
     if ($root.State -eq 'false') {
