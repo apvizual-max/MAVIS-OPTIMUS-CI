@@ -96,3 +96,66 @@ nu e o excepție — e o lipsă de prefix.
 ---
 
 *2026-10-12 · Mavis Local · protocol aditiv · nu rescrie, completează*
+
+---
+
+## 8. Extinderea la canalul Drive — 2026-10-27
+
+**Aditiv, ca tot restul acestui protocol.** Regulile de mai sus rămân
+valabile; aici se spune **cine scrie ce**, în canalul primar nou.
+
+### 8.1 Convenția se extinde, nu se înlocuiește
+
+| Instanță | În `BRIDGE-DRIVE/` |
+|---|---|
+| **Mavis Local** | `MAVIS-LOCAL-…` pentru documente, `mavis-local-…` pentru cod |
+| **Mavis Cloud** | `MAVIS-CLOUD-…` pentru documente, `mavis-cloud-…` pentru cod |
+
+Cele patru interdicții din §3 **se aplică identic**: niciun fișier al
+celeilalte instanțe nu e suprascris, corectiile se fac prin fișiere noi,
+nimic nu e redenumit.
+
+### 8.2 `TASK_ID` — singurul identificator comun
+
+Ambele canale folosesc **același `TASK_ID`**. Nu e o convenție de
+nume, e o cheie de urmărire: un tichet poate exista simultan în
+`QUEUE/TASKS-FOR-CLOUD.md` (secundar) și în
+`BRIDGE-DRIVE/TASKURI-PENTRU-CLOUD.md` (primar), și se recunoaște ca
+același lucru.
+
+```
+TASK_ID: MAVIS-LOCAL-2026-10-27-001
+```
+
+### 8.3 Unde se scrie cine
+
+| Direcție | Canal primar (Drive) | Canal secundar (GitHub) |
+|---|---|---|
+| Local → Cloud | `BRIDGE-DRIVE/TASKURI-PENTRU-CLOUD.md` | `QUEUE/TASKS-FOR-CLOUD.md` |
+| Cloud → Local | `BRIDGE-DRIVE/INTRARI-CLOUD/` | `cloud-ingest/` (**read-only** pentru Local) |
+| Consumat, închis | `BRIDGE-DRIVE/ISTORIC/` | `QUEUE/DONE/` (marcat `[x]`) |
+| Liber, cu cuvintele lui Popy | `BRIDGE-DRIVE/INTENTII.md` | `docs/INTENTII.md` |
+
+### 8.4 Precedența la coliziune
+
+Dacă același `TASK_ID` apare în ambele canale cu conținut diferit,
+**divergența e informație, nu defect** — ca în §4. Se scrie un fișier
+nou, `MAVIS-LOCAL-…`, care citește ambele și spune care e de citit. Nu se
+alege un câștigător și nu se șterge unul.
+
+### 8.5 Controlul automat, extins
+
+Verificarea pentru fișierele fără proprietar rămâne cea din §6, dar se
+aplică și pe folderul Drive:
+
+```bash
+git ls-files | grep -viE '(MAVIS-(LOCAL|CLOUD)|Mavis(Local|Cloud))' | grep -iE '(handoff|raport|state)'
+```
+
+**Orice ieșire e o încălcare.** Regula e aceeași pentru `BRIDGE-DRIVE/`:
+un document care nu poartă numele instanței care l-a scris nu aparține
+nimănui.
+
+---
+
+*2026-10-27 · Mavis Local · extindere aditivă pentru canalul Drive*

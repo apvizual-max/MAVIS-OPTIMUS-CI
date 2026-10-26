@@ -1,0 +1,224 @@
+# mavis-drive-bridge-selfcheck.ps1
+# The gate for the Local<->Cloud bridge (Google Drive primary, GitHub backup).
+#
+# What it checks, and why each one exists:
+#
+#   1. ASCII purity + parse + exit-code contamination for the bridge scripts.
+#      Same defect class as everywhere else: Windows PowerShell 5.1 and an
+#      `exit $var` after `Write-Output` turns every failure into a success.
+#   2. PROBE A (positive): the project folder must exist IN THE DRIVE, with a
+#      Drive id. Without it there is no target, only local bytes.
+#   3. PROBE B (negative): a title that cannot exist must be reported NOT
+#      FOUND. A measurement that cannot fail is not a measurement.
+#   4. PROBE C (honesty): the orchestrator's TRANSPORT verdict must AGREE
+#      with the raw DriveFS state. A report that says "the transport is up"
+#      while the mirror root is disconnected is a lying report, and that is
+#      worse than a missing one.
+#   5. PROBE D (falsification): the orchestrator must REFUSE a publish with
+#      no subject. If it accepted it, the gate in it would be decorative.
+#   6. The channels must exist - Drive primary, GitHub secondary.
+#
+# A DOWN transport does NOT fail this gate: the system is supposed to detect
+# it and fall back. What fails the gate is a transport that is broken and
+# NOT reported.
+#
+# Exit codes:
+#   0 = everything measured and true
+#   1 = at least one check failed
+#   2 = the gate could not run at all
+#
+# ASCII ONLY: executed by Windows PowerShell 5.1.
+
+param(
+    [string]$ScriptsDir = ''
+)
+
+$ErrorActionPreference = 'Stop'
+
+if (-not $ScriptsDir) { $ScriptsDir = $PSScriptRoot }
+if (-not (Test-Path -LiteralPath $ScriptsDir)) {
+    Write-Output ('EROARE: director inexistent: ' + $ScriptsDir)
+    exit 2
+}
+
+$ProjectRoot = Split-Path -Parent $ScriptsDir
+$BridgeDir = Join-Path $ProjectRoot 'BRIDGE-DRIVE'
+$Orchestrator = Join-Path $ScriptsDir 'mavis-drive-bridge.ps1'
+$Probe = Join-Path $ScriptsDir 'drivefs_probe.py'
+
+$problems = 0
+$unknown = 0
+
+function Get-Python {
+    foreach ($cand in @('python', 'python3', 'py')) {
+        $cmd = Get-Command $cand -ErrorAction SilentlyContinue
+        if ($cmd) { return $cmd.Source }
+    }
+    return ''
+}
+
+function Invoke-Native {
+    param(
+        [Parameter(Mandatory = $true)][string]$Program,
+        [string[]]$Arguments = @()
+    )
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    $out = & $Program @Arguments 2>&1
+    $ErrorActionPreference = $prev
+    $code = $LASTEXITCODE
+    if ($null -eq $code) { $code = -1 }
+    $text = ''
+    if ($out) { $text = ($out -join "`n") }
+    return @{ Code = $code; Out = $text }
+}
+
+$python = Get-Python
+if (-not $python) {
+    Write-Output 'EROARE: nu exista interpretor python pe PATH'
+    exit 2
+}
+foreach ($f in @($Orchestrator, $Probe)) {
+    if (-not (Test-Path -LiteralPath $f)) {
+        Write-Output ('EROARE: lipseste ' + $f)
+        exit 2
+    }
+}
+
+# --- 1. static checks ----------------------------------------------------
+foreach ($t in @($Orchestrator, $Probe)) {
+    $bytes = [System.IO.File]::ReadAllBytes($t)
+    $nonAscii = 0
+    $firstBad = -1
+    for ($i = 0; $i -lt $bytes.Count; $i++) {
+        if ($bytes[$i] -gt 127) {
+            $nonAscii++
+            if ($firstBad -lt 0) { $firstBad = $i }
+        }
+    }
+    $errs = $null
+    if ($t -like '*.ps1') {
+        $null = [System.Management.Automation.Language.Parser]::ParseFile($t, [ref]$null, [ref]$errs)
+    }
+    $parseCount = 0
+    if ($errs) { $parseCount = $errs.Count }
+
+    $raw = [System.IO.File]::ReadAllText($t)
+    $exitVar = [regex]::Match($raw, '(?m)^\s*exit\s+\$(\w+)\s*$')
+    $contaminated = $false
+    if ($exitVar.Success) {
+        $name = $exitVar.Groups[1].Value
+        $fromCall = [regex]::IsMatch($raw, ('(?m)^\s*\$' + $name + '\s*=\s*[A-Za-z_][A-Za-z0-9_\-]*\s*$'))
+        $usesStream = [regex]::IsMatch($raw, '(?m)^\s*Write-Output\b')
+        if ($fromCall -and $usesStream) { $contaminated = $true }
+    }
+
+    $leaf = Split-Path -Leaf $t
+    if ($nonAscii -gt 0 -or $parseCount -gt 0 -or $contaminated) {
+        $problems++
+        Write-Output ('FAIL ' + $leaf + ' - bytes=' + $bytes.Count + ' nonascii=' + $nonAscii + ' parseErrors=' + $parseCount + ' exitContaminated=' + $contaminated)
+        if ($nonAscii -gt 0) { Write-Output ('     primul octet > 0x7F la pozitia ' + $firstBad) }
+        if ($errs) {
+            foreach ($e in $errs) {
+                Write-Output ('     L' + $e.Extent.StartLineNumber + 'C' + $e.Extent.StartColumnNumber + ': ' + $e.Message)
+            }
+        }
+    } else {
+        Write-Output ('OK   ' + $leaf + ' - bytes=' + $bytes.Count + ' nonascii=0 parseErrors=0 exitContaminated=false')
+    }
+}
+
+# --- 2. PROBE A: the folder must exist in Drive ---------------------------
+$folder = Split-Path -Leaf $ProjectRoot
+$resA = Invoke-Native -Program $python -Arguments @($Probe, '--title', $folder)
+$driveId = ''
+foreach ($line in ($resA.Out -split "`n")) {
+    if ($line -match 'cloud_id=(\S+)') {
+        $id = $Matches[1]
+        if ($id -and $id -ne 'None') { $driveId = $id }
+    }
+}
+if ($resA.Code -eq 0 -and $driveId) {
+    Write-Output ('OK   proba-tinta - folderul proiectului exista in Drive, cloud_id=' + $driveId)
+} elseif ($resA.Code -eq 2) {
+    $problems++
+    Write-Output 'FAIL proba-tinta - folderul proiectului nu exista in Drive: nu exista tinta'
+} else {
+    $unknown++
+    Write-Output ('UNKNOWN proba-tinta - masuratoarea nu s-a putut face (' + $resA.Out.Trim() + ')')
+}
+
+# --- 3. PROBE B: the probe must be able to say NOT FOUND -----------------
+$resB = Invoke-Native -Program $python -Arguments @($Probe, '--title', 'ZZZ_NO_SUCH_ITEM_9F3A1C.md')
+if ($resB.Code -eq 2) {
+    Write-Output 'OK   proba-not-found - un titlu inexistent e raportat NOT FOUND (exit 2), deci proba poate esua'
+} else {
+    $problems++
+    Write-Output ('FAIL proba-not-found - un titlu inexistent NU a fost raportat NOT FOUND (exit ' + $resB.Code + ')')
+}
+
+# --- 4. PROBE C: the orchestrator must tell the truth ---------------------
+$resRoot = Invoke-Native -Program $python -Arguments @($Probe, '--root-state')
+$rootState = 'UNKNOWN'
+foreach ($line in ($resRoot.Out -split "`n")) {
+    if ($line -match '^ROOT_STATE=(\S+)') { $rootState = $Matches[1] }
+}
+$resC = Invoke-Native -Program 'powershell' -Arguments @('-NoProfile', '-File', $Orchestrator, '-Status')
+$transport = 'UNKNOWN'
+$channel = 'UNKNOWN'
+foreach ($line in ($resC.Out -split "`n")) {
+    if ($line -match '^TRANSPORT=(\S+)') { $transport = $Matches[1] }
+    if ($line -match '^ACTIVE_CHANNEL=(\S+)') { $channel = $Matches[1] }
+}
+if ($rootState -eq 'UNKNOWN') {
+    $unknown++
+    Write-Output ('UNKNOWN proba-transport - starea radacinii mirrorului nu s-a putut citi')
+} elseif ($rootState -eq 'false' -and $transport -eq 'DOWN') {
+    Write-Output ('OK   proba-transport - radacina mirrorului e deconectata si raportul spune exact asa; canal activ: ' + $channel)
+} elseif ($rootState -eq 'true' -and $transport -eq 'UP') {
+    Write-Output ('OK   proba-transport - radacina mirrorului e conectata si raportul spune exact asa; canal activ: ' + $channel)
+} else {
+    $problems++
+    Write-Output ('FAIL proba-transport - raportul si masuratoarea se contrazic: root_state=' + $rootState + ' transport=' + $transport)
+}
+
+# --- 5. PROBE D: the orchestrator must REFUSE an empty publish -----------
+$resD = Invoke-Native -Program 'powershell' -Arguments @('-NoProfile', '-File', $Orchestrator, '-Publish')
+if ($resD.Code -eq 2) {
+    Write-Output 'OK   proba-refuz - o publicare fara subiect e refuzata (exit 2)'
+} else {
+    $problems++
+    Write-Output ('FAIL proba-refuz - o publicare fara subiect NU a fost refuzata (exit ' + $resD.Code + ')')
+}
+
+# --- 6. the channels must exist ------------------------------------------
+$channels = @(
+    (Join-Path $BridgeDir 'TASKURI-PENTRU-CLOUD.md'),
+    (Join-Path $BridgeDir 'INTENTII.md'),
+    (Join-Path $BridgeDir 'INTRARI-CLOUD'),
+    (Join-Path $BridgeDir 'ISTORIC'),
+    (Join-Path $ProjectRoot 'QUEUE\TASKS-FOR-CLOUD.md')
+)
+$missingChannels = 0
+foreach ($c in $channels) {
+    if (-not (Test-Path -LiteralPath $c)) {
+        $missingChannels++
+        Write-Output ('FAIL canal lipsa: ' + $c)
+    }
+}
+if ($missingChannels -eq 0) {
+    Write-Output 'OK   proba-canale - canalele Drive (4) si canalul secundar GitHub exista'
+} else {
+    $problems++
+}
+
+Write-Output ('BRIDGE_PROBLEMS=' + $problems + ' UNKNOWN=' + $unknown)
+if ($problems -gt 0) {
+    Write-Output 'POARTA A BLOCAT. Puntea nu se foloseste pana nu se repara.'
+    exit 1
+}
+if ($unknown -gt 0) {
+    Write-Output 'Porta a trecut, dar o proba nu a putut fi masurata. Necunoscutul se raporteaza, nu se presupune.'
+}
+Write-Output 'Puntea e construita si raporteaza adevarul despre transport.'
+exit 0

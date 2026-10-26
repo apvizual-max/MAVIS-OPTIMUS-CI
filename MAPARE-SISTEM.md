@@ -103,4 +103,66 @@ C:\Users\apviz\.minimax-agent\projects\Mavis-Optimus-Continuous-Development\
 
 **Nu ne atingem.** CD nu scrie în `MAVIS-CLOUD`; CI nu rulează triajul.
 
+---
+
+## Topologia măsurată — 2026-10-27
+
+> **Aditiv.** Nimic din arborele de mai sus nu se mută și nu se șterge.
+> Secțiunea de jos reflectă **unde stă tot ACUM**.
+
+### Sursa fizică
+
+```
+E:\Google\GDrive\GDrive-Second_Brain_PKMS\02_Areas\02-2-AI-SOT\CASA\OPTIMUS - Prime\Optimus_CI (by Mavis)\
+├── .git                          ← FIȘIER (worktree link) → E:\Google\GitData-Optimus-CI
+├── README.md · DOCTRINA-CI.md · MAPARE-SISTEM.md
+├── BRIDGE-DRIVE\                ← PUNTEA PRIMARĂ (Google Drive)
+│   ├── README-BRIDGE-DRIVE.md   protocolul
+│   ├── TASKURI-PENTRU-CLOUD.md  Local → Cloud, structurat
+│   ├── INTENTII.md              Popy → Cloud, liber
+│   ├── INTRARI-CLOUD\           Cloud → Local
+│   └── ISTORIC\                 consumate: se mută, nu se șterg
+├── QUEUE\                        ← canalul SECUNDAR (GitHub)
+│   └── TASKS-FOR-CLOUD.md
+├── docs\        documentația de proiect
+├── scripts\     mavis-sync.ps1 · run-sync-logged.ps1 · meta-prompt.ps1
+│                notebooklm-cdp.mjs · snapshot-vault.ps1
+│                drivefs_probe.py · mavis-drive-bridge.ps1
+│                mavis-drive-bridge-selfcheck.ps1
+├── blueprint\ · cloud-ingest\ (read-only) · logs\ · state\ (ignorat de git)
+```
+
+### Joncțiunile
+
+| Acces rapid | Sursa fizică |
+|---|---|
+| `C:\Users\apviz\.minimax-agent\projects\Optimus_CI (by Mavis)` | folderul de pe `E:` de mai sus |
+| `C:\Users\apviz\.minimax-agent\projects\Optimus_CD (by Jules)` | `E:\…\CASA\OPTIMUS - Prime\Optimus_CD (by Jules)` |
+
+**Calea veche** `…\projects\Mavis-Optimus-Continuous-Integration\` **nu mai
+există** — mutată pe `E:` la consolidarea din 2026-10-25, cu joncțiune în
+loc. Nimic nu s-a pierdut: istoricul e în `E:\Google\GitData-Optimus-CI`.
+
+### Ce e nou în CI (2026-10-27)
+
+| Ce | Unde | De ce |
+|---|---|---|
+| Puntea Drive (primară) | `BRIDGE-DRIVE\` | ambele instanțe au acces la Drive |
+| Canal secundar | `QUEUE\TASKS-FOR-CLOUD.md` | rezervă, scris simultan |
+| Măsurătorul Drive | `scripts\drivefs_probe.py` | singura sursă de adevăr, API-ul e rupt |
+| Orquestratorul punții | `scripts\mavis-drive-bridge.ps1` | scrie **și** măsoară |
+| Poarta punții | `scripts\mavis-drive-bridge-selfcheck.ps1` | 6 probe, poate eșua |
+| Starea de azi | `docs\STARE-MASURATA-CI-2026-10-27.md` | cifre + metode |
+| Snapshot remote | `docs\STARE-MAVIS-OPTIMUS-CI-REMOTE.md` | alt AI lucrează acolo |
+| Specificația punții | `docs\PUNTE-DRIVE-PRIMARA.md` | arhitectura + latența |
+
+### Topologia Drive, corectată
+
+| Ce | Stare măsurată |
+|---|---|
+| Mirrorul | `E:\Google\GDrive\` (rădăcină `Google\GDrive`, `root_id=23`, MIRROR) |
+| **`G:`** | **nu** e mount virtual — volum fix, cu scurtătură `My Drive.lnk` → `E:\Google\GDrive` |
+| DriveFS | rulează; startup 2026-10-26 22:43 |
+| Folderul CI în Drive | `cloud_id 1V87h9Pbw52chSVNkxQ_NNuMh-CLfZeuI` |
+
 Conventția care explică tot: `docs/ARHITECTURA-CI-CD.md`.

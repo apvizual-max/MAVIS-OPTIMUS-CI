@@ -134,7 +134,13 @@ aprobă nimic tehnic.
 **Poarta pre-commit** citește **index-ul**, nu arborele de lucru:
 
 ```
-powershell -NoProfile -File scripts\jules-scan-staged.ps1 -RepoPath <repo>
+powershell -NoProfile -File scripts\scan-staged-secrets.ps1 -RepoPath <repo>
+
+> **Reparat 2026-10-27.** Comanda de mai sus indica `jules-scan-staged.ps1`,
+> care a plecat în CD odată cu platforma Jules — **în CI nu mai există**, iar
+> procedura indica un fișier dispărut. CI are acum **scannerul propriu**:
+> `scripts\scan-staged-secrets.ps1`, cu auto-proba
+> `scripts\scan-staged-secrets-selfcheck.ps1`.
 ```
 
 | Cod | Ce înseamnă |
@@ -143,13 +149,65 @@ powershell -NoProfile -File scripts\jules-scan-staged.ps1 -RepoPath <repo>
 | `1` | cel puțin un `BLOCK` |
 | `2` | poarta nu a putut citi index-ul |
 
-Ce blochează: secrete, emailuri necanonice, brandul interzis, căi de date
-personale. Ce doar avertizează: numere de telefon (e decizia de politică a
-lui Popy).
+**Ce blochează scannerul din CI:** secrete — forme fixe (cheie privată, cheie
+AWS, token GitHub, cheie Google API, cheie OpenAI, token Slack, token
+Telegram, JWT) și atribuiri cu valoare (`api_key = "..."` și rude).
+**Ce doar avertizează:** valori-c substituent (`your-key-here`, `changeme`,
+`<TOKEN_AICI>`).
+
+**Ce NU mai blochează aici:** emailuri necanonice, brandul interzis, căi de
+date personale. Verificările astea aparțineau scannerului din platforma
+Jules, care a plecat în CD, și vizează **build-ul de portofoliu din
+`MAVIS-CLOUD`** (`SITE/`), nu repo-ul CI. Acolo ele rămân o **regulă de
+revizuire**, nu o poartă automată: verificarea e făcută de platforma CD,
+care deține scannerul.
 
 **Regulă, nu excepție:** într-un lanț de porți, codul de ieșire al unei porți
 trebuie să fie **propriu**, nu mostenit. O poartă fără `exit` are o valoare
 moștenită, iar verdictul ei aparține porții precedente.
+
+### 4.1 Topologia hook-urilor — măsurată 2026-10-27
+
+| Repo | `core.hooksPath` (local) | Hook-uri |
+|---|---|---|
+| **CI** | `E:/Google/GitData-Optimus-CI/hooks` | `pre-commit` (scanner) + `pre-push` (**delegat**) |
+| **CD** | `C:/Users/apviz/.minimax-agent/projects/scripts/git-hooks` | `pre-push` (definiția comună) |
+
+**De ce CI are director propriu, dar nu copiază poarta de push:** definiția
+porții R0 rămâne **una singură**, partajată cu CD — două copii se pot
+diverga. Hook-ul `pre-push` din CI **delegă** (`exec sh <poarta-comună>`), nu
+copiază. Dacă poarta comună nu poate fi atinsă, push-ul e **refuzat**: o
+poartă care pică deschis nu e poartă.
+
+**Ce câștigă CI:** `pre-commit` — o poartă de secrete care rulează la **fiecare**
+commit, fără să poată fi ocolită printr-un flag. O poartă în prohă sau
+într-un switch pe care eu îl pot pasa nu e o poartă.
+
+### 4.2 Falsificarea întregului lanț — măsurată 2026-10-27
+
+Repo de probă izolat în `state/tmp/`, remote = repo bare local. **Nu s-a
+atingut GitHub și nici repo-ul real.**
+
+| Probă | Așteptat | Măsurat |
+|---|---|---|
+| commit curat | permis | **exit 0** ✓ |
+| commit cu cheie plantată | **refuzat** | **exit 1**, `BLOCKS=1`, `aws-access-key-id` ✓ |
+| secretul în istoric după refuz | absent | **absent** ✓ |
+| push fără `PUSH-ACORD` | **refuzat** | **exit 1**, mesajul porții comune ✓ |
+| push cu `PUSH-ACORD` | permis | **exit 0** ✓ |
+
+Verdict: `GATE_PROBLEMS=0`, **EXIT 0**.
+
+**Defect măsurat și reparat în acest proces:** scannerul arunca excepție
+pe un fișier cu **linii goale** — un parametru `[string[]]` obligatoriu
+respinge șirul vid. Excepția ieșea cu **1**, adică *acuză* un bloc care nu
+exista: poarta bloca un fișier fără niciun secret. Reparat: `AllowEmptyString`
+pe parametru, plus `try/catch` în jurul scanării, unde o excepție dă
+**2 (eroare)**, niciodată **1 (bloc)**. O poartă care *acuză* trebuie să
+dovedească imputabilitatea; o aruncare nu e o dovadă.
+
+Proba de regresie: `proba-linii-goale` în `scan-staged-secrets-selfcheck.ps1`
+— trebuie să dea `EXIT 0` cu `SCAN_OK`.
 
 ---
 

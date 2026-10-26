@@ -144,3 +144,54 @@ fără acord — pentru că poarta exista doar ca un switch într-un script.
 
 **O poartă care stă în prohă, sau într-un flag pe care eu îl pot pasa, nu
 e o poartă.**
+
+---
+
+## 9. Cele două canale, și cum se alege între ele
+
+> **Aditiv.** Nu rescrie nimic de mai sus. Măsurat 2026-10-27.
+
+### 9.1 Principiul
+
+**Puntea Local↔Cloud are două guri, și se scrie în ambele de fiecare dată.**
+
+| | Canal primar | Canal secundar |
+|---|---|---|
+| Unde | folder Google Drive (`BRIDGE-DRIVE/`) | repo GitHub (`QUEUE/TASKS-FOR-CLOUD.md`) |
+| Cine-l scrie | Local | Local |
+| Cine-l citește | Cloud | Cloud |
+| Latency | **≈ 80 min**, măsurat | câteva minute + R0 la push |
+| Pierdere de date | **niciuna** — ambele sunt scrise | niciuna |
+
+### 9.2 De ce se scrie în ambele
+
+Fiindcă **nu aleg canalul în funcție de sănătatea lui**. Aleg în funcție de
+**ce cere cerința**: dacă răspunsul trebuie acum, merge pe GitHub; dacă
+nu, merge pe Drive. Și scriu în ambele, ca o cădere a unui canal să nu
+lase nimic în aer.
+
+### 9.3 „Publicat" înseamnă măsurat
+
+Nu declar nimic pe baza scrierii în fișier. Verific în indicele Drive și
+raportez `SYNCED` / `PENDING` / `NOT_UPLOADED` / `UNVERIFIED`.
+
+**`UNVERIFIED` nu e succes.** E unknown, și se raportează ca unknown.
+
+### 9.4 Ce NU fac în această sesiune
+
+- **Nu ating platforma Jules, Live Review, triajul PR-urilor.** Sunt ale
+  sesiunii CD. Fiecare document trăiește în folderul sistemului pe care îl
+  guvernează.
+- **Nu rescriu skillurile existente.** Le **completez**, aditiv. Un skill
+  trunchiat e o regulă pierdută.
+- **Nu împing fără R0**, nici pe repo-ul pe care alt AI lucrează acum.
+
+### 9.5 Regula pentru canal
+
+```
+Ceres urgent          → GitHub (secundar), apoi și pe Drive.
+Ceres fără urgență     → Drive (primar), apoi și pe GitHub.
+Că transportul cade   → ambele sunt deja scrise. Nu se reia nimic.
+```
+
+Detalii și măsurători: `docs/PUNTE-DRIVE-PRIMARA.md`.

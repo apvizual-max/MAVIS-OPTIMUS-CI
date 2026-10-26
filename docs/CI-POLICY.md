@@ -138,3 +138,99 @@ Instanța Cloud nu are rol în CD.
 - **Zero cifre nereproductibile.** Tot ce se raportează e măsurat acum.
 - **Un verdict care acuză trebuie să dovedească imputabilitatea.**
 - **Instrument lipsă ≠ test picat** → `NO_MEASUREMENT`.
+
+---
+
+## 6. Puntea Drive — canalul primar
+
+> **Aditiv.** Nu rescrie §1. §1 descrie în continuare **canalul secundar**,
+> care rămâne viu și măsurat. Asta adaugă canalul **primar**.
+
+### 6.1 Principiul
+
+**Canalul primar e un folder Google Drive.** Local scrie în el; DriveFS îl
+sincronizează; Cloud-ul — care are acces la Drive — vede aceiași octeți.
+Fără server, fără webhook, fără API în cale.
+
+### 6.2 Unde
+
+| | |
+|---|---|
+| Folder | `BRIDGE-DRIVE/` |
+| Calea în Drive | `My Drive > GDrive-Second_Brain_PKMS > 02_Areas > 02-2-AI-SOT > CASA > OPTIMUS - Prime > Optimus_CI (by Mavis)` |
+| `cloud_id` | `1V87h9Pbw52chSVNkxQ_NNuMh-CLfZeuI` |
+
+### 6.3 Cele patru canale
+
+| Canal | Scrie | Citește |
+|---|---|---|
+| `TASKURI-PENTRU-CLOUD.md` | Local | Cloud |
+| `INTENTII.md` | Popy | Cloud |
+| `INTRARI-CLOUD/` | Cloud | Local |
+| `ISTORIC/` | Local (mutare) | — |
+
+### 6.4 Politica
+
+1. **Se scrie în ambele canale, la aceeași publicare.** Nu „dacă primul
+   cade" — pentru că atunci pierzi timp exact când transportul e bolnav.
+2. **Publicat = măsurat.** `SYNCED` / `PENDING` / `NOT_UPLOADED` /
+   `UNVERIFIED`. **`UNVERIFIED` nu e succes.**
+3. **Nu se suprascrie nimic.** Corecția = fișier nou.
+4. **Nu se șterge nimic.** Mutare în `ISTORIC/`.
+5. **Latency e măsurată, nu presupusă** — ≈ 80 min, măsurat 2026-10-27.
+   Cerințele urgente merg pe canalul secundar.
+
+### 6.5 Poarta
+
+```powershell
+powershell -NoProfile -File scripts\mavis-drive-bridge-selfcheck.ps1
+```
+
+Șase probe: static, ținta în Drive, NOT FOUND (proba poate eșua), **verificul
+că raportul și măsurătoarea se contrazic**, refuzul unei publicări fără
+subiect, și existența canalelor. Măsurat: `BRIDGE_PROBLEMS=0 UNKNOWN=0`,
+EXIT 0.
+
+Detalii: `docs/PUNTE-DRIVE-PRIMARA.md`.
+
+---
+
+## 7. Poarta de secrete la commit
+
+**Măsurat 2026-10-27.** Repo-ul CI e **public**. Deci poarta de secrete
+trebuie să fie în **hook**, nu într-un switch: o poartă în prohă sau
+într-un flag pe care eu îl pot pasa nu e o poartă.
+
+### Instrumentul
+
+`scripts\scan-staged-secrets.ps1` — citește **index-ul**, nu arborele de
+lucru. Rulează automat la **fiecare** commit, prin hook-ul `pre-commit` din
+`E:\Google\GitData-Optimus-CI\hooks`.
+
+| Cod | Ce înseamnă |
+|---|---|
+| `0` | `BLOCKS=0` · `SCAN_OK` |
+| `1` | cel puțin un `BLOCK` — commitul e **refuzat** |
+| `2` | scanarea **nu a putut rula** — commitul e refuzat, dar verdictul e „eroare", nu „bloc" |
+
+**O excepție nu e un bloc.** O poartă care *acuză* trebuie să dovedească
+imputabilitatea: `2` înseamnă „nu am putut măsura", nu „ai un secret".
+
+### Auto-proba
+
+`scripts\scan-staged-secrets-selfcheck.ps1` — 7 probe, în ambele sensuri:
+o cheie plantată e **blocată** · o cheie privată e **blocată** · un
+placeholder **nu** e blocat · liniile goale **nu** aruncă excepție ·
+scannerul **nu** se blochează pe propriul cod · indexul real al repo-ului
+e curat.
+
+Măsurat: `SECRET_PROBLEMS=0 UNKNOWN=0`, **EXIT 0**.
+
+### Lanțul, falsificat
+
+`state\probe-gate-chain.ps1` — repo de probă izolat, remote bare local,
+**GitHub neatins**. Rezultat: `GATE_PROBLEMS=0`, **EXIT 0** — commit curat
+permis · commit cu secret refuzat · secret **absent** din istoric · push
+fără acord refuzat · push cu acord permis.
+
+Detalii: `docs/GIT-GITHUB-PROCEDURI.md` §4.1–§4.2.

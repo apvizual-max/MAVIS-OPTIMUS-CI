@@ -139,3 +139,33 @@ blocat de poarta R0.
 `exit_pull=0`, `local_dupa == remote`, `impingere=NEEXECUTATA`.
 
 Cifrele complete: `docs/STARE-MASURATA-CI.md`.
+
+---
+
+## Puntea Drive — canalul primar (din 2026-10-27)
+
+> **Aditiv.** Nimic din secțiunile de mai sus nu se rescrie.
+
+| | |
+|---|---|
+| **Canal primar** | **Google Drive** — folderul `BRIDGE-DRIVE/`, în mirrorul `E:\Google\GDrive\` |
+| **Canal secundar** | GitHub — `QUEUE/TASKS-FOR-CLOUD.md` |
+| Folderul proiectului | `E:\Google\GDrive\…\CASA\OPTIMUS - Prime\Optimus_CI (by Mavis)` |
+| Joncțiune pe C: | `C:\Users\apviz\.minimax-agent\projects\Optimus_CI (by Mavis)` |
+| cloud_id în Drive | `1V87h9Pbw52chSVNkxQ_NNuMh-CLfZeuI` |
+| Lag de propagare | **≈ 80 min**, măsurat |
+
+**Ce s-a schimbat:** canalul principal nu mai e repo-ul GitHub, ci un
+folder Google Drive pe care ambele instanțe îl văd. GitHub rămâne, ca
+**rezervă** — și e scris la publicare, nu doar când primul canal cade.
+
+**Măsurătorile**:
+```powershell
+powershell -NoProfile -File scripts\mavis-drive-bridge.ps1 -Status
+powershell -NoProfile -File scripts\mavis-drive-bridge-selfcheck.ps1
+```
+
+Detalii: `docs/PUNTE-DRIVE-PRIMARA.md` · `docs/STARE-MASURATA-CI-2026-10-27.md`
+
+**Observație de guvernanță:** repo-ul `MAVIS-OPTIMUS-CI` e lucrat acum de
+sesiunea CD. Noi ținem copia și referința — `docs/STARE-MAVIS-OPTIMUS-CI-REMOTE.md`.

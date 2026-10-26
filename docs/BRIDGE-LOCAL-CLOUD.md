@@ -52,6 +52,10 @@ ajungă pe GitHub fără acordul lui.
 
 Cloud citește ambele și livrează în `QUEUE/DONE/`, marcând `[x]`.
 
+> **Actualizare 2026-10-27:** canalul de mai sus devine **secundar**.
+> Canalul **primar** e Google Drive — vezi secțiunea „Canalul primar —
+> Google Drive" la finalul acestui document.
+
 ---
 
 ## Comanda unică, pentru orice agent fără memorie
@@ -147,3 +151,79 @@ martor `PUSH-ACORD`, probat în ambele sensuri.
 Cloud a propus `mavis-sync.sh` cu `git push` în buclă. **Nu a fost construit
 așa**, pentru că acolo ocolește poarta R0. Detalii în
 `docs/CONFLICTE-DOZTRINA.md` C7.
+
+---
+
+## Canalul primar — Google Drive (măsurat 2026-10-27)
+
+### Motiv
+
+Repo-ul GitHub a rămas **secundar**, din două măsurători, nu din preferință:
+
+1. **Divergența măsurată** — local `83b6139` vs remote `3da55ff`:
+   **12 commituri înainte / 5 înapoi**. Cele 5 remote sunt lucrarea CD.
+   Un canal care cere rebaza manual înainte de fiecare publicare nu poate
+   fi canalul primar.
+2. **Poziția fizică a sursei** — sursa CI a fost mutată pe `E:`, **în chiar
+   mirrorul Google Drive**. Local ↔ Cloud au *același* sistem de fișiere
+   la capete diferite. Nu mai e nevoie de `git push` ca să existe
+   handoff-ul: e suficient să scrii în folder.
+
+În plus, ambele instanțe au acces la Drive. **Costul măsurat al canalului
+primar e latența: ≈ 80 min** — acceptabil pentru handoff, inacceptabil ca
+singurul canal, motiv pentru care GitHub rămâne în paralel.
+
+### Topologia canalului
+
+```
+E:\Google\GDrive\GDrive-Second_Brain_PKMS\02_Areas\02-2-AI-SOT\CASA\
+    OPTIMUS - Prime\Optimus_CI (by Mavis)\BRIDGE-DRIVE\
+        ├── README-BRIDGE-DRIVE.md   ← protocolul canalului
+        ├── INTENTII.md              ← cerințe libere (Mavis Cloud → Local)
+        ├── TASKURI-PENTRU-CLOUD.md  ← cerințe structurate (Local → Cloud)
+        ├── INTRARI-CLOUD\           ← ce livresează Cloud
+        └── ISTORIC\                 ← ce a fost consumat
+```
+
+Folderul CI în Drive: `cloud_id 1V87h9Pbw52chSVNkxQ_NNuMh-CLfZeuI`.
+Lanț: `My Drive > GDrive-Second_Brain_PKMS > 02_Areas > 02-2-AI-SOT > CASA >
+OPTIMUS - Prime > Optimus_CI (by Mavis)`.
+
+### Cele patru reguli ale canalului
+
+1. **Se scrie în ambele canale la aceeași publicare**, cu același `TASK_ID`.
+   Nu „întâi primul, apoi secundarul dacă primul cade".
+2. **„Publicat" înseamnă măsurat.** Scriptul nu declară nimic pe baza
+   scrierii — verifică indicele Drive și raportează `SYNCED` / `PENDING` /
+   `NOT_UPLOADED` / `UNVERIFIED`. **`UNVERIFIED` nu e succes.**
+3. **Transportul căzut nu blochează sistemul.** Poarta cere ca raportul să fie
+   *concordant* cu măsurătoarea, nu ca transportul să fie UP. Când Drive
+   e căzut, canalul activ trece pe GitHub.
+4. **Nu se re-autentifică DriveFS și nu se reconsentează tokenul unilateral.**
+   E o decizie pe mașina lui Popy, cu posibilitatea de a cere re-login.
+
+### Instrumentele
+
+| Instrument | Ce face |
+|---|---|
+| `scripts/mavis-drive-bridge.ps1` | `-Status` · `-Publish` · `-Verify`; scrie pe ambele canale; raportează `SYNCED/PENDING/NOT_UPLOADED/UNVERIFIED` + `PROPAGATION_LAG_MIN` |
+| `scripts/drivefs_probe.py` | `--title` · `--newest` · `--root-state` · `--pending` — citire read-only din baza locală DriveFS |
+| `scripts/mavis-drive-bridge-selfcheck.ps1` | poarta: 6 probe, inclusiv „raportul și măsurătoarea se contrazic" și „NOT FOUND" |
+
+### Starea punții, măsurată
+
+| Măsurătoare | Rezultat |
+|---|---|
+| Poarta punții | `BRIDGE_PROBLEMS=0 UNKNOWN=0`, **EXIT 0** |
+| Rădăcina mirrorului | `root_id=23`, `sync_type=MIRROR`, `connected=true` |
+| Operațiuni în așteptare | `PENDING_OPERATIONS=0` |
+| Latență propagare | **≈ 80 min** (scriere 22:11 → în Drive 23:31) |
+| Rutele de API | `gdrive-mcp` `invalid_grant` · `verify-drive.js` FAILED (EXIT 2) · `gcloud` ADC **403** |
+
+**Sursa de adevăr pentru Drive e baza locală DriveFS**
+(`metadata_sqlite_db`, 422 932 480 B, read-only) — pentru că rutele de API
+sunt rupte. `mirror_metadata_sqlite_db` (2 278 027 264 B) e **blocată** de
+DriveFS, inclusiv cu `immutable=1`.
+
+Detalii complete: `docs/PUNTE-DRIVE-PRIMARA.md`,
+`docs/STARE-MASURATA-CI-2026-10-27.md`, `docs/ARHITECTURA-CI-CD.md` §8–§9.
