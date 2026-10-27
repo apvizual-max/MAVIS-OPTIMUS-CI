@@ -1,0 +1,30 @@
+﻿# 00_INDEX — 02_Areas/02-2-AI-SOT/CASA/OPTIMUS - Prime/Optimus_CI (by Mavis)/BRIDGE-DRIVE
+
+**3 fișiere · 14 KB · 2 subfoldere**
+
+> Generat automat de `02_Areas/02-2-AI-SOT/02-2-1-AI-Kit/AI-Kit_manual/build-index.ps1` și `align-index.ps1`. Nu edita manual — rulează scriptul din nou.
+> Randul **De ce e aici** de mai sus, daca exista, se pastreaza la fiecare regenerare.
+
+## Ce e aici
+
+Singura extensie prezentă e `.md` (3 din 3 fișiere). 2 rafturi copil: `INTRARI-CLOUD`, `ISTORIC`; cel mai mare element din folder e `TASKURI-PENTRU-CLOUD.md` (9 KB)
+
+## Cuvinte cheie
+
+`BRIDGE-DRIVE` · `TASKURI` · `PENTRU` · `CLOUD` · `.md`
+
+## Subfoldere
+
+_Fiecare raft e legat la indexul lui. Un index care nu e legat nu e în arbore._
+
+- [`INTRARI-CLOUD`](<INTRARI-CLOUD/00_INDEX.md>) — 2 fișiere · 0 subfoldere
+- [`ISTORIC`](<ISTORIC/00_INDEX.md>) — 2 fișiere · 0 subfoldere
+
+## Fișiere
+
+| Fișier | Dimensiune | Modificat |
+|---|---|---|
+| `INTENTII.md` | 497 B | 2026-10-27 |
+| `README-BRIDGE-DRIVE.md` | 5 KB | 2026-10-27 |
+| `TASKURI-PENTRU-CLOUD.md` | 9 KB | 2026-10-27 |
+

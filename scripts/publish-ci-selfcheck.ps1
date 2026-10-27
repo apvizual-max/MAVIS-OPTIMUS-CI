@@ -333,10 +333,39 @@ if ($junctionMade) {
 }
 
 # --- 5. the REAL repository, dry run only: the real remote must not move ---
+# The publisher REFUSES a tree with uncommitted changes to tracked files
+# (exit 2, by design - a merge on top of uncommitted work is a result nobody
+# can attribute). So the expected exit code depends on the state of the tree
+# AT THE MOMENT of the probe, not on the publisher being broken.
+#
+# MEASURED 2026-10-27: this probe hardcoded "exit 0", so the gate went RED
+# with a perfectly correct publisher - it fired whenever the operator had
+# uncommitted changes in the tree. A gate that blocks for a reason it does not
+# own is a gate that trains people to ignore it.
+#
+# The invariant that actually matters is asserted in BOTH branches: the real
+# remote must not move. And in the dirty branch the publisher must refuse
+# (exit 2) - that refusal IS the safety property.
+$realStatusOut = (Invoke-Git -WorkingDirectory $RealRoot -Arguments @('status', '--porcelain')).Out
+$realTrackedDirty = @()
+foreach ($l in @($realStatusOut -split "`r?`n")) {
+    $s = $l.TrimEnd()
+    if (-not $s.Trim()) { continue }
+    if ($s.StartsWith('??')) { continue }
+    $realTrackedDirty += $s.Trim()
+}
 $realRemote = (Invoke-Git -WorkingDirectory $RealRoot -Arguments @('ls-remote', 'origin', 'refs/heads/main')).Out.Trim()
 $r5 = Invoke-Publisher -RepoPath $RealRoot
 $realRemoteAfter = (Invoke-Git -WorkingDirectory $RealRoot -Arguments @('ls-remote', 'origin', 'refs/heads/main')).Out.Trim()
-Test-Probe -Label 'repo-ul real, doar dry run -> exit 0, remote-ul real neatins' -Ok (($r5.Code -eq 0) -and ($realRemote -eq $realRemoteAfter)) -Detail ('exit=' + $r5.Code + ' | remote_neschimbat=' + ($realRemote -eq $realRemoteAfter))
+$remoteUnchanged5 = ($realRemote -eq $realRemoteAfter)
+if ($realTrackedDirty.Count -gt 0) {
+    $ok5 = (($r5.Code -eq 2) -and $remoteUnchanged5)
+    $label5 = 'repo-ul real cu arbore murdar -> refuz corect (exit 2), remote-ul real neatins'
+} else {
+    $ok5 = (($r5.Code -eq 0) -and $remoteUnchanged5)
+    $label5 = 'repo-ul real, doar dry run -> exit 0, remote-ul real neatins'
+}
+Test-Probe -Label $label5 -Ok $ok5 -Detail ('exit=' + $r5.Code + ' | remote_neschimbat=' + $remoteUnchanged5 + ' | fisierele_urmarite_modificate=' + $realTrackedDirty.Count)
 
 # --- 6. STATIC: no script-scope variable may shadow a parameter ------------
 $hits = @(Get-ParameterShadowing -Path $Publisher)
