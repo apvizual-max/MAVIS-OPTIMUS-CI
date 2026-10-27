@@ -44,3 +44,11 @@ state/
 # la prima rulare. Masurat 2026-10-27 - un .pyc a ajuns in index la comit.
 __pycache__/
 *.pyc
+
+# chats/ = transcrierile sesiunilor de lucru (ex. sesiunea de setup Google
+# cu Mavis Cloud) care au aterizat in radacina proiectului.
+# NU se comite: MAVIS-OPTIMUS-CI este PUBLIC, iar o transcriere de sesiune
+# contine context personal, nu continut de sistem. Artefactele de setup sunt
+# deja in repo-ul operational (MAVIS-CLOUD/mavis-tools/), deci nimic nu se
+# pierde prin necomitare.
+chats/

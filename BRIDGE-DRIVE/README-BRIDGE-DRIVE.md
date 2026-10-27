@@ -54,6 +54,23 @@ vede care e activă.
 | `INTRARI-CLOUD/` | Cloud | Local | `RASPUNS-MAVIS-CLOUD-<data>-<ora>.md` |
 | `ISTORIC/` | Local | — | task consumat, **mutat** |
 
+**Cine arhivează — rezolvat pe fapte (2026-10-27).** Protocolul spunea în două
+locuri diferite: antetul acestui folder și antetul lui
+`TASKURI-PENTRU-CLOUD.md` spuneau „Cloud-ul mută secțiunea consumată", iar
+tabelul de mai sus spunea „Local". Cloud-ul a citit antetul, a răspuns corect
+și a scris în raport: *„Nu am mutat nimic în ISTORIC/ — mutarea e sarcina
+mea"* (Local). **Regula, care acum e într-un singur loc:** Cloud-ul **marchează**
+ce a consumat; Local **mută** secțiunea în `ISTORIC/`, cu conținutul păstrat
+integral. Ticheta rămâne activă în coada secundară până când Cloud-ul o trece
+în `QUEUE/DONE/` — pentru că poarta cere ca fiecare `TASK_ID` din coadă să
+apară și în canalul primar, iar amputarea lui ar stinge poarta.
+
+**De ce nu se scoate secțiunea din canalul primar:** invariantul de paritate
+(`scripts/queue-contract-check.ps1`, proba „același TASK_ID în ambele canale")
+cer ca fiecare tichetă din coadă să fie prezentă și în
+`TASKURI-PENTRU-CLOUD.md`. Deci arhivarea înseamnă **arhivă + marcaj**, nu
+amputare.
+
 **Convenția de denumire a instanțelor** rămâne cea din
 `docs/PROTOCOL-DENUMIRE-LOCAL-CLOUD.md`: `MAVIS-LOCAL-*` / `MAVIS-CLOUD-*`.
 Un document fără prefix nu aparține nimănui — și e o lipsă de prefix.
