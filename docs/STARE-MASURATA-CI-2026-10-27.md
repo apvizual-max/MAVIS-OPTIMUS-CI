@@ -548,3 +548,78 @@ QUEUE_PROBLEMS=0 UNKNOWN=0
 
 Detalii: `docs/BRIDGE-LOCAL-CLOUD.md` §11 · `docs/WORKFLOWS.md` W14 ·
 `README.md`.
+
+---
+
+## 12. Corecția drift-urilor vii din documentație
+
+> **Aditiv.** Nimic din §1–§11 nu se rescrie — acolo e măsurătoarea acelui
+> moment. Aici se înregistrează **corecțiile de fapt făcute pe loc**, cu
+> măsurătoarea care le dovedește. Măsurat `2026-10-27, ~05:30Z`.
+
+### 12.1 De ce a apărut driftul
+
+Livrarea cozii secundare și împungerea au schimbat **fapte**, nu documente:
+tichetele au ajuns în repo-ul consumatorului, workflow-ul a ajuns pe remote,
+divergența s-a închis, PR-urile s-au închis. Documentele au continuat să
+ spună starea de dinaintea împungerii. Un document care spune ce era
+adevărat acum o oră și nu se verifică e o sursă de decizii greșite — nu de
+istoric.
+
+### 12.2 Cele 8 afirmații care au devenit false, și măsurătoarea lor
+
+| # | Afirmația veche | Măsurarea de azi | Corectat în |
+|---|---|---|---|
+| 1 | „`.github/workflows/` dă **404** pe remote" | `ci-verify.yml` **pe remote**, blob `6f0fd55`; `merge-base --is-ancestor 65af38f origin/main` → exit 0 | `CI-POLICY.md` §8 · `MAPARE-FOLDERE.md` §8 · `WORKFLOWS.md` W8 · `INVENTAR-REPO-URI.md` §2 |
+| 2 | „**17 commituri neîmpinse**" | `rev-list --left-right --count origin/main...main` → **0 0** | `INVENTAR-REPO-URI.md` §3 · `WORKFLOWS.md` W3 |
+| 3 | „**22** PR-uri deschise" în `MAVIS-CLOUD` | `gh pr list --state open` → **0** | `INVENTAR-REPO-URI.md` §2 |
+| 4 | clona `MAVIS-CLOUD` e „**read-only, nu se modifică**" | clona e și **copia de lucru a livrării**: HEAD = `origin/main` = `4a88879`, 2 tichete livrate | `README.md` · `INVENTAR-REPO-URI.md` §3 · `ARHITECTURA-CI-CD.md` · `PROTOCOL-DENUMIRE-LOCAL-CLOUD.md` · `MAPARE-SISTEM.md` · `MAPARE-FOLDERE.md` · `CI-POLICY.md` §4 |
+| 5 | „remote = `15c5353` = HEAD local" | `ls-remote` = HEAD local (la citire: `8afa89b`) | `README.md` §„Starea acum" — **cifra a fost înlocuită cu metoda**, ca să nu se învechească la fiecare commit |
+| 6 | `pushed_at` învechite în inventar | `gh repo list … --json pushedAt` → **5** repo-uri schimbate | `INVENTAR-REPO-URI.md` §1 |
+| 7 | „**8** repo-uri din 10 sunt publice" | **7** publice, 3 private (numărate din `gh repo list`) | `INVENTAR-REPO-URI.md` §1 |
+| 8 | taskul zilnic „la **08:30**" | `StartBoundary 2026-10-12T07:30:00+02:00` + `StartWhenAvailable=True` → pornire întârziată când mașina e stinsă (de aceea logurile vechi apar la 08:30) | `README.md` · `WORKFLOWS.md` W4/W9 · `ARHITECTURA-CI-CD.md` · `MAPARE-FOLDERE.md` · `CI-POLICY.md` §1.3 |
+
+### 12.3 Ce n-am atins, și de ce
+
+Documentele-**snapshot** cu dată în nume sau cu „măsurată 2026-10-24" în
+text **rămân cum erau**: `STARE-MASURATA-CI.md`, `RECUPERARE-GIT.md`,
+`CONFLICTE-DOZTRINA.md` §„STARE — 2026-10-24", `BRIDGE-LOCAL-CLOUD.md`
+§„Stare curentă — măsurată 2026-10-24" și planul Gemini din 13 oct. Un
+snapshot e o **măsurătoare a acelui moment**; a-l rescrie ar falsifica
+istoricul, nu l-ar actualiza.
+
+Documentele **vii** — `README.md`, `INVENTAR-REPO-URI.md`, `CI-POLICY.md`,
+`ARHITECTURA-CI-CD.md`, `PROTOCOL-DENUMIRE-LOCAL-CLOUD.md`,
+`MAPARE-SISTEM.md`, `MAPARE-FOLDERE.md`, `WORKFLOWS.md` — s-au corectat
+**pe loc**, cu vechea afirmație păstrată ca istoric și corectarea lângă ea.
+
+### 12.4 Trei măsurători care s-au dovedit nereproductibile
+
+| Ce am măsurat | Prima măsurătoare | A doua | Ce s-a întâmplat |
+|---|---|---|---|
+| Fișiere în clona `MAVIS-CLOUD` | 591 | 651 | `git gc` împachetează obiectele loose: ±60 de fișiere în `.git/` |
+| Fișiere în clona `MAVIS-CLOUD`, **fără `.git/`** | 443 | 475 | materializarea fișierelor-placeholder de pe DriveFS |
+| Fișiere în **rădăcina CI**, fără `state/` și fără `cloud-ingest/` | 86 | 118 | **aceeași** materializare, în rădăcină: ±32 de fișiere |
+
+Am învățat de aici trei reguli, deja scrise în `MAPARE-FOLDERE.md` §2:
+**cifra de volum se raportează în fișiere urmărite de git** (`git ls-files` —
+**68** în CI, **405** în clonă), **`.git/` nu intră în nicio cifră**, și
+**octeții se dau per entitate, nu într-un total** — pentru folderele care se
+editează, totalul se mută la fiecare editare.
+
+**Cea mai scumpă lecție:** am scris în document un volum de „677 fișiere" și
+l-am corectat în același rând — dar până la corectare, documentul purta o
+cifră pe care **nu se reproducea**. O cifră care se schimbă la următoarea
+măsurătoare nu e o măsurătoare, e o noroc. Cifra care se publică trebuie să
+poată fi **remăsurată identică** de altcineva.
+
+### 12.5 Măsurătorile de după
+
+| | |
+|---|---|
+| `git rev-list --left-right --count origin/main...main` | `0 0` |
+| `git ls-remote origin refs/heads/main` | `8afa89b…` = HEAD local (la citire) |
+| `gh repo list apvizual-max --limit 60 --json pushedAt` | 10 repo-uri · 7 publice, 3 private |
+| Clona `MAVIS-CLOUD` | 475 fișiere (fără `.git`) · HEAD = `origin/main` = `4a88879` · arbore curat |
+| Arborele CI (fără `state/`, fără `.git/`) | 561 fișiere · 14.208.300 B · 68 fișiere urmărite de git |
+| `Get-ScheduledTask MavisSyncBridge` | `StartBoundary 2026-10-12T07:30:00+02:00` · `StartWhenAvailable=True` · `LastTaskResult=0` (27 oct 02:14) |

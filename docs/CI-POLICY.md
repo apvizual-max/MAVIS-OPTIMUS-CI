@@ -38,7 +38,7 @@ să ajungă pe GitHub fără acordul lui.
             |                                      |
             |  git push automat                     |
             |-------------------------------------->|
-            |                                      | git pull (MavisSyncBridge 08:30)
+            |                                      | git pull (MavisSyncBridge 07:30)
             |<--------------------------------------|
             |  git pull                             | commit pe main
    (următorul pas)                                 | push doar cu -Acord
@@ -51,7 +51,7 @@ Cloud. Cloud livrează în `QUEUE/DONE/` și marchează `[x]`.
 
 ```
 1. Local scrie ce vrea în QUEUE/TASKS-FOR-CLOUD.md
-2. Local: pull (MavisSyncBridge 08:30), citește
+2. Local: pull (MavisSyncBridge 07:30), citește
 3. Dacă e cerință de date → lasă cererea pentru Cloud
 4. Cloud: pull, face cercetarea, scrie datele în repo, push
 5. Local: pull, ia datele
@@ -126,8 +126,15 @@ lipsește.
 | Contextul canonic trimis lui Jules | folder CD → `JULES - Optimus CD\config\jules-context.md` |
 | Triajul, adaptările, rapoartele | folder CD → `JULES - Optimus CD\docs\` |
 
-**Regula rămâne:** `MAVIS-CLOUD` e sursă read-only pentru conținut.
-Instanța Cloud nu are rol în CD.
+**Regula rămâne:** `MAVIS-CLOUD` e sursă read-only pentru **conținutul
+existent**. Instanța Cloud nu are rol în CD.
+
+**A doua excepție declarată (27 oct):** Localul scrie **ticheta cozii
+secundare** în `MAVIS-CLOUD` — contractul consumatorului spune explicit
+„Local scrie sarcina aici" și cere citirea din **propriul repo** al Cloud-ului
+(`docs/CONTRACT-CLOUD-QUEUE.md`). Scrierea e **aditivă**, în formatul de
+contract, și trece prin poarta de livrare (`scripts/queue-deliver.ps1`), care
+verifică prezența tichetei **la vârful remote-ului**.
 
 ---
 
@@ -259,9 +266,11 @@ scris și nu l-am măsurat — exact defectul pe care §5 îl interzice.
 BLOCKS=0 SCAN_OK` exit 0 → cheie plantată → `BLOCKS=1` exit 1 (workflow
 roșu) → scosă → `SCAN_OK` exit 0.
 
-**Starea reală:** pe remote, `.github/workflows/` dă **404**. Workflow-ul
-există doar în copia locală, între cele 17 commituri neîmpinse — serverul nu
-rulează încă nimic pentru acest repo. Se activează la push, cu R0.
+**Starea reală:** workflow-ul `ci-verify.yml` **e pe remote** — a ajuns acolo
+cu împungerea lui `65af38f` (26 oct), confirmat azi la `origin/main`
+(`merge-base --is-ancestor` → exit 0, blob `6f0fd55`). Serverul rulează acum
+pentru acest repo. **Corectat:** secțiunea spunea *„404 pe remote, între cele
+17 commituri neîmpinse"* — era adevărată înainte de împungere, nu și acum.
 
 **Nicio ramură nu e protejată** pe server (`required_status_checks` → 404
 „Branch not protected"), măsurat 2026-10-27, pe ambele repo-uri publice.

@@ -130,7 +130,7 @@ Inventarul complet, măsurat: `docs/INVENTAR-REPO-URI.md`.
 | `docs/STATUS-LOCAL-TO-CLOUD-2026-10-12.md` | raport de status |
 | `docs/arhiva/handoffs-vechi/` | handoff-uri consumate — **mutate, nu șterse** |
 | `blueprint/` | planul de execuție al proiectului |
-| `cloud-ingest/` | sursa clonată, neatinsă |
+| `cloud-ingest/` | clona `MAVIS-CLOUD`: sursa contractului consumatorului **și copia de lucru a livrării cozii secundare** |
 | `scripts/` | puntea: `mavis-sync.ps1`, wrapper, snapshot, meta-prompt · `publish-ci.ps1` (publicarea) · `merge-check.ps1` (măsurătoarea) |
 | `logs/` | logul datat al fiecărei rulări a punții |
 | `.github/workflows/` | **plasa de siguranță a serverului**: `ci-verify.yml` |
@@ -139,13 +139,19 @@ Inventarul complet, măsurat: `docs/INVENTAR-REPO-URI.md`.
 
 ## Starea acum
 
-Repo: **public**, ramura `main`. **Sincronizat cu `origin/main`** — măsurat
-`2026-10-27`: remote = `15c5353` = HEAD local, `DIVERGENCE_FINAL=0 0`,
-verificat prin `git ls-remote`.
+Repo: **public**, ramura `main`. **Sincronizat cu `origin/main`** — invariant
+măsurat `2026-10-27`, după livrarea cozii și publicarea instrumentelor:
+`remote = HEAD local`, `DIVERGENCE_FINAL=0 0`, verificat prin `git ls-remote`.
+
+**SHA-ul nu se scrie aici**, pentru că se schimbă la fiecare commit automat și
+ar fi fals în momentul scrierii. **Se măsoară:**
+`git -C "<repo>" ls-remote origin refs/heads/main` → trebuie să fie identic cu
+`git -C "<repo>" rev-parse HEAD`.
 
 Commitul de combinare `86669d9` are **doi părinți** (`e9290f7` local +
 `3da55ff` remote): istoricul celuilalt AI a fost **inclus**, nu suprascris.
-Cel mai recent commit e `15c5353` (repararea emoji-ului din `mavis-sync.ps1`).
+De atunci: livrarea cozii secundare în `MAVIS-CLOUD` (`4a88879`) și
+publicarea instrumentelor de livrare în acest repo (`8afa89b`).
 
 Publicarea se face cu **un instrument**, nu cu comenzi manuale:
 `scripts\publish-ci.ps1` (măsoară → combină → împinge → verifică prin
@@ -155,8 +161,12 @@ Publicarea se face cu **un instrument**, nu cu comenzi manuale:
 > scrierii. **SHA-ul exact al HEAD:** `git -C "<repo>" log -1 --oneline`.
 > Cifrele complete: `docs/STARE-MASURATA-CI-2026-10-27.md`.
 
-**Puntea e vie:** `MavisSyncBridge` 08:30, `LastTaskResult=0`,
-`exit_pull=0`, `local_dupa == remote`, `impingere=NEEXECUTATA`.
+**Puntea e vie:** taskul `MavisSyncBridge` are declanșatorul zilnic la
+**07:30** (`StartBoundary 2026-10-12T07:30:00+02:00`, `StartWhenAvailable=True`
+— de aceea rulările din 23–24 oct apar la 08:30: mașina nu era pornită la
+07:30). Ultima rulare: **27 oct 02:14** (declanșată la cerere) →
+`LastTaskResult=0`, `exit_pull=0`, `local_dapa == remote` (`7f8e5de`),
+`impingere=NEEXECUTATA`. Log: `logs/mavis-sync-2026-10-27.log`.
 
 ---
 

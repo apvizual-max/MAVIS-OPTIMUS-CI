@@ -18,7 +18,7 @@
 | **Repo** | `apvizual-max/MAVIS-OPTIMUS-CI` | `apvizual-max/MAVIS-OPTIMUS-CD` |
 | **Puntea** | Local ↔ Cloud: **Drive = canal primar**, `MAVIS-CLOUD` = canal secundar (vezi §8) | — |
 | **Bucla de dezvoltare** | — | Jules + Live Review |
-| **Task zilnic** | `MavisSyncBridge` 08:30 | `JulesDailyLoop` 09:00 |
+| **Task zilnic** | `MavisSyncBridge` 07:30 | `JulesDailyLoop` 09:00 |
 | **Cota Jules** | nu e bugetul CI | 100 taskuri/zi, bugetul CD |
 
 ---
@@ -26,7 +26,8 @@
 ## 2. Ce ține CI
 
 - **Puntea Local ↔ Cloud** și scriptul `scripts/mavis-sync.ps1`
-- **Ingest-ul read-only** din `MAVIS-CLOUD` (`cloud-ingest/`)
+- **Ingestul** din `MAVIS-CLOUD` (`cloud-ingest/`) — read-only pentru conținut,
+  **și copia de lucru a livrării cozii secundare**
 - **Canalul `QUEUE/TASKS-FOR-CLOUD.md`** — rămâne canalul Cloud
 - **Procedurile Git/GitHub** pentru repo-ul Cloud
 - **Guvernanța Git/GitHub** a repo-ului CI
@@ -48,10 +49,12 @@
 **`MAVIS-CLOUD` e comun, dar nu e al nimănui.**
 
 - CD îl folosește ca **țintă** de lucru pentru Jules (triaj, adaptare).
-- CI îl folosește ca **punte** (ingest read-only, cereri de la Cloud).
+- CI îl folosește ca **punte** (ingest + livrare cozii secundare, cereri de la Cloud).
 
 **CD nu scrie în `MAVIS-CLOUD`.** Regula rămâne: `MAVIS-CLOUD` e **sursă
-read-only pentru conținut**, cu excepțiile autorizate explicit.
+read-only pentru conținut**, cu excepțiile autorizate explicit. **A doua
+excepție (27 oct):** Localul scrie ticheta cozii secundare în formatul de
+contract — cerută de contractul consumatorului, aditivă, cu poartă de livrare.
 
 **Instanța Cloud nu are rol în CD.** Nu triază, nu propune, nu
 merge-uiește. Singura ei interacțiune cu CD e canalul `QUEUE/`.

@@ -39,8 +39,11 @@ tăcere. Git nu ar fi semnalat nimic — ar fi raportat un commit curat.
 2. **Corecția se face printr-un fișier nou**, cu numele tău, care îl citește pe celălalt.
 3. **Nu redenumește** fișierele celeilalte instanțe. Nimeni nu deține convenția pentru
    ea, și un rename e o suprascriere cu aprobare.
-4. **`cloud-ingest/` e read-only** pentru Local, cu **o singură excepție declarată:**
-   adăugarea de fișiere `MAVIS-LOCAL-*`. Nimic existent nu se atinge.
+4. **`cloud-ingest/` e read-only** pentru Local, cu **două excepții declarate:**
+   adăugarea de fișiere `MAVIS-LOCAL-*` și **scrierea tichetei cozii secundare**
+   în formatul de contract (`QUEUE/TASKS-FOR-CLOUD.md`), cerută de contractul
+   consumatorului („Local scrie sarcina aici"). Nimic existent nu se atinge —
+   ambele excepții sunt **aditive**.
 
 ---
 
@@ -132,7 +135,7 @@ TASK_ID: MAVIS-LOCAL-2026-10-27-001
 | Direcție | Canal primar (Drive) | Canal secundar (GitHub) |
 |---|---|---|
 | Local → Cloud | `BRIDGE-DRIVE/TASKURI-PENTRU-CLOUD.md` | `QUEUE/TASKS-FOR-CLOUD.md` |
-| Cloud → Local | `BRIDGE-DRIVE/INTRARI-CLOUD/` | `cloud-ingest/` (**read-only** pentru Local) |
+| Cloud → Local | `BRIDGE-DRIVE/INTRARI-CLOUD/` | `cloud-ingest/` (**read-only** pentru conținut; devine și copie de lucru a livrării cozii) |
 | Consumat, închis | `BRIDGE-DRIVE/ISTORIC/` | `QUEUE/DONE/` (marcat `[x]`) |
 | Liber, cu cuvintele lui Popy | `BRIDGE-DRIVE/INTENTII.md` | `docs/INTENTII.md` |
 

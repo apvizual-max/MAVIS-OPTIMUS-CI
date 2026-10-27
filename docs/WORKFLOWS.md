@@ -101,13 +101,17 @@ trebuie să coste timp.
 > -Acord`: un `-Acord` = o singură împungere.
 
 **Divergența se documentează, nu se rezolvă cu forță.** Măsurat 2026-10-27:
-**17 commituri local / 5 remote** (cele 5 remote sunt lucrarea CD).
+**17 commituri local / 5 remote** (cele 5 remote sunt lucrarea CD). **Azi:
+0 / 0** — divergența s-a închis cu `merge --no-ff` (ambele istorice păstrate,
+commitul de combinare `86669d9` cu doi părinți), nu prin rescriere.
 
 ---
 
 ## W4 — Sincronizarea zilnică
 
-Rulează singură, la **08:30**, prin taskul `MavisSyncBridge`.
+Rulează singură, la **07:30**, prin taskul `MavisSyncBridge`
+(`StartBoundary 2026-10-12T07:30:00+02:00` + `StartWhenAvailable=True` — de
+aceea logurile din 23–24 oct apar la 08:30: mașina nu era pornită la 07:30).
 
 ```powershell
 powershell -NoProfile -File scripts\run-sync-logged.ps1 -DryRun
@@ -208,17 +212,21 @@ imputabilitatea.*
 `SCANNED=50 BLOCKS=0 SCAN_OK` exit 0 → cheie plantată → `BLOCKS=1` exit 1
 (workflow roșu) → scosă → `SCAN_OK` exit 0.
 
-**Starea reală:** pe remote `.github/workflows/` dă **404**. Workflow-ul
-există doar în copia locală, între cele 17 commituri neîmpinse — **serverul
-nu rulează încă nimic pentru acest repo.** Se activează la push, cu R0.
+**Starea reală:** workflow-ul `ci-verify.yml` **e pe remote** (a ajuns cu
+împungerea lui `65af38f`, 26 oct; azi confirmat la `origin/main`, blob
+`6f0fd55`). **Serverul rulează acum pentru acest repo.** Secțiunea spunea
+*„404 pe remote, între cele 17 commituri neîmpinse"* — era adevărată înainte
+de împungere.
 
 ---
 
-## W9 — Puntea zilnică (task 08:30)
+## W9 — Puntea zilnică (task 07:30)
 
 > **Aditiv.** Măsurat 2026-10-27.
 
-Rulează singură, la **07:30/08:30**, prin taskul Windows `MavisSyncBridge`.
+Rulează singură, la **07:30**, prin taskul Windows `MavisSyncBridge`
+(`StartBoundary 2026-10-12T07:30:00+02:00` + `StartWhenAvailable=True` — de
+aceea logurile din 23–24 oct apar la 08:30: mașina nu era pornită la 07:30).
 
 ```
 MavisSyncBridge (task Windows)

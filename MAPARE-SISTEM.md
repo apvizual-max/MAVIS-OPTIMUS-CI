@@ -126,7 +126,7 @@ Gitdir CD: `E:/Google/GitData-Optimus-CD` — **separat** de cel al CI.
 | | CI (aici) | CD (acolo) |
 |---|---|---|
 | Puntea Local↔Cloud | ✅ | — |
-| Ingest read-only din Cloud | ✅ | — |
+| Ingest + livrarea cozii secundare | ✅ | — |
 | Canalul `QUEUE/` | ✅ | — |
 | Platforma Jules | — | ✅ |
 | Live Review | — | ✅ |
@@ -154,19 +154,24 @@ E:\Google\GDrive\GDrive-Second_Brain_PKMS\02_Areas\02-2-AI-SOT\CASA\OPTIMUS - Pr
 │   ├── INTRARI-CLOUD\           Cloud → Local
 │   └── ISTORIC\                 consumate: se mută, nu se șterg
 ├── QUEUE\                        ← canalul SECUNDAR (GitHub)
-│   └── TASKS-FOR-CLOUD.md
+│   ├── TASKS-FOR-CLOUD.md
+│   └── DONE\ README.md           consumate: marcate [x] de Cloud
 ├── docs\        documentația de proiect
+├── .jules\                       ← bootstrapul lui Jules (bolt.md · sentinel.md)
+├── JULES_HANDOFF.md              ← predarea către sesiunea Jules
 ├── scripts\     mavis-sync.ps1 · run-sync-logged.ps1 · meta-prompt.ps1
 │                notebooklm-cdp.mjs · snapshot-vault.ps1
 │                drivefs_probe.py · mavis-drive-bridge.ps1
 │                mavis-drive-bridge-selfcheck.ps1
 │                scan-staged-secrets.ps1 · scan-staged-secrets-selfcheck.ps1
 │                queue-contract-check.ps1 · queue-contract-check-selfcheck.ps1
+│                queue-lib.ps1 · queue-deliver.ps1 · queue-deliver-selfcheck.ps1
+│                publish-ci.ps1 · publish-ci-selfcheck.ps1
 │                mavis-sync-selfcheck.ps1
 │                merge-check.ps1 · merge-check-selfcheck.ps1
 ├── .github\workflows\            ← plasa de siguranță a serverului
 │   └── ci-verify.yml
-├── blueprint\ · cloud-ingest\ (read-only) · logs\ · state\ (ignorat de git)
+├── blueprint\ · cloud-ingest\ (clonă + copie de lucru a livrării) · logs\ · state\ (ignorat de git)
 ```
 
 ### Joncțiunile

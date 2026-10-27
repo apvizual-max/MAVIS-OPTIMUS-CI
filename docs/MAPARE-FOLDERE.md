@@ -18,7 +18,7 @@
 | **`cloud_id`** | `1V87h9Pbw52chSVNkxQ_NNuMh-CLfZeuI` |
 | **`.git`** | **fișier** (worktree link) → `gitdir: E:/Google/GitData-Optimus-CI` |
 | **Gitdir CD (separat)** | `E:/Google/GitData-Optimus-CD` |
-| **Volum** | **568 fișiere · 13,7 MB** (fără `state/`) |
+| **Volum** | **68 fișiere urmărite de git** · arborele de pe disc se măsoară la cerere (placeholder-uri DriveFS) |
 
 > **Calea veche nu mai există:** `…\projects\Mavis-Optimus-Continuous-Integration\`
 > a fost eliminată prin Trash recuperabil (3 niveluri, EXIT 0) pe 27 oct.
@@ -29,25 +29,36 @@
 
 | Entitate | Ce e | Volum | Git? |
 |---|---|---|---|
-| `README.md` | Portul: ce e proiectul, cum se intră, ce porți există | 8.649 B | ✅ |
-| `DOCTRINA-CI.md` | Doctrina CI: reguli, asimetria, ce nu se atinge | 9.544 B | ✅ |
-| `MAPARE-SISTEM.md` | Unde stă sistemul față de restul mașinii | 7.811 B | ✅ |
-| `Plan_Dezvoltare_CI_from_POPY (Gemini)-10-13-2026.md` | Planul original, 13 oct, **istoric** — nu e contract | 63.702 B | ✅ |
-| `.gitignore` | Ce nu se comite | 1.360 B | ✅ |
+| `README.md` | Portul: ce e proiectul, cum se intră, ce porți există | 1 fișier · 18.321 B | ✅ |
+| `DOCTRINA-CI.md` | Doctrina CI: reguli, asimetria, ce nu se atinge | 1 fișier · 16.523 B | ✅ |
+| `MAPARE-SISTEM.md` | Unde stă sistemul față de restul mașinii | 1 fișier · 11.191 B | ✅ |
+| `Plan_Dezvoltare_CI_from_POPY (Gemini)-10-13-2026.md` | Planul original, 13 oct, **istoric** — nu e contract | 1 fișier · 63.702 B | ✅ |
+| `.gitignore` | Ce nu se comite | 1 fișier · 1.606 B | ✅ |
 | `.github/workflows/` | Workflow-ul de server: `ci-verify.yml` | 1 fișier · 1.589 B | ✅ |
-| `docs/` | Documentația: 27 fișiere | 164.356 B | ✅ |
-| `scripts/` | Instrumentele: 10 fișiere | 79.200 B | ✅ |
-| `BRIDGE-DRIVE/` | **Canalul primar** (Google Drive) | 5 fișiere · 8.563 B | ✅ |
-| `QUEUE/` | **Canalul secundar** (GitHub) | 1 fișier · 3.352 B | ✅ |
+| `.jules/` | Bootstrapul lui Jules: `bolt.md` · `sentinel.md` | 2 fișiere · 2.558 B | ✅ |
+| `JULES_HANDOFF.md` | Predarea către sesiunea Jules | 1 fișier · 978 B | ✅ |
+| `docs/` | Documentația de proiect | **31 fișiere urmărite** | ✅ |
+| `scripts/` | Instrumentele | **20 fișiere urmărite** · 237.784 B | ✅ |
+| `BRIDGE-DRIVE/` | **Canalul primar** (Google Drive) | 5 fișiere · 8.608 B | ✅ |
+| `QUEUE/` | **Canalul secundar** (GitHub) | 2 fișiere · 6.206 B | ✅ |
 | `blueprint/` | Planul CI din faza de blueprint | 1 fișier · 11.255 B | ✅ |
 | `mapari/` | **gol** — folder rămas de la o layout veche | 0 | — |
-| `cloud-ingest/` | Clonă **read-only** a lui `MAVIS-CLOUD` | 502 fișiere · 13,98 MB | ❌ ignorat |
-| `logs/` | Jurnalele punții zilnice | 14 fișiere · 44.015 B | ❌ ignorat |
+| `cloud-ingest/` | Clona `MAVIS-CLOUD` — sursă **read-only** pentru conținut, **și copia de lucru a livrării cozii secundare** | **405 fișiere urmărite** de git | ❌ ignorat |
+| `logs/` | Jurnalele punții zilnice | 15 fișiere (un log pe zi) | ❌ ignorat |
 | `desktop.ini` | Artefact Windows | 149 B | ❌ ignorat |
 | `state/` | Scratch, măsurători, probe | — | ❌ ignorat |
 
-**Volum total** (fără `state/`): **568 fișiere · 14.388.527 B** (13,7 MB).
-**Git-tracked: 50 fișiere · 359.381 B.**
+**Urmărit de git: 68 fișiere** (`git ls-files`). Octeții se dau **per
+entitate**, nu se însumează într-un total: un commit nu schimbă dimensiunile,
+dar o editare ulterioară le mută — iar `docs/` se editează la fiecare rând.
+
+> **De ce cifrele sunt „urmărite de git" și nu „fișiere pe disc":** arborele
+> stă pe un mirror DriveFS, iar **fișierele-placeholder se materializează la
+> acces**. Între două măsurători consecutive, numărul de fișiere pe disc a
+> variat cu **±32** în clonă și cu **±32** în rădăcina CI. Reproductibil e
+> doar ce e urmărit de git: `git ls-files` dă **68** în CI și **405** în clonă.
+> Iar istoricul (`git gc` împachetează obiectele loose) adaugă **±60**
+> fișiere — de aceea `.git/` nu intră în nicio cifră.
 
 > **`mapari/` e gol.** L-am lăsat: e necomandat, și un folder gol nu strică
 > nimic. Nu e un plan de șters — e o poziție fără conținut.
@@ -77,7 +88,7 @@
 | `queue-contract-check-selfcheck.ps1` | **Poarta porții de contract** — 14 probe | `QUEUE_GATE_PROBLEMS=0 UNKNOWN=0 FALSIFIED=11` |
 | `scan-staged-secrets.ps1` | **Poarta de secrete** pe index | `BLOCKS` / `WARNS` |
 | `scan-staged-secrets-selfcheck.ps1` | **Poarta porții de secrete** — 7 probe | `SECRET_PROBLEMS=0 UNKNOWN=0` |
-| `mavis-sync.ps1` | **Puntea zilnică** Local↔Cloud (task 08:30) | cale derivată din `$PSScriptRoot` · `exit` propriu · taskul `MavisSyncBridge` |
+| `mavis-sync.ps1` | **Puntea zilnică** Local↔Cloud (task 07:30) | cale derivată din `$PSScriptRoot` · `exit` propriu · taskul `MavisSyncBridge` |
 | `mavis-sync-selfcheck.ps1` | **Poarta punții zilnice** — 9 probe | `SYNC_PROBLEMS=0 UNKNOWN=0 FALSIFIED=4` |
 | `merge-check.ps1` | **Măsurătorul combinării istoricului** — dry-run, nu atinge arborele | exit `0`/`1`/`2`; `2` = nemăsurabil ≠ curat |
 | `merge-check-selfcheck.ps1` | **Poarta măsurătorului** — 5 probe pe repo reale | `MERGE_GATE_PROBLEMS=0 UNKNOWN=0 FALSIFIED=5` |
@@ -155,9 +166,11 @@ de „REJECT" al meu pe conținutul altcuia. El doar **spune** ce a aterizat.
 `SCANNED=50 BLOCKS=0 SCAN_OK` exit 0 → cu cheie plantată `BLOCKS=1` exit 1
 (workflow ar deveni roșu) → scosă → `SCAN_OK` exit 0.
 
-**Starea reală:** pe remote, `.github/workflows/` dă **404** — workflow-ul
-există doar în copia locală, între cele 17 commituri neîmpinse. **Serverul
-nu rulează încă nimic pentru acest repo.**
+**Starea reală:** workflow-ul `ci-verify.yml` **e pe remote** — a ajuns cu
+împungerea lui `65af38f` (26 oct), confirmat azi la `origin/main` (blob
+`6f0fd55`). **Serverul rulează acum pentru acest repo.** Secțiunea spunea
+*„404 pe remote, între cele 17 commituri neîmpinse"* — era adevărată înainte
+de împungere.
 
 ---
 
