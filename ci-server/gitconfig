@@ -1,0 +1,21 @@
+# gitconfig pentru containerul Mavis-Optimus-CI.
+#
+# DE CE EXISTA: pe host, gitul citeste core.autocrlf=true din configul de
+# sistem al lui Git for Windows (C:\Program Files\Git\etc\gitconfig). In
+# container nu exista -> gitul compara octet cu octet si vedea CRLF in
+# worktree versus LF in index ca fiind 403 fisiere "modificate" in clona
+# Cloud, desi pe host sunt curate. Masurat: aceeasi regula, 403 vs 0.
+#
+# Configul de sistem al hostului NU se monteaza cu totul, pentru ca
+# http.sslBackend=schannel nu exista in linux (ar strica TLS) si
+# core.symlinks/fscache sunt specifice Windows.
+#
+# Semantica e aceeasi cu a host-ului: continutul se compara dupa normalizare
+# CRLF -> LF, exact cum face gitul de pe host.
+[core]
+	autocrlf = true
+	longpaths = true
+[init]
+	defaultBranch = main
+[pull]
+	rebase = false

@@ -15,6 +15,10 @@
 #   -StagedDiff      : scan ONLY the lines the staged change adds. The
 #                      question is "does this change introduce a secret", not
 #                      "does this repository contain the string AKIA".
+#   -GitDir <dir>    : use this gitdir explicitly instead of the one the
+#                      worktree points to. The container Mavis-Optimus-CI needs
+#                      it: there the .git pointer holds a Windows path (E:/...)
+#                      that linux git cannot resolve.
 #
 # Exit codes (the script's OWN, never inherited):
 #   0 = clean (no blocking secret)
@@ -26,6 +30,7 @@
 param(
     [string]$RepoPath = '',
     [string]$ProbeFile = '',
+    [string]$GitDir = '',
     [switch]$StagedDiff
 )
 
@@ -74,11 +79,19 @@ function Invoke-Git {
     param(
         [Parameter(Mandatory = $true)][string]$Git,
         [Parameter(Mandatory = $true)][string]$Repo,
+        [string]$GitDir = '',
         [Parameter(Mandatory = $true)][string[]]$GitArgs
     )
     $prev = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
-    $out = & $Git -C $Repo @GitArgs 2>$null
+    # -GitDir wins over -C: in container the .git pointer holds a Windows path
+    # (E:/...) that linux git cannot resolve, so the gitdir is passed
+    # explicitly. On the host both work; the explicit form is unambiguous.
+    if ($GitDir) {
+        $out = & $Git --git-dir=$GitDir @GitArgs 2>$null
+    } else {
+        $out = & $Git -C $Repo @GitArgs 2>$null
+    }
     $ErrorActionPreference = $prev
     $code = $LASTEXITCODE
     if ($null -eq $code) { $code = -1 }
@@ -158,12 +171,12 @@ function Invoke-Scan {
         }
         $repo = $RepoPath
         if (-not $repo) { $repo = (Get-Location).Path }
-        $probe = Invoke-Git -Git $git -Repo $repo -GitArgs @('rev-parse', '--git-dir')
+        $probe = Invoke-Git -Git $git -Repo $repo -GitDir $GitDir -GitArgs @('rev-parse', '--git-dir')
         if ($probe.Code -ne 0) {
             Write-Err ('ERROR=not a git repo: ' + $repo)
             return 2
         }
-        $diff = Invoke-Git -Git $git -Repo $repo -GitArgs @('diff', '--cached', '-U0', '--no-color')
+        $diff = Invoke-Git -Git $git -Repo $repo -GitDir $GitDir -GitArgs @('diff', '--cached', '-U0', '--no-color')
         if ($diff.Code -ne 0) {
             Write-Err ('ERROR=cannot read the staged diff: ' + $repo)
             return 2
@@ -192,7 +205,7 @@ function Invoke-Scan {
         }
         $repo = $RepoPath
         if (-not $repo) { $repo = (Get-Location).Path }
-        $probe = Invoke-Git -Git $git -Repo $repo -GitArgs @('rev-parse', '--git-dir')
+        $probe = Invoke-Git -Git $git -Repo $repo -GitDir $GitDir -GitArgs @('rev-parse', '--git-dir')
         if ($probe.Code -ne 0) {
             Write-Err ('ERROR=not a git repo: ' + $repo)
             return 2
@@ -200,14 +213,14 @@ function Invoke-Scan {
         # Search the INDEX, not the working tree: what is staged is what would
         # enter the commit. -I skips binary files.
         foreach ($p in $FixedPatterns) {
-            $res = Invoke-Git -Git $git -Repo $repo -GitArgs @('grep', '-n', '-I', '-E', '-e', $p.Regex, '--cached')
+            $res = Invoke-Git -Git $git -Repo $repo -GitDir $GitDir -GitArgs @('grep', '-n', '-I', '-E', '-e', $p.Regex, '--cached')
             if ($res.Code -eq 0) {
                 foreach ($l in @($res.Out)) {
                     $blocks += ($p.Name + ' @ ' + $l)
                 }
             }
         }
-        $res = Invoke-Git -Git $git -Repo $repo -GitArgs @('grep', '-n', '-I', '-E', '-e', $AssignRegex, '--cached')
+        $res = Invoke-Git -Git $git -Repo $repo -GitDir $GitDir -GitArgs @('grep', '-n', '-I', '-E', '-e', $AssignRegex, '--cached')
         if ($res.Code -eq 0) {
             foreach ($l in @($res.Out)) {
                 $value = ''
@@ -220,7 +233,7 @@ function Invoke-Scan {
                 }
             }
         }
-        $scanned = @(Invoke-Git -Git $git -Repo $repo -GitArgs @('ls-files', '--cached')).Out.Count
+        $scanned = @(Invoke-Git -Git $git -Repo $repo -GitDir $GitDir -GitArgs @('ls-files', '--cached')).Out.Count
     }
 
     Write-Out ('SCANNED=' + $scanned)

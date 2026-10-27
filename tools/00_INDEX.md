@@ -7,7 +7,7 @@
 
 ## Ce e aici
 
-Nu are fișiere de conținut. Un raft copil: `google-access`; cel mai mare element din folder e `google-access` (57 KB)
+Nu are fișiere de conținut. Un raft copil: `google-access`; cel mai mare element din folder e `google-access` (110 KB)
 
 ## Cuvinte cheie
 
@@ -17,5 +17,5 @@ Nu are fișiere de conținut. Un raft copil: `google-access`; cel mai mare eleme
 
 _Fiecare raft e legat la indexul lui. Un index care nu e legat nu e în arbore._
 
-- [`google-access`](<google-access/00_INDEX.md>) — 8 fișiere · 0 subfoldere
+- [`google-access`](<google-access/00_INDEX.md>) — 13 fișiere · 0 subfoldere
 

@@ -7,7 +7,7 @@
 
 ## Ce e aici
 
-Singura extensie prezentă e `.md` (3 din 3 fișiere). 2 rafturi copil: `INTRARI-CLOUD`, `ISTORIC`; cel mai mare element din folder e `INTRARI-CLOUD` (14 KB)
+Singura extensie prezentă e `.md` (3 din 3 fișiere). 2 rafturi copil: `INTRARI-CLOUD`, `ISTORIC`; cel mai mare element din folder e `INTRARI-CLOUD` (18 KB)
 
 ## Cuvinte cheie
 
@@ -17,8 +17,8 @@ Singura extensie prezentă e `.md` (3 din 3 fișiere). 2 rafturi copil: `INTRARI
 
 _Fiecare raft e legat la indexul lui. Un index care nu e legat nu e în arbore._
 
-- [`INTRARI-CLOUD`](<INTRARI-CLOUD/00_INDEX.md>) — 3 fișiere · 0 subfoldere
-- [`ISTORIC`](<ISTORIC/00_INDEX.md>) — 2 fișiere · 0 subfoldere
+- [`INTRARI-CLOUD`](<INTRARI-CLOUD/00_INDEX.md>) — 4 fișiere · 0 subfoldere
+- [`ISTORIC`](<ISTORIC/00_INDEX.md>) — 6 fișiere · 0 subfoldere
 
 ## Fișiere
 
