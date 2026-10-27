@@ -234,3 +234,39 @@ permis · commit cu secret refuzat · secret **absent** din istoric · push
 fără acord refuzat · push cu acord permis.
 
 Detalii: `docs/GIT-GITHUB-PROCEDURI.md` §4.1–§4.2.
+
+---
+
+## 8. Plasa de siguranță a serverului
+
+> **Aditiv.** Nu rescrie §7. Măsurat 2026-10-27.
+
+`.github/workflows/ci-verify.yml` rulează pe serverul GitHub, peste conținutul
+**deja împins**: scannerul de secrete + auto-proba.
+
+| | Poarta locală (§7) | Workflow-ul de server |
+|---|---|---|
+| Când | înainte de commit | după push |
+| Unde | calculatorul lui Popy | runner GitHub |
+| Efect | **blochează** commitul | **raportează** — nu blochează |
+| Acoperă | indexul local | conținutul **public** |
+
+**De ce raportează, nu blochează:** acest repo e lucrat acum de alt AI. O
+poartă care blochează push-ul altcuia ar acuza conținut pe care eu nu l-am
+scris și nu l-am măsurat — exact defectul pe care §5 îl interzice.
+
+**Falsificat în ambele sensuri**, într-o clonă curată: `SCANNED=50
+BLOCKS=0 SCAN_OK` exit 0 → cheie plantată → `BLOCKS=1` exit 1 (workflow
+roșu) → scosă → `SCAN_OK` exit 0.
+
+**Starea reală:** pe remote, `.github/workflows/` dă **404**. Workflow-ul
+există doar în copia locală, între cele 17 commituri neîmpinse — serverul nu
+rulează încă nimic pentru acest repo. Se activează la push, cu R0.
+
+**Nicio ramură nu e protejată** pe server (`required_status_checks` → 404
+„Branch not protected"), măsurat 2026-10-27, pe ambele repo-uri publice.
+**Consecința, spusă fără cosmetizare:** poarta din `pre-commit` e singura
+verificare înainte de push. Dacă hook-ul e ocolit, nimic nu oprește
+conținutul cu secrete să ajungă public.
+
+Detalii: `docs/MAPARE-FOLDERE.md` §8 · `docs/WORKFLOWS.md` W8.

@@ -145,6 +145,60 @@ fără acord — pentru că poarta exista doar ca un switch într-un script.
 **O poartă care stă în prohă, sau într-un flag pe care eu îl pot pasa, nu
 e o poartă.**
 
+### 8.1 Trei reguli de măsurătoare, învățate pe puntea Drive
+
+> **Aditiv.** Măsurate 2026-10-27. Nu rescriu nimic de mai sus.
+
+1. **Conectat ≠ încarcă.** Rădăcina mirrorului putea raporta
+   `connected=true`, coada `PENDING_OPERATIONS=0` — și totuși motorul de sync
+   nu vedea scrierile locale. *Coada goală înseamnă „nu am ce încărca", nu
+   „am încărcat tot".* **Starea motorului** (change-id, queue, fetch) e
+   dovada; `connected` nu e.
+2. **Un proxy nu e o măsurătoare.** Compararea „ultima confirmare" cu
+   „ultima scriere" e o aproximație. Ce contează e **obiectul pe care
+   consumatorul îl citește**: cât de veche e copia din cloud față de ce e pe
+   disc. Măsurat: **2,91 zile**, pe un lag raportat ca proxy.
+3. **O poartă care acuză trebuie să dovedească imputabilitatea.** Dacă
+   acuz fișierul, coada, sau **propriul instrument**, verdictul stă pe
+   măsurători — nu pe o excepție și nici pe un proxy. Iar o excepție trebuie
+   să dea **eroare**, nu **bloc**: altfel poarta acuză fals.
+
+La toate trei, măsurătoarea **directă** a fost mai severă decât proxy-ul, și
+mai utilă: ea a spus **ce ar citi Cloud**, nu doar că ceva nu s-a încărcat.
+
+### 8.2 Un nume de fișier fix nu e o măsurătoare
+
+> **Aditiv.** Măsurat 2026-10-27. Nu rescriu nimic de mai sus.
+
+A treia regulă are un corol, dovedit pe puntea Drive.
+
+**DriveFS rotește logurile.** Sesiunea activă scria în `drive_fs_507.txt`,
+iar `drive_fs.txt` — fișierul cu nume fix — conținea doar urma unei
+**lansări eșuate** (`CANNOT_START_IPC`). Instrumentul care citea un nume
+fix a raportat `UNKNOWN` pentru un transport **funcțional**.
+
+Cele două relee ale releului:
+
+1. **Când un producător rotește fișierele, citește *toate* copiile și
+   ordonează după amprenta din interiorul conținutului**, nu după nume și
+   nici după mtime. Numele spune *unde a fost*; amprenta spune *când a
+   fost spus*.
+2. **O stare necunoscută nu se traduce niciodată într-o stare
+   favorabilă.** `UNKNOWN` → `UNKNOWN`, cu cod de ieșire propriu. Un
+   instrument care nu a măsurat nu are dreptul să spună „merge" — și nici
+   o poartă nu are dreptul să considere necunoscutul drept acord.
+
+**Și în interiorul unui singur fișier:** o linie poate conține **mai multe
+rădăcini**. Asocierea trebuie să fie **per-element**, nu per-linie — altfel
+instrumentul raportează starea elementului A folosind valoarea elementului
+B.
+
+Regula generalizată, din aceeași familie cu „proxy ≠ măsurătoare":
+
+> **Un instrument care citește o resursă cu nume fix măsoară istoricul
+> resursei, nu starea ei curentă. Și o poartă care acceptă necunoscutul
+> drept verdict favorabil nu e o poartă — e o decorare.**
+
 ---
 
 ## 9. Cele două canale, și cum se alege între ele
@@ -195,3 +249,35 @@ Că transportul cade   → ambele sunt deja scrise. Nu se reia nimic.
 ```
 
 Detalii și măsurători: `docs/PUNTE-DRIVE-PRIMARA.md`.
+
+### 9.6 Canalul activ urmează propagarea, nu conexiunea
+
+> **Aditiv.** Măsurat 2026-10-27.
+
+Regula din §9.5 spune *unde se scrie*. Aceasta spune **unde se raportează că
+e ajuns** — și răspunsul nu poate fi „conexiunea".
+
+Instrumentul raportează **două lucruri diferite**, și le ține separate:
+
+| Câmp | Întreabă | Valoare măsurată 2026-10-27 |
+|---|---|---|
+| `TRANSPORT` | E conectat? | `UP` — rădăcina mirrorului, `connected=true` |
+| `PROPAGATION` | S-a confirmat conținutul? | `STALE` — `CLOUD_AGE_DAYS=2.91` |
+
+**`ACTIVE_CHANNEL` urmează `PROPAGATION`, nu `TRANSPORT`.** Cât timp
+propagarea nu e confirmată, conținutul **nou** se raportează pe canalul
+secundar (GitHub), chiar dacă rădăcina Drive e conectată.
+
+**De ce:** un instrument care zice „transportul e sus" când conținutul are
+2,91 zile mincă un consumator care citește din cloud și crede că are
+conținutul de azi. **Conectat ≠ încarcă** (§8.1).
+
+**Invarianta de coridor:** dacă fișierul de canal al punții **nu e** în
+cloud, propagarea **nu poate** fi `OK`. Poarta verifică asta explicit — un
+„propagare OK" cu fișierul de canal absent e o **contradicție**, și se
+respinge.
+
+Porțile întregi: `BRIDGE_PROBLEMS=0 UNKNOWN=0` (14 probe), dintre care
+probe-ul de doctorat „absent din cloud, dar propagare OK" → **respingut**.
+Cod de ieșire **4** când propagarea e `STALE` — transportul căzut nu
+blochează sistemul, dar **nu se raportează ca succes**.

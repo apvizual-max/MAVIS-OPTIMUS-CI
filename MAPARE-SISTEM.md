@@ -22,15 +22,24 @@ E:\Google\GDrive\GDrive-Second_Brain_PKMS\02_Areas\02-2-AI-SOT\CASA\OPTIMUS - Pr
 │   ├── PROTOCOL-DENUMIRE-LOCAL-CLOUD.md  protocolul de denumire
 │   ├── INVENTAR-REPO-URI.md     toate repo-urile
 │   ├── RECUPERARE-GIT.md        starea măsurată a mașinii
+│   ├── STARE-MASURATA-CI-2026-10-27.md   starea de azi, cu cifre + metode
+│   ├── STARE-MAVIS-OPTIMUS-CI-REMOTE.md  referința remote, lucrată de alt AI
+│   ├── META-PROMPT.md           generarea meta-promptului
+│   ├── STATUS-LOCAL-TO-CLOUD-2026-10-12.md  raport de status
 │   └── arhiva\handoffs-vechi\   handoff-uri consumate — **mutate, nu șterse**
 ├── BRIDGE-DRIVE\                canalul primar (Google Drive)
 ├── QUEUE\                       canalul secundar (GitHub)
 ├── scripts\                     instrumentele
+├── .github\workflows\           plasa de siguranță a serverului
+│   └── ci-verify.yml
 ├── blueprint\
 │   └── BLUEPRINT-PLAN-CI.md     planul de execuție           ← CITESTE
+├── logs\                        jurnalele punții zilnice
 └── cloud-ingest\
     └── MAVIS-CLOUD\             clonă locală, **NEATINGEĂ**
 ```
+
+> **Adăugat 2026-10-27.** Arborele de mai sus e completat, nu rescris.
 
 ## Doctina de bază — în afara proiectului
 
@@ -63,14 +72,19 @@ Toate în `C:\Users\apviz\.minimax\agents\mavis\skills\`.
 
 | Repo | Rol | Acces |
 |---|---|---|
-| `Optimus-Mavis-Skills` | skillurile mele | privat |
-| `OPTIMUS-Backbone` | consola OPTIMUS, scripturi | privat |
+| `Optimus-Mavis-Skills` | skillurile mele | **public** |
+| `OPTIMUS-Backbone` | consola OPTIMUS, scripturi | **public** |
 | `SENTINEL_PRIME` | substratul SENTINEL | privat |
 | **`MAVIS-CLOUD`** | **fostul cartier Cloud** | **public** |
-| **`MAVIS-OPTIMUS-CI`** | **acest proiect — de creat** | de creat |
+| **`MAVIS-OPTIMUS-CI`** | **acest proiect** | **public** |
+| `MAVIS-OPTIMUS-CD` | SOT CD — **se creează la priming** (R0) | de creat |
 | `Qwen-Ecosystem-Dashboard` | sistem Qwen | privat |
-| `hermes-doctor` | plasa lui Hermes | privat |
-| `pkms-vault-automation` | menținerea vaultului | privat |
+| `hermes-doctor` | plasa lui Hermes | **public** |
+| `pkms-vault-automation` | menținerea vaultului | **public** |
+
+**Re-măsurat 2026-10-27** (`gh repo list apvizual-max --limit 60 --json
+name,visibility,pushedAt`). Inventarul complet, cu datele de push și cu
+numărul de secrete: `docs/INVENTAR-REPO-URI.md`.
 
 Lista completă și măsurată: `docs/INVENTAR-REPO-URI.md`.
 
@@ -95,11 +109,16 @@ defectul pe care îl reparăm.
 Sesiunea CD e **paralelă**, cu folderul, repo-ul și bugetul lui:
 
 ```
-C:\Users\apviz\.minimax-agent\projects\Mavis-Optimus-Continuous-Development\
+E:\Google\GDrive\GDrive-Second_Brain_PKMS\02_Areas\02-2-AI-SOT\CASA\OPTIMUS - Prime\Optimus_CD (by Jules)\
 ├── README.md · DOCTRINA-CD.md · HANDOFF-CD.md · PRIMING-CD.md
 ├── docs\                       ARHITECTURA · SPEC · MAPARE · WORKFLOWS · PROTOCOALE
 └── JULES - Optimus CD\         platforma Jules (10 scripturi, config, workflows)
 ```
+
+**Calea veche a CD-ului** `…\projects\Mavis-Optimus-Continuous-Development\`
+**nu mai există** — CD-ul a fost mutat pe `E:` la aceeași consolidare.
+Joncțiune pe `C:`: `C:\Users\apviz\.minimax-agent\projects\Optimus_CD (by Jules)`.
+Gitdir CD: `E:/Google/GitData-Optimus-CD` — **separat** de cel al CI.
 
 | | CI (aici) | CD (acolo) |
 |---|---|---|
@@ -138,6 +157,9 @@ E:\Google\GDrive\GDrive-Second_Brain_PKMS\02_Areas\02-2-AI-SOT\CASA\OPTIMUS - Pr
 │                notebooklm-cdp.mjs · snapshot-vault.ps1
 │                drivefs_probe.py · mavis-drive-bridge.ps1
 │                mavis-drive-bridge-selfcheck.ps1
+│                scan-staged-secrets.ps1 · scan-staged-secrets-selfcheck.ps1
+├── .github\workflows\            ← plasa de siguranță a serverului
+│   └── ci-verify.yml
 ├── blueprint\ · cloud-ingest\ (read-only) · logs\ · state\ (ignorat de git)
 ```
 
@@ -160,7 +182,9 @@ loc. Nimic nu s-a pierdut: istoricul e în `E:\Google\GitData-Optimus-CI`.
 | Canal secundar | `QUEUE\TASKS-FOR-CLOUD.md` | rezervă, scris simultan |
 | Măsurătorul Drive | `scripts\drivefs_probe.py` | singura sursă de adevăr, API-ul e rupt |
 | Orquestratorul punții | `scripts\mavis-drive-bridge.ps1` | scrie **și** măsoară |
-| Poarta punții | `scripts\mavis-drive-bridge-selfcheck.ps1` | 6 probe, poate eșua |
+| Poarta punții | `scripts\mavis-drive-bridge-selfcheck.ps1` | 14 probe, poate eșua |
+| Poarta de secrete | `scripts\scan-staged-secrets.ps1` | 9 forme fixe + atribuiri cu valoare |
+| Workflow de server | `.github\workflows\ci-verify.yml` | raportează, nu blochează |
 | Starea de azi | `docs\STARE-MASURATA-CI-2026-10-27.md` | cifre + metode |
 | Snapshot remote | `docs\STARE-MAVIS-OPTIMUS-CI-REMOTE.md` | alt AI lucrează acolo |
 | Specificația punții | `docs\PUNTE-DRIVE-PRIMARA.md` | arhitectura + latența |

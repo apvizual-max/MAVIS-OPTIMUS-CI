@@ -101,7 +101,7 @@ trebuie să coste timp.
 > -Acord`: un `-Acord` = o singură împungere.
 
 **Divergența se documentează, nu se rezolvă cu forță.** Măsurat 2026-10-27:
-**15 commituri local / 5 remote** (cele 5 remote sunt lucrarea CD).
+**17 commituri local / 5 remote** (cele 5 remote sunt lucrarea CD).
 
 ---
 
@@ -172,6 +172,45 @@ act ACCESS, pe mașina lui Popy.
 
 **Regula de numire:** `MAVIS-LOCAL-…` / `MAVIS-CLOUD-…` în ambele canale.
 **Nu se suprascrie nimic.** Corecția = fișier nou.
+
+---
+
+## W8 — Verificarea pe server, peste conținutul aterizat
+
+> **Aditiv.** Măsurat 2026-10-27.
+
+```
+.github/workflows/ci-verify.yml
+  on: push (main) · workflow_dispatch · schedule '30 3 * * *'
+  runs-on: windows-latest · permissions: contents: read
+  → actions/checkout@v4
+  → scannerul de secrete pe index
+  → auto-proba
+```
+
+**Ce e diferit de W1:** W1 rulează **înainte** de commit, pe mașina lui Popy,
+prin hook. W8 rulează **după** push, pe server, peste ce s-a aterizat.
+
+| | W1 (hook) | W8 (server) |
+|---|---|---|
+| Când | înainte de commit | după push |
+| Unde | calculatorul lui Popy | runner GitHub |
+| Efect | **blochează** commitul | **raportează** (nu blochează) |
+| Ce acoperă | indexul local | conținutul **public**, deja împins |
+
+**De ce raportează, nu blochează:** acest repo e lucrat acum de alt AI. Un
+workflow care blochează push-ul altcuia ar fi o poartă fără imputabilitate —
+ar acuza conținut pe care eu nu l-am scris și pe care nu l-am măsurat. Regula
+din `CI-POLICY.md` §5: *un verdict care acuză trebuie să dovedească
+imputabilitatea.*
+
+**Proba:** falsificat în ambele sensuri într-o clonă curată (runner simulat) —
+`SCANNED=50 BLOCKS=0 SCAN_OK` exit 0 → cheie plantată → `BLOCKS=1` exit 1
+(workflow roșu) → scosă → `SCAN_OK` exit 0.
+
+**Starea reală:** pe remote `.github/workflows/` dă **404**. Workflow-ul
+există doar în copia locală, între cele 17 commituri neîmpinse — **serverul
+nu rulează încă nimic pentru acest repo.** Se activează la push, cu R0.
 
 ---
 

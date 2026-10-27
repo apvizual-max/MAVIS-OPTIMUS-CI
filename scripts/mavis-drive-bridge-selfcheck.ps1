@@ -182,6 +182,11 @@ function Test-BridgeConcordance {
     param([string]$RootState, [string]$Transport, [string]$Propagation, [string]$Channel, [string]$ChannelPresent)
     if ($RootState -eq 'false' -and $Transport -ne 'DOWN') { return $false }
     if ($RootState -eq 'true' -and $Transport -ne 'UP') { return $false }
+    # An UNMEASURED root state must never be reported as UP. Claiming a
+    # working transport on the strength of a measurement that failed is
+    # the same defect as a gate that cannot fail - the report asserts
+    # something nobody measured.
+    if ($RootState -eq 'UNKNOWN' -and $Transport -eq 'UP') { return $false }
     if ($Propagation -eq 'OK' -and $Channel -ne 'DRIVE') { return $false }
     if (($Propagation -eq 'STALE' -or $Propagation -eq 'UNKNOWN') -and $Channel -ne 'GITHUB') { return $false }
     # The channel file is the thing the Cloud reads. If it is not in the
@@ -195,10 +200,12 @@ function Test-BridgeConcordance {
 $doctored = @(
     @{ Label = 'raport fals: propagare STALE dar canal DRIVE'; Root = 'true'; Trans = 'UP'; Prop = 'STALE'; Chan = 'DRIVE'; Present = 'true'; MustReject = $true },
     @{ Label = 'raport fals: radacina deconectata dar transport UP'; Root = 'false'; Trans = 'UP'; Prop = 'OK'; Chan = 'DRIVE'; Present = 'true'; MustReject = $true },
+    @{ Label = 'raport fals: radacina NECUNOSCUTA dar transport UP'; Root = 'UNKNOWN'; Trans = 'UP'; Prop = 'STALE'; Chan = 'GITHUB'; Present = 'false'; MustReject = $true },
     @{ Label = 'raport fals: propagare OK dar canal GITHUB'; Root = 'true'; Trans = 'UP'; Prop = 'OK'; Chan = 'GITHUB'; Present = 'true'; MustReject = $true },
     @{ Label = 'raport fals: fisierul canalului absent din cloud dar propagare OK'; Root = 'true'; Trans = 'UP'; Prop = 'OK'; Chan = 'DRIVE'; Present = 'false'; MustReject = $true },
     @{ Label = 'raport adevarat: conectat, propagare OK, canal DRIVE'; Root = 'true'; Trans = 'UP'; Prop = 'OK'; Chan = 'DRIVE'; Present = 'true'; MustReject = $false },
-    @{ Label = 'raport adevarat: conectat, propagare STALE, canal GITHUB'; Root = 'true'; Trans = 'UP'; Prop = 'STALE'; Chan = 'GITHUB'; Present = 'false'; MustReject = $false }
+    @{ Label = 'raport adevarat: conectat, propagare STALE, canal GITHUB'; Root = 'true'; Trans = 'UP'; Prop = 'STALE'; Chan = 'GITHUB'; Present = 'false'; MustReject = $false },
+    @{ Label = 'raport adevarat: radacina necunoscuta, transport necunoscut, canal GITHUB'; Root = 'UNKNOWN'; Trans = 'UNKNOWN'; Prop = 'UNKNOWN'; Chan = 'GITHUB'; Present = 'false'; MustReject = $false }
 )
 $falsified = 0
 foreach ($d in $doctored) {
@@ -221,6 +228,46 @@ if ($rootState -eq 'UNKNOWN') {
 } else {
     $problems++
     Write-Output ('FAIL proba-transport - raportul si masuratoarea se contrazic: root_state=' + $rootState + ' transport=' + $transport + ' propagare=' + $propagation + ' canal=' + $channel + ' fisierul canalului in cloud=' + $channelPresent)
+}
+
+# --- 4b. PROBE E: the probe must read the LOG THAT IS WRITTEN -----------
+# MEASURED 2026-10-27: DriveFS rotates its logs. The live session was
+# writing drive_fs_507.txt while a fresh drive_fs.txt held the trace of a
+# FAILED launch. A probe that reads one fixed filename reported UNKNOWN
+# while the transport was healthy - a false negative, and the orchestrator
+# turned that UNKNOWN into TRANSPORT=UP.
+#
+# The probe must therefore report WHICH log it read. If it always says
+# drive_fs.txt, it is reading a file that no longer carries the state.
+$resE = Invoke-Native -Program $python -Arguments @($Probe, '--root-state')
+$probeLog = ''
+$probeTs = ''
+$probeState = ''
+foreach ($line in ($resE.Out -split "`n")) {
+    if ($line -match '^LOG=(.+)$') { $probeLog = $Matches[1].Trim() }
+    if ($line -match '^ROOT_STATE_TS=(\S+)') { $probeTs = $Matches[1] }
+    if ($line -match '^ROOT_STATE=(\S+)') { $probeState = $Matches[1] }
+}
+if ($probeState -eq 'UNKNOWN') {
+    $unknown++
+    Write-Output 'UNKNOWN proba-log - starea radacinii nu a putut fi citita din niciun log'
+} elseif ($probeLog -and (Test-Path -LiteralPath $probeLog)) {
+    $logName = Split-Path -Leaf $probeLog
+    $logAge = ((Get-Date) - (Get-Item -LiteralPath $probeLog).LastWriteTime).TotalMinutes
+    if ($logName -eq 'drive_fs.txt' -and $logAge -gt 30) {
+        # drive_fs.txt that has not been touched for half an hour is a
+        # STALE file, not the live one. Reading it is the bug.
+        $problems++
+        Write-Output ('FAIL proba-log - sonda a citit ' + $logName + ', care nu a fost scris de ' + [math]::Round($logAge, 1) + ' minute; logul activ e altul')
+    } elseif ($probeTs) {
+        Write-Output ('OK   proba-log - starea radacinii a fost citita din ' + $logName + ' (scris acum ' + [math]::Round($logAge, 1) + ' min in urma), anunt ' + $probeTs + ', starea=' + $probeState)
+    } else {
+        $problems++
+        Write-Output 'FAIL proba-log - sonda a raportat o stare fara amprenta de timp a anuntului'
+    }
+} else {
+    $problems++
+    Write-Output ('FAIL proba-log - logul raportat de sonda nu exista sau nu a fost citit: ' + $probeLog)
 }
 
 # --- 5. PROBE D: the orchestrator must REFUSE an empty publish -----------

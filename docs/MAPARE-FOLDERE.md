@@ -18,7 +18,7 @@
 | **`cloud_id`** | `1V87h9Pbw52chSVNkxQ_NNuMh-CLfZeuI` |
 | **`.git`** | **fișier** (worktree link) → `gitdir: E:/Google/GitData-Optimus-CI` |
 | **Gitdir CD (separat)** | `E:/Google/GitData-Optimus-CD` |
-| **Volum** | **565 fișiere · 13,7 MB** (fără `state/`) |
+| **Volum** | **568 fișiere · 13,7 MB** (fără `state/`) |
 
 > **Calea veche nu mai există:** `…\projects\Mavis-Optimus-Continuous-Integration\`
 > a fost eliminată prin Trash recuperabil (3 niveluri, EXIT 0) pe 27 oct.
@@ -29,12 +29,13 @@
 
 | Entitate | Ce e | Volum | Git? |
 |---|---|---|---|
-| `README.md` | Portul: ce e proiectul, cum se intră, ce porți există | 6.851 B | ✅ |
-| `DOCTRINA-CI.md` | Doctrina CI: reguli, asimetria, ce nu se atinge | 6.834 B | ✅ |
-| `MAPARE-SISTEM.md` | Unde stă sistemul față de restul mașinii | 7.082 B | ✅ |
+| `README.md` | Portul: ce e proiectul, cum se intră, ce porți există | 8.649 B | ✅ |
+| `DOCTRINA-CI.md` | Doctrina CI: reguli, asimetria, ce nu se atinge | 9.544 B | ✅ |
+| `MAPARE-SISTEM.md` | Unde stă sistemul față de restul mașinii | 7.811 B | ✅ |
 | `Plan_Dezvoltare_CI_from_POPY (Gemini)-10-13-2026.md` | Planul original, 13 oct, **istoric** — nu e contract | 63.702 B | ✅ |
 | `.gitignore` | Ce nu se comite | 1.360 B | ✅ |
-| `docs/` | Documentația: 25 fișiere | 151.490 B | ✅ |
+| `.github/workflows/` | Workflow-ul de server: `ci-verify.yml` | 1 fișier · 1.589 B | ✅ |
+| `docs/` | Documentația: 27 fișiere | 164.356 B | ✅ |
 | `scripts/` | Instrumentele: 10 fișiere | 79.200 B | ✅ |
 | `BRIDGE-DRIVE/` | **Canalul primar** (Google Drive) | 5 fișiere · 8.563 B | ✅ |
 | `QUEUE/` | **Canalul secundar** (GitHub) | 1 fișier · 3.352 B | ✅ |
@@ -44,6 +45,9 @@
 | `logs/` | Jurnalele punții zilnice | 14 fișiere · 44.015 B | ❌ ignorat |
 | `desktop.ini` | Artefact Windows | 149 B | ❌ ignorat |
 | `state/` | Scratch, măsurători, probe | — | ❌ ignorat |
+
+**Volum total** (fără `state/`): **568 fișiere · 14.388.527 B** (13,7 MB).
+**Git-tracked: 50 fișiere · 359.381 B.**
 
 > **`mapari/` e gol.** L-am lăsat: e necomandat, și un folder gol nu strică
 > nimic. Nu e un plan de șters — e o poziție fără conținut.
@@ -124,6 +128,31 @@
 Concret, în acest rând: 15 documente CI extinse, 4 skilluri extinse, 4 scripturi
 noi, 2 hook-uri, `.gitignore` completat — **zero** fișiere șterse, zero
 rescrise, zero atinse în CD.
+
+---
+
+## 8. `.github/workflows/` — plasa de siguranță a serverului
+
+> **Aditiv.** Măsurat 2026-10-27.
+
+| Fișier | Ce face | Notă |
+|---|---|---|
+| `ci-verify.yml` | Rulează scannerul de secrete + auto-proba pe **ce a aterizat** în repo | `on: push` (main) + `workflow_dispatch` + `schedule: '30 3 * * *'` · `runs-on: windows-latest` |
+
+**Unde rulează:** pe serverul GitHub. **Nu** rulează poarta punții — acolo nu
+există DriveFS.
+
+**Raportează, nu blochează.** Un workflow care blchează un push al altui AI
+care lucrează pe același repo ar fi o poartă fără imputabilitate: verdictul
+de „REJECT" al meu pe conținutul altcuia. El doar **spune** ce a aterizat.
+
+**Falsificat în ambele sensuri** (clonă curată, simulare de runner):
+`SCANNED=50 BLOCKS=0 SCAN_OK` exit 0 → cu cheie plantată `BLOCKS=1` exit 1
+(workflow ar deveni roșu) → scosă → `SCAN_OK` exit 0.
+
+**Starea reală:** pe remote, `.github/workflows/` dă **404** — workflow-ul
+există doar în copia locală, între cele 17 commituri neîmpinse. **Serverul
+nu rulează încă nimic pentru acest repo.**
 
 ---
 

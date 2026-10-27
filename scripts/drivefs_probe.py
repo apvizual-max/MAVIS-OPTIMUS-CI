@@ -9,7 +9,12 @@
 #    folder that is really in the Drive can be proven, not assumed.
 #
 # 2. Is the local mirror root CONNECTED?
-#    Source: the newest drive_fs.txt, the ReceiveMirrorRoots lines.
+#    Source: the DriveFS logs, the MirrorRoots announcements. The file
+#    NAME is not the evidence: DriveFS rotates its logs, so the live
+#    session can be writing to a numbered file while a fresh drive_fs.txt
+#    holds the trace of a launch that failed. The newest announcement
+#    wins, and the report says which log it came from and how old that
+#    log's last write is.
 #    MEASURED 2026-10-27: the "GDrive" root (E:\Google\GDrive, is_my_drive)
 #    reports connected=false, while every C: root reports connected=true.
 #    A disconnected root transports NOTHING - neither up nor down. That is
@@ -81,50 +86,131 @@ def safe(value, limit=400):
     return str(value)[:limit]
 
 
-def newest_log():
-    """drive_fs.txt holds the startup state, mirror roots included."""
-    path = os.path.join(LOGS, "drive_fs.txt")
-    if not os.path.isfile(path):
-        return None
-    return path
+def candidate_logs():
+    """Every drive_fs log, newest first by mtime.
+
+    MEASURED 2026-10-27: DriveFS rotates its logs. The active session was
+    writing drive_fs_507.txt while a fresh drive_fs.txt held the trace of
+    a launch that FAILED (CANNOT_START_IPC). A probe that reads one fixed
+    filename therefore reports UNKNOWN while the system is perfectly
+    healthy - a false negative that hides a working transport.
+    """
+    if not os.path.isdir(LOGS):
+        return []
+    out = []
+    try:
+        names = os.listdir(LOGS)
+    except OSError:
+        return []
+    for name in names:
+        if not name.startswith("drive_fs") or not name.endswith(".txt"):
+            continue
+        path = os.path.join(LOGS, name)
+        try:
+            out.append((os.path.getmtime(path), path))
+        except OSError:
+            continue
+    out.sort(reverse=True)
+    return [p for _, p in out]
+
+
+def file_stamp(path):
+    """The log file's own write time, as an ISO stamp comparable with the
+    timestamps inside the log lines (which are UTC).
+
+    A log's content is never newer than the file's last write, so a file
+    whose write time is older than the best announcement found so far
+    cannot contain a newer one - and can be skipped.
+    """
+    try:
+        mtime = os.path.getmtime(path)
+    except OSError:
+        return ""
+    return time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(mtime))
 
 
 def report_root_state():
-    """The GDrive mirror root and whether it is connected."""
-    path = newest_log()
-    if path is None:
+    """The GDrive mirror root and whether it is connected.
+
+    The truth is the NEWEST MirrorRoots announcement about the GDrive
+    root, across all logs, ordered by the timestamp inside the line - not
+    by file name and not by file mtime. A file's mtime only says when it
+    was last touched; the line's own timestamp says when the state was
+    announced.
+    """
+    logs = candidate_logs()
+    if not logs:
         print("ROOT_STATE=UNKNOWN")
-        print("REASON=drive_fs.txt not found under " + LOGS)
+        print("REASON=no drive_fs log under " + LOGS)
         return 3
-    with open(path, "rb") as fh:
-        raw = fh.read()
-    text = raw.decode("utf-8", "replace")
+
+    best_ts = ""
+    best_state = "UNKNOWN"
+    best_root = ""
+    best_log = ""
     connected_true = 0
     connected_false = 0
-    gdrive_state = "UNKNOWN"
-    gdrive_root = ""
-    for line in text.splitlines():
-        if "ReceiveMirrorRoots" not in line:
+    for path in logs:
+        # Files are ordered newest first. Once the best announcement is
+        # newer than a file's own last write, no remaining file can beat
+        # it - so the scan stops there instead of reading every archive.
+        fstamp = file_stamp(path)
+        if best_ts and fstamp and fstamp < best_ts:
+            break
+        try:
+            with open(path, "rb") as fh:
+                raw = fh.read()
+        except OSError:
             continue
-        m = re.search(r'title="([^"]*)"', line)
-        c = re.search(r"connected=(true|false)", line)
-        if not c:
-            continue
-        if c.group(1) == "true":
-            connected_true += 1
-        else:
-            connected_false += 1
-        if m and m.group(1) == "GDrive":
-            gdrive_state = c.group(1)
-            r = re.search(r'root_path="([^"]*)"', line)
-            if r:
-                gdrive_root = r.group(1)
-    print("ROOT_STATE=" + gdrive_state)
-    print("GDRIVE_ROOT_PATH=" + safe(gdrive_root, 200))
+        text = raw.decode("utf-8", "replace")
+        file_ts = ""
+        file_state = ""
+        file_root = ""
+        for line in text.splitlines():
+            if "MirrorRoots" not in line:
+                continue
+            stamp = ""
+            ts_m = re.match(r"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})", line)
+            if ts_m:
+                stamp = ts_m.group(1)
+            # Every SyncRoot in the line is a separate root. The old code
+            # took the FIRST title and the FIRST connected= in the line,
+            # which can belong to DIFFERENT roots - so it could report the
+            # GDrive root with another root's connection state.
+            for chunk in line.split("[SyncRoot:")[1:]:
+                m = re.search(r'title="([^"]*)"', chunk)
+                c = re.search(r"connected=(true|false)", chunk)
+                if not c:
+                    continue
+                if c.group(1) == "true":
+                    connected_true += 1
+                else:
+                    connected_false += 1
+                if not m or m.group(1) != "GDrive":
+                    continue
+                r = re.search(r'root_path="([^"]*)"', chunk)
+                rpath = r.group(1) if r else ""
+                # Within one file the newest announcement wins; on equal
+                # stamps the later line in the file wins.
+                if stamp >= file_ts:
+                    file_ts = stamp
+                    file_state = c.group(1)
+                    file_root = rpath
+        if file_ts and file_ts > best_ts:
+            best_ts = file_ts
+            best_state = file_state
+            best_root = file_root
+            best_log = path
+
+    print("ROOT_STATE=" + best_state)
+    print("GDRIVE_ROOT_PATH=" + safe(best_root, 200))
     print("ROOTS_CONNECTED_TRUE=%d" % connected_true)
     print("ROOTS_CONNECTED_FALSE=%d" % connected_false)
-    print("LOG=" + path)
-    if gdrive_state == "UNKNOWN":
+    print("ROOT_STATE_TS=" + best_ts)
+    print("LOG=" + best_log)
+    print("LOGS_SCANNED=%d" % len(logs))
+    if best_state == "UNKNOWN":
+        print("REASON=no MirrorRoots announcement about the GDrive root in any log")
         return 3
     return 0
 

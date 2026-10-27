@@ -38,3 +38,8 @@ _JULES-Optimus_CI/state/verify/
 # state/ = rezultate de masuratoare, probe temporare, loguri de diagnostic.
 # Nu se comite: sunt masuratori punctuale, nu continut de proiect.
 state/
+
+# Cache-ul byte-code al lui Python. Nu e continut de proiect: se regenereaza
+# la prima rulare. Masurat 2026-10-27 - un .pyc a ajuns in index la comit.
+__pycache__/
+*.pyc

@@ -274,6 +274,15 @@ function Invoke-Status {
         Write-Out 'ACTIVE_CHANNEL=GITHUB - puntea Drive nu transporta nimic pana nu se reia'
         return 5
     }
+    if ($root.State -ne 'true') {
+        # An UNMEASURED root state is not an UP root state. Reporting
+        # TRANSPORT=UP here would be a report that asserts something the
+        # instrument never measured - and a report that lies is worse
+        # than a report that says "I could not measure it".
+        Write-Out 'TRANSPORT=UNKNOWN - starea radacinii mirrorului nu a putut fi citita'
+        Write-Out 'ACTIVE_CHANNEL=GITHUB - canalul primar nu poate fi confirmat; pentru continut nou, canalul activ e GitHub'
+        return 4
+    }
     Write-Out 'TRANSPORT=UP'
     if ($propagation -eq 'OK') {
         Write-Out 'ACTIVE_CHANNEL=DRIVE'

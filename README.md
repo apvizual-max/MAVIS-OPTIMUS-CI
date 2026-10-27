@@ -119,23 +119,30 @@ Inventarul complet, măsurat: `docs/INVENTAR-REPO-URI.md`.
 | `docs/BRIDGE-LOCAL-CLOUD.md` | puntea, în detaliu |
 | `docs/MAPARE-FOLDERE.md` | **ce e în fiecare folder al proiectului**, măsurat |
 | `docs/WORKFLOWS.md` | **cum se lucrează**: fluxuri, porți, coduri de ieșire |
+| `docs/PUNTE-DRIVE-PRIMARA.md` | **canalul primar** Drive: arhitectură, măsurători |
 | `docs/PROTOCOL-DENUMIRE-LOCAL-CLOUD.md` | protocolul de denumire |
 | `docs/META-PROMPT.md` | generarea meta-promptului |
 | `docs/RECUPERARE-GIT.md` | starea măsurată a mașinii, cu cifre |
+| `docs/STARE-MASURATA-CI-2026-10-27.md` | **starea de azi**, cu cifre și metode |
+| `docs/STARE-MAVIS-OPTIMUS-CI-REMOTE.md` | referința remote, lucrată de alt AI |
 | `docs/STATUS-LOCAL-TO-CLOUD-2026-10-12.md` | raport de status |
 | `docs/arhiva/handoffs-vechi/` | handoff-uri consumate — **mutate, nu șterse** |
 | `blueprint/` | planul de execuție al proiectului |
 | `cloud-ingest/` | sursa clonată, neatinsă |
 | `scripts/` | puntea: `mavis-sync.ps1`, wrapper, snapshot, meta-prompt |
 | `logs/` | logul datat al fiecărei rulări a punții |
+| `.github/workflows/` | **plasa de siguranță a serverului**: `ci-verify.yml` |
 
 ---
 
 ## Starea acum
 
-Repo: **public**, ramura `main`, HEAD `7227a8b`, **15 commituri neîmpinse**
+Repo: **public**, ramura `main`, HEAD `65af38f`, **17 commituri neîmpinse**
 peste `origin/main` (`3da55ff`, ultim push `2026-10-24T23:55:56Z`).
 **Nimic împins** — corect, push-ul e blocat de poarta R0.
+
+Divergența e **17 înainte / 5 înapoi**: cele 5 commituri remote sunt lucrarea
+sesiunii CD, care lucrează la acest repo în paralel.
 
 **Puntea e vie:** `MavisSyncBridge` 08:30, `LastTaskResult=0`,
 `exit_pull=0`, `local_dupa == remote`, `impingere=NEEXECUTATA`.
@@ -171,6 +178,32 @@ Detalii: `docs/PUNTE-DRIVE-PRIMARA.md` · `docs/STARE-MASURATA-CI-2026-10-27.md`
 
 **Observație de guvernanță:** repo-ul `MAVIS-OPTIMUS-CI` e lucrat acum de
 sesiunea CD. Noi ținem copia și referința — `docs/STARE-MAVIS-OPTIMUS-CI-REMOTE.md`.
+
+---
+
+## Două defecte de măsurătoare, reparate (2026-10-27, ~02:00)
+
+> **Aditiv.** Nimic din secțiunile de mai sus nu se rescrie.
+
+| Defect | Simptom | Reparare |
+|---|---|---|
+| Sonda citea un **nume de fișier fix** (`drive_fs.txt`) | `UNKNOWN` pentru un transport funcțional — logul activ era `drive_fs_507.txt`, iar `drive_fs.txt` conținea urma unei lansări **eșuate** (`CANNOT_START_IPC`) | Sonda scanează toate logurile și ia anunțul cel mai recent, ordonat după amprenta din interiorul liniei |
+| Instrumentul spunea **`TRANSPORT=UP`** pe baza unei măsurători nereușite | `UNKNOWN` trecea pe ramura `UP` — un instrument care afirma ceva ce n-a măsurat | `UNKNOWN` are ramura ei: `TRANSPORT=UNKNOWN`, ieșire 4; poarta **respinge** raportul falsificat |
+
+**Falsificat în ambele sensuri** (6 cazuri): anunț vechi vs nou, cuplare
+per-rădăcină, lipsa oricărui anunț → `UNKNOWN` + exit 3, raport falsificat
+**respins**, raport adevarat **acceptat**, citesirea unui log neatins de
+>30 min → **FAIL**.
+
+**Starea după reparație:** `BRIDGE_PROBLEMS=0 UNKNOWN=0` (16 probe),
+`SECRET_PROBLEMS=0 UNKNOWN=0` (7 probe), `TRANSPORT=UP`,
+`PROPAGATION=STALE`, `ACTIVE_CHANNEL=GITHUB`, ieșire 4.
+
+**Rădăcina e conectată** — `ROOT_STATE=true`, anunț `2026-10-26T22:43:24`,
+citit din `drive_fs_507.txt`. **Propagarea e tot STALE** — măsurătoarea
+separată, nemodificată prin repararea instrumentului.
+
+Detalii: `docs/STARE-MASURATA-CI-2026-10-27.md` §7 · `DOCTRINA-CI.md` §8.2
 
 ---
 

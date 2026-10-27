@@ -1,10 +1,13 @@
 # INVENTAR REPO-URI
 
-> Măsurat **2026-10-24** prin `gh repo list apvizual-max --limit 60 --json
-> name,visibility,pushedAt,defaultBranchRef` și `gh api
+> Măsurat **2026-10-24**, **re-măsurat 2026-10-27** prin `gh repo list
+> apvizual-max --limit 60 --json name,visibility,pushedAt` și `gh api
 > repos/apvizual-max/<R>`.
 > **Înlocuiește** inventarul din 2026-10-11/12, ale cărui vizibilități au
 > devenit false.
+>
+> **Cifrele de push sunt cele din 27 oct.** Activitatea din 26 oct a atins
+> aproape toate repo-urile — de aceea inventarul vechi era depășit.
 
 ---
 
@@ -14,17 +17,30 @@
 
 | Repo | Vizibilitate | Ramură | Ultim push | Rol |
 |---|---|---|---|---|
-| `apvizual-max/MAVIS-CLOUD` | **PUBLIC** | `main` | 2026-10-24T01:14:10Z | **puntea** Local↔Cloud · ținta de lucru a lui Jules |
-| `apvizual-max/MAVIS-OPTIMUS-CI` | **PUBLIC** | `main` | 2026-10-23T14:35:06Z | **SOT CI** — acest proiect |
+| `apvizual-max/MAVIS-CLOUD` | **PUBLIC** | `main` | 2026-10-26T22:47:32Z | **puntea** Local↔Cloud · ținta de lucru a lui Jules |
+| `apvizual-max/MAVIS-OPTIMUS-CI` | **PUBLIC** | `main` | 2026-10-24T23:55:56Z | **SOT CI** — acest proiect |
 | `apvizual-max/MAVIS-OPTIMUS-CD` | **nu există** | — | — | **SOT CD** — se creează la priming (R0) |
-| `apvizual-max/OPTIMUS-Backbone` | **PUBLIC** | `main` | 2026-10-23T14:29:06Z | consola OPTIMUS + scripturi Git |
-| `apvizual-max/Optimus-Mavis-Skills` | **PUBLIC** | `main` | 2026-10-24T00:17:22Z | skillurile agentului |
-| `apvizual-max/pkms-vault-automation` | **PUBLIC** | **`master`** | 2026-10-24T00:19:25Z | menținerea vaultului |
-| `apvizual-max/SENTINEL_PRIME` | **PRIVATE** | `main` | 2026-10-24T01:15:51Z | substratul doctrinei |
-| `apvizual-max/Qwen-Ecosystem-Dashboard` | **PRIVATE** | `main` | 2026-10-24T00:30:08Z | sistem Qwen |
-| `apvizual-max/hermes-doctor` | **PUBLIC** | `main` | 2026-10-23T14:31:44Z | plasa lui Hermes |
-| `apvizual-max/hermes-local-backup` | **PUBLIC** | `main` | 2026-10-24T00:28:56Z | backup săptămânal Hermes |
-| `apvizual-max/hermes-agent-temp` | **PRIVATE** | `main` | 2026-10-24T01:07:40Z | fork Hermes |
+| `apvizual-max/OPTIMUS-Backbone` | **PUBLIC** | `main` | 2026-10-24T23:55:39Z | consola OPTIMUS + scripturi Git |
+| `apvizual-max/Optimus-Mavis-Skills` | **PUBLIC** | `main` | 2026-10-26T23:24:32Z | skillurile agentului |
+| `apvizual-max/pkms-vault-automation` | **PUBLIC** | **`master`** | 2026-10-26T18:13:08Z | menținerea vaultului |
+| `apvizual-max/SENTINEL_PRIME` | **PRIVATE** | `main` | 2026-10-26T22:57:19Z | substratul doctrinei |
+| `apvizual-max/Qwen-Ecosystem-Dashboard` | **PRIVATE** | `main` | 2026-10-24T23:55:31Z | sistem Qwen |
+| `apvizual-max/hermes-doctor` | **PUBLIC** | `main` | 2026-10-26T22:54:51Z | plasa lui Hermes |
+| `apvizual-max/hermes-local-backup` | **PUBLIC** | `main` | 2026-10-26T22:21:46Z | backup săptămânal Hermes |
+| `apvizual-max/hermes-agent-temp` | **PRIVATE** | `main` | 2026-10-26T22:21:48Z | fork Hermes |
+
+> **Re-măsurat 2026-10-27.** Comanda: `gh repo list apvizual-max --limit 60
+> --json name,visibility,pushedAt`. Cifrele de push s-au schimbat față de
+> 24 oct — activitatea din 26 oct (consolidarea pe `E:`) a atins aproape
+> toate repo-urile. **Visibilitățile nu s-au schimbat**: 7 publice, 3 private.
+
+> **`MAVIS-OPTIMUS-CD` încă nu există** pe GitHub — măsurat 2026-10-27, absent
+> din `gh repo list`. Crearea lui e R0 deschis, și aparține sesiunii CD.
+
+> **Nicio ramură nu e protejată** (`required_status_checks` → 404 „Branch not
+> protected"), pe `MAVIS-OPTIMUS-CI` și pe `MAVIS-CLOUD`. Măsurat 2026-10-27.
+> Înseamnă că poarta de secrete din `pre-commit` e singura verificare locală
+> înainte de push — **nu** există o verificare impusă de server.
 
 ### Corectare față de inventarul din 2026-10-11/12
 
@@ -45,11 +61,22 @@
 
 ## 2. Starea canalelor GitHub, măsurată
 
-| Repo | `.github/workflows/` | Secrete de repo | PR-uri Jules deschise |
+| Repo | `.github/workflows/` | Secrete de repo | PR-uri deschise |
 |---|---|---|---|
-| `MAVIS-CLOUD` | `jules.yml`, `verify.yml` | `JULES_API_KEY` | 34 |
-| `MAVIS-OPTIMUS-CI` | **niciunul** (404) | **niciunul** | 0 |
+| `MAVIS-CLOUD` | `jules.yml`, `verify.yml` | `JULES_API_KEY` (1) | **22** |
+| `MAVIS-OPTIMUS-CI` | **`ci-verify.yml`** — adăugat local, **neîmpins** (remote = 404) | **0** | **0** |
 | `MAVIS-OPTIMUS-CD` | — (nu există) | — | — |
+
+**Măsurat 2026-10-27**, cu `gh api repos/apvizual-max/<R>/contents/.github/workflows`,
+`gh api repos/apvizual-max/<R>/actions/secrets --jq .total_count` și
+`gh pr list --repo apvizual-max/<R> --state open --limit 100 --json number`.
+
+> **Faptul măsurat care contează:** în `MAVIS-OPTIMUS-CI`, `.github/workflows/`
+> dă **404 pe remote** — workflow-ul `ci-verify.yml` există doar în copie
+> locală, între cele 17 commituri neîmpinse. Serverul nu rulează încă
+> nimic pentru acest repo. **Cine împinge vede ce a aterizat** — de aceea
+> verificarea serverului e o plasă de siguranță pentru conținutul împins,
+> nu o poartă de intrare.
 
 **`JULES_API_KEY` e prezent doar în `MAVIS-CLOUD`.** Măsurat pe toate cele
 6 repo-uri din registru. În celelalte calea automată nu se declanșează.
@@ -60,11 +87,26 @@
 
 | Cale locală | Remote | Stare |
 |---|---|---|
-| `…\projects\Mavis-Optimus-Continuous-Integration\` | `MAVIS-OPTIMUS-CI` | **acest proiect** · 10 commituri neîmpinse |
-| `…\projects\Mavis-Optimus-Continuous-Development\` | `MAVIS-OPTIMUS-CD` | **SOT CD** · repo GitHub de creat la priming |
-| `…\projects\Mavis-Optimus-Continuous-Integration\cloud-ingest\MAVIS-CLOUD\` | `MAVIS-CLOUD` | clonă read-only, **nu se modifică** |
+| `E:\Google\GDrive\…\CASA\OPTIMUS - Prime\Optimus_CI (by Mavis)\` | `MAVIS-OPTIMUS-CI` | **acest proiect** · **17 commituri neîmpinse** · gitdir `E:/Google/GitData-Optimus-CI` |
+| `E:\Google\GDrive\…\CASA\OPTIMUS - Prime\Optimus_CD (by Jules)\` | `MAVIS-OPTIMUS-CD` | **SOT CD** · repo GitHub de creat la priming · gitdir `E:/Google/GitData-Optimus-CD` |
+| `E:\Google\GDrive\…\Optimus_CI (by Mavis)\cloud-ingest\MAVIS-CLOUD\` | `MAVIS-CLOUD` | clonă read-only, **nu se modifică** |
 | `~/.minimax/agents/mavis/skills` | `Optimus-Mavis-Skills` | skillurile |
 | `~/.minimax-agent/projects` | `OPTIMUS-Backbone` | consola OPTIMUS |
+
+**Joncțiunile pe `C:`** (acces rapid, sursa rămâne pe `E:`):
+
+| Acces rapid | Sursa fizică |
+|---|---|
+| `C:\Users\apviz\.minimax-agent\projects\Optimus_CI (by Mavis)` | `E:\…\CASA\OPTIMUS - Prime\Optimus_CI (by Mavis)` |
+| `C:\Users\apviz\.minimax-agent\projects\Optimus_CD (by Jules)` | `E:\…\CASA\OPTIMUS - Prime\Optimus_CD (by Jules)` |
+
+> **Calea veche a dispărut.** `…\projects\Mavis-Optimus-Continuous-Integration\`
+> a fost eliminată prin Trash recuperabil (3 niveluri, EXIT 0) pe 27 oct.
+> Nimic nu s-a pierdut: istoricul e în `E:\Google\GitData-Optimus-CI`.
+
+**Măsurat 2026-10-27:** `git rev-list --left-right --count origin/main...main`
+→ **17 înainte / 5 înapoi**. Cele 5 commituri remote sunt lucrarea sesiunii
+CD. `git ls-remote origin` → `refs/heads/main = 3da55ff`.
 
 ---
 
