@@ -343,4 +343,79 @@ propriu, poartă, și falsificare.
 
 ---
 
+## 9. Canalul secundar — o coadă plină pe care Cloud nu o putea citi
+
+> **Aditiv.** Măsurat 2026-10-27, ~02:40. Nimic de mai sus nu se rescrie.
+
+### 9.1 Ce părea
+
+`QUEUE/TASKS-FOR-CLOUD.md` avea **3.352 B, 58 de linii**, două tichete
+citibile cu ochiul, și un antet care zicea că e canalul secundar al punții.
+
+### 9.2 Ce era, măsurat
+
+Contractul consumatorului a fost citit **de pe disc**, nu din documentația
+mea: `MAVIS-CLOUD/.skills/mavis-cloud-to-local-reporting/SKILL.md` (liniile
+13–16) și `MAVIS-CLOUD/QUEUE/TASKS-FOR-CLOUD.md` (blocul `## Format`).
+
+| Măsurătoare | Valoare | Metodă |
+|---|---|---|
+| Câmpuri de contract în coada CI | **0 din 5** | numărare pe fișier |
+| Anteturi `### [id] titlu` | **0** | numărare pe fișier |
+| Anteturi `## TASK-…` (invizibile pentru Cloud) | **2** | numărare pe fișier |
+| Tichete cu `scope:` | **0** | numărare pe fișier |
+| `QUEUE/DONE/` în repo | **absent** | `Test-Path` |
+| Ultima linie a cozii | `Nu intai` — mijloc de propoziție | citire octet cu octet |
+
+**Cloud rulează doar tichetele cu `scope: cloud`** (skill-ul Cloud-ului, pas
+3). Cu zero `scope:`, ar fi executat **zero** tichete — și n-ar fi raportat
+nimic greșit.
+
+### 9.3 Trunchierea era în amândouă copiile
+
+Și canalul primar (`BRIDGE-DRIVE/TASKURI-PENTRU-CLOUD.md`) se termina în
+`Nu intai`. Receiptul de publicare (`state/drive-bridge-last-publish.json`)
+arată că **scriptul** a publicat ticheta `TASK-2026-10-27-0103-…` la
+`01:03:30` — deci corpul trunchiat a ajuns în publisher ca atare, iar
+publisherul l-a scris în ambele canale și a raportat succes.
+
+**Deci defectul nu era în fișier. Era în generator** — și în poarta care îl
+lăsa să treacă.
+
+### 9.4 Ce s-a reparat
+
+| # | Unde | Reparare |
+|---|---|---|
+| 1 | `scripts/mavis-drive-bridge.ps1` | `-Publish` scrie copia secundară **în contractul consumatorului** (5 câmpuri + `scope` + `livrare`) |
+| 2 | `scripts/mavis-drive-bridge.ps1` | `-Publish` **refuză** un corp trunchiat (exit 2) și un `scope` necunoscut (exit 2) |
+| 3 | `scripts/mavis-drive-bridge.ps1` | după scriere, verifică `DUAL_CHANNEL_DRIVE` / `DUAL_CHANNEL_QUEUE` — regula „același TASK_ID" devine executabilă |
+| 4 | `QUEUE/TASKS-FOR-CLOUD.md` | reconstruită în format de contract; tichetele păstrate, propoziția trunchiată completată **în ambele canale** |
+| 5 | `QUEUE/DONE/README.md` | creat — ținta de livrare pe care Cloud o scrie |
+| 6 | `docs/CONTRACT-CLOUD-QUEUE.md` | contractul, citat de pe discul Cloud-ului, cu data măsurării |
+| 7 | `scripts/queue-contract-check.ps1` | poarta: 6 verificări + detectarea driftului de contract |
+| 8 | `scripts/queue-contract-check-selfcheck.ps1` | auto-proba, 11 probe, falsificare în ambele sensuri |
+
+### 9.5 Măsurătoarea de după
+
+```
+QUEUE_PROBLEMS=0 UNKNOWN=0        EXIT 0
+TICKETS=2   TICKET_PROBLEMS=0
+CONTRACT_SOURCE=MAVIS-CLOUD-LIVE   CONTRACT_DRIFT=NO
+UNRECOGNISED_HEADERS=0             DONE_DIR=present
+
+QUEUE_GATE_PROBLEMS=0 UNKNOWN=0 FALSIFIED=11    EXIT 0   (11 probe)
+BRIDGE_PROBLEMS=0 UNKNOWN=0                     EXIT 0   (19 probe)
+SYNC_PROBLEMS=0 UNKNOWN=0 FALSIFIED=4           EXIT 0   (9 probe)
+```
+
+### 9.6 Ce rămâne de decis de Popy (nu e tehnic)
+
+În ce repo trăiește coada pe care Cloud o citește. Măsurat: Cloud citește
+`MAVIS-CLOUD/QUEUE/TASKS-FOR-CLOUD.md`, **din repo-ul lui**. Coada din CI e
+acum **conformă cu contractul** în oricare dintre cele două variante — deci
+decizia lui nu e blocată de lipsa de pregătire. E o alegere de contract
+între instanțe, nu o lipsă de tehnică.
+
+---
+
 *2026-10-27 · Mavis Local · măsurat*

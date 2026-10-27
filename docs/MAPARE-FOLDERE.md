@@ -71,8 +71,10 @@
 | Script | Ce face | Notă |
 |---|---|---|
 | `mavis-drive-bridge.ps1` | Publicare pe ambele canale + măsurătoare de stare | `-Status` · `-Publish` · `-Verify` |
-| `mavis-drive-bridge-selfcheck.ps1` | **Poarta punții** — 14 probe | `BRIDGE_PROBLEMS=0 UNKNOWN=0` |
+| `mavis-drive-bridge-selfcheck.ps1` | **Poarta punții** — 19 probe | `BRIDGE_PROBLEMS=0 UNKNOWN=0` |
 | `drivefs_probe.py` | Sonda read-only în baza DriveFS | `--title` · `--newest` · `--root-state` · `--pending` · `--staleness` |
+| `queue-contract-check.ps1` | **Poarta cozii secundare** — contractul consumatorului, viu | exit `0`/`1`/`2`; `2` = contract ilizibil = UNKNOWN |
+| `queue-contract-check-selfcheck.ps1` | **Poarta porții de contract** — 11 probe | `QUEUE_GATE_PROBLEMS=0 UNKNOWN=0 FALSIFIED=11` |
 | `scan-staged-secrets.ps1` | **Poarta de secrete** pe index | `BLOCKS` / `WARNS` |
 | `scan-staged-secrets-selfcheck.ps1` | **Poarta porții de secrete** — 7 probe | `SECRET_PROBLEMS=0 UNKNOWN=0` |
 | `mavis-sync.ps1` | **Puntea zilnică** Local↔Cloud (task 08:30) | cale derivată din `$PSScriptRoot` · `exit` propriu |
@@ -94,8 +96,8 @@
 `WORKFLOWS`
 
 **Puntea și politici:** `PUNTE-DRIVE-PRIMARA` · `BRIDGE-LOCAL-CLOUD` ·
-`PROTOCOL-DENUMIRE-LOCAL-CLOUD` · `CI-POLICY` · `GIT-GITHUB-PROCEDURI` ·
-`CONFLICTE-DOZTRINA` · `ARHITECTURA-CI-CD`
+`PROTOCOL-DENUMIRE-LOCAL-CLOUD` · `CONTRACT-CLOUD-QUEUE` · `CI-POLICY` ·
+`GIT-GITHUB-PROCEDURI` · `CONFLICTE-DOZTRINA` · `ARHITECTURA-CI-CD`
 
 **Stare:** `STARE-MASURATA-CI-2026-10-27` · `STARE-MAVIS-OPTIMUS-CI-REMOTE` ·
 `STARE-MASURATA-CI` · `STATUS-LOCAL-TO-CLOUD-2026-10-12`
@@ -155,6 +157,45 @@ de „REJECT" al meu pe conținutul altcuia. El doar **spune** ce a aterizat.
 **Starea reală:** pe remote, `.github/workflows/` dă **404** — workflow-ul
 există doar în copia locală, între cele 17 commituri neîmpinse. **Serverul
 nu rulează încă nimic pentru acest repo.**
+
+---
+
+## 9. `QUEUE/` — canalul secundar (GitHub)
+
+> **Aditiv.** Măsurat 2026-10-27, ~02:40.
+
+| Fișier / folder | Cine scrie | Ce e |
+|---|---|---|
+| `QUEUE/TASKS-FOR-CLOUD.md` | Local | Coada de tichete pentru Cloud, **în contractul consumatorului** |
+| `QUEUE/DONE/README.md` | Local | Ținta de livrare: aici scrie Cloud rezultatele, ca `<id>.md` |
+
+**Formatul cozii e contractul, nu o preferință.** Cloud citește acest fișier
+la pull și rulează **doar** tichetele cu `scope: cloud`. Cele cinci câmpuri:
+`cerut de` · `data` · `scope` · `ce trebuie` · `livrare`. Contractul, citat de
+pe discul Cloud-ului: `docs/CONTRACT-CLOUD-QUEUE.md`.
+
+**Măsurat înainte de reparare:** 0 din 5 câmpuri, 0 `scope:`, 2 anteturi
+invizibile pentru Cloud, `QUEUE/DONE/` absent. Cloud ar fi executat **zero**
+tichete — fără să raporteze nicio eroare.
+
+**Măsurat după reparare:**
+
+```
+QUEUE_PROBLEMS=0 UNKNOWN=0   TICKETS=2   CONTRACT_DRIFT=NO
+UNRECOGNISED_HEADERS=0        DONE_DIR=present            EXIT 0
+```
+
+### Ce s-a adăugat în acest rând
+
+| Ce | Kind | Notă |
+|---|---|---|
+| `docs/CONTRACT-CLOUD-QUEUE.md` | document | contractul consumatorului, cu proveniență și dată |
+| `scripts/queue-contract-check.ps1` | poartă | contract **viu**, drift, paritate `TASK_ID`, țintă de livrare |
+| `scripts/queue-contract-check-selfcheck.ps1` | auto-probă | 11 probe, falsificare în ambele sensuri |
+| `QUEUE/DONE/README.md` | țintă | folderul în care Cloud livrează |
+
+Delta: **+1 document, +2 scripturi, +1 folder** — **zero** fișiere șterse,
+zero rescrise, zero atinse în CD.
 
 ---
 

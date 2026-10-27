@@ -238,3 +238,43 @@ raport–măsurătoare, cu probe de falsificare.
 
 Detalii: `docs/PUNTE-DRIVE-PRIMARA.md` §4.1–§4.2 ·
 `docs/STARE-MASURATA-CI-2026-10-27.md`
+
+---
+
+## Canalul secundar — reparat, măsurat (2026-10-27, ~02:40)
+
+> **Aditiv.** Nimic din secțiunile de mai sus nu se rescrie.
+
+`QUEUE/TASKS-FOR-CLOUD.md` avea două tichete citibile cu ochiul și era
+**inexecutabilă** de Cloud. Contractul consumatorului, citit de pe discul
+lui Cloud: `### [id] titlu` + `cerut de` · `data` · `scope` · `ce trebuie` ·
+`livrare`, iar Cloud rulează **doar** tichetele cu `scope: cloud`.
+
+| Măsurat, înainte | Valoare |
+|---|---|
+| Câmpuri de contract în coadă | **0 din 5** |
+| Tichete cu `scope:` | **0** → Cloud ar executa **zero** tichete |
+| Anteturi invizibile pentru Cloud (`## TASK-…`) | **2** |
+| `QUEUE/DONE/` (ținta de livrare) | **absent** |
+| Ultima linie, în **ambele** canale | `Nu intai` — mijloc de propoziție |
+
+**Defectul era în generator, nu în fișier:** publisherul a primit un corp
+trunchiat și l-a scris în ambele canale, raportând succes. Deci s-a reparat
+publisherul, nu doar coada.
+
+| Reparare | Unde |
+|---|---|
+| Copia secundară se scrie în **contractul consumatorului** | `scripts/mavis-drive-bridge.ps1 -Publish` |
+| Corp trunchiat și `scope` necunoscut → **refuz** (exit 2) | `scripts/mavis-drive-bridge.ps1 -Publish` |
+| `DUAL_CHANNEL_DRIVE` / `DUAL_CHANNEL_QUEUE` — „același TASK_ID" devine executabil | `scripts/mavis-drive-bridge.ps1 -Publish` |
+| Poarta contractului, cu **contract viu** de pe discul Cloud | `scripts/queue-contract-check.ps1` |
+| Auto-proba, 11 probe, falsificare în ambele sensuri | `scripts/queue-contract-check-selfcheck.ps1` |
+
+```powershell
+powershell -NoProfile -File scripts\queue-contract-check.ps1
+```
+→ `QUEUE_PROBLEMS=0 UNKNOWN=0` · `TICKETS=2` · `CONTRACT_DRIFT=NO` ·
+`UNRECOGNISED_HEADERS=0` · `DONE_DIR=present` · **EXIT 0**
+
+Detalii: `docs/CONTRACT-CLOUD-QUEUE.md` · `docs/BRIDGE-LOCAL-CLOUD.md` §10 ·
+`docs/STARE-MASURATA-CI-2026-10-27.md` §9 · `DOCTRINA-CI.md` §9.7

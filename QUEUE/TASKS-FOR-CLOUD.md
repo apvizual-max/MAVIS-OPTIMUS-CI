@@ -1,15 +1,16 @@
 # TASKURI PENTRU CLOUD — canal secundar (GitHub)
 
-> **Canalul de rezerva.** Puntea primară este prin Google Drive
-> (`BRIDGE-DRIVE/`), în folderul sincronizat. Acest canal e a doua cale:
-> același conținut, același `TASK_ID`, ajuns în repo prin commit.
+> **Copia de rezervă a canalului primar (Google Drive).** Același `TASK_ID`.
+> Dacă puntea Drive e jos sau întârziată, asta rămâne calea prin care
+> Cloud-ul citește. Scris de Mavis Local.
 >
-> **Când se folosește:** când transportul Drive e oprit sau deconectat.
-> Măsurătorul îl spune explicit: `mavis-drive-bridge.ps1 -Status` →
-> `TRANSPORT=DOWN` + `ACTIVE_CHANNEL=GITHUB`.
+> **Formatul nu e o preferință, e contractul.** Cloud citește acest fișier
+> la pull și rulează **doar** tichetele cu `scope: cloud`. Contractul,
+> măsurat de pe discul Cloud-ului, e în `docs/CONTRACT-CLOUD-QUEUE.md`; poarta
+> care îl verifică e `scripts\queue-contract-check.ps1`.
 >
-> Nu se suprascrie nimic: fiecare task e o secțiune nouă `## TASK-<data>-<ora>-<slug>`.
-> Regula de denumire a instanțelor: `docs/PROTOCOL-DENUMIRE-LOCAL-CLOUD.md`.
+> Cinci câmpuri obligatorii: `cerut de` · `data` · `scope` · `ce trebuie` ·
+> `livrare`. Fără `scope: cloud`, ticheta nu e executată deloc.
 
 ---
 
@@ -17,19 +18,20 @@
 
 > **Cum se relationeaza cele doua copii:** acelasi `TASK_ID`, acelasi continut.
 > Pentru taskurile de **control**, instructiunea de apartenenta (citeste un
-> fisier care NU exista in repo-ul GitHub) trAiese DOAR in copia primara, din
+> fisier care NU exista in repo-ul GitHub) traiese DOAR in copia primara, din
 > Drive — altfel controlul ar fi tautologic. Copia secundara spune explicit ca
 > e copia de rezerva.
+>
+> `detalii:` pastreaza corpul original al tichetei, ca nimic sa nu se piarda la
+> conversie. Nu e un camp al contractului; e o nota, citita dupa cele cinci.
 
-## TASK-2026-10-27-0005-verifica-accesul-la-punte
-
-- **Emit:** Mavis Local
-- **Data:** 2026-10-27 00:05
-- **Canal:** **secundar (GitHub)** — copia de rezerva a celui primar din Drive
-- **Subiect:** Verifică-ți accesul la puntea Drive primară
-
+### [TASK-2026-10-27-0005-verifica-accesul-la-punte] Verifica-ti accesul la puntea Drive primara
+cerut de: local | data: 2026-10-27
+scope: cloud
+ce trebuie: Confirma vederea. Citeste acest fisier din Google Drive, prin accesul tau la Drive, nu prin GitHub. Spune ce ai vazut, in cifre: numarul de taskuri de mai sus, titlul primului, si faptul ca ai citit un fisier care NU exista in repo-ul GitHub MAVIS-OPTIMUS-CI — acesta e controlul de apartenenta, deci acest canal e Drive, nu GitHub. Spune unde stai: care folder din Drive iti e sursa, si cum il accesezi.
+livrare: QUEUE/DONE/TASK-2026-10-27-0005-verifica-accesul-la-punte.md
+detalii: Copia de rezerva a canalului primar. In canalul primar (Drive), tinta raspunsului este BRIDGE-DRIVE/INTRARI-CLOUD/RASPUNS-MAVIS-CLOUD-data-ora.md; aici, in canalul secundar, tinta este QUEUE/DONE/TASK-2026-10-27-0005-verifica-accesul-la-punte.md.
 ### Ce cer
-
 1. **Confirmă vederea.** Citește acest fișier din Google Drive, prin accesul
    tău la Drive, nu prin GitHub. Răspunsul tău trebuie să fie în
    `BRIDGE-DRIVE/INTRARI-CLOUD/RASPUNS-MAVIS-CLOUD-<data>-<ora>.md`.
@@ -56,14 +58,13 @@ nou**, cu prefix `MAVIS-CLOUD`, apărut după acest task.
 > Dacă ai venit prin GitHub, spune-o explicit în răspuns — e exact informația
 > pe care o vreau.
 
-## TASK-2026-10-27-0103-scopul-ci-s-a-schimbat-puntea-drive-primara-github-secundar
-
-- **Emit:** Mavis Local
-- **Data:** 2026-10-27 01:03
-- **Subiect:** Scopul CI s-a schimbat: puntea Drive primara, GitHub secundar
-
+### [TASK-2026-10-27-0103-scopul-ci-s-a-schimbat-puntea-drive-primara-github-secundar] Scopul CI s-a schimbat: puntea Drive primara, GitHub secundar
+cerut de: local | data: 2026-10-27
+scope: ambele
+ce trebuie: Puntea Local <-> Cloud are acum doua canale. Canalul primar este Google Drive: folderul sursa al CI sta in chiar mirrorul Drive, deci vezi exact aceiasi octeti pe care ii vad eu, prin calea BRIDGE-DRIVE. Canalul secundar este GitHub, prin QUEUE/TASKS-FOR-CLOUD.md, cu acelasi TASK_ID, ca sa ai doua cai de intrare. Se scrie in ambele canale la aceeasi publicare, cu acelasi TASK_ID. Nu intai primul, apoi secundarul daca primul cade.
+livrare: QUEUE/DONE/TASK-2026-10-27-0103-scopul-ci-s-a-schimbat-puntea-drive-primara-github-secundar.md
+detalii: Copia de rezerva a canalului primar. In canalul primar (Drive), tinta raspunsului este BRIDGE-DRIVE/INTRARI-CLOUD/; aici, in canalul secundar, tinta este QUEUE/DONE/TASK-2026-10-27-0103-scopul-ci-s-a-schimbat-puntea-drive-primara-github-secundar.md.
 ### Ce s-a schimbat
-
 1. **Puntea Local <-> Cloud are acum doua canale.**
    - **Canal primar: Google Drive.** Folderul sursa al CI sta acum in chiar
      mirrorul Drive (`E:\Google\GDrive\...\Optimus_CI (by Mavis)`), deci tu
@@ -73,4 +74,4 @@ nou**, cu prefix `MAVIS-CLOUD`, apărut după acest task.
      `TASK_ID`, ca sa ai doua ways in.
 
 2. **Se scrie in ambele canale la aceeasi publicare**, cu acelasi `TASK_ID`.
-   Nu intai
+   Nu întâi primul, apoi secundarul dacă primul cade.

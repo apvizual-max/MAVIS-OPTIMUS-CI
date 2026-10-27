@@ -44,7 +44,9 @@ param(
     [switch]$Publish,
     [switch]$Verify,
     [string]$Title = '',
-    [string]$Body = ''
+    [string]$Body = '',
+    [string]$Scope = 'cloud',
+    [string]$Livrare = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -296,9 +298,43 @@ function Invoke-Status {
     return 4
 }
 
+# A task body is an instruction to another agent. A body that stops in the
+# middle of a sentence is a truncated instruction, and publishing it would
+# hand the Cloud half an order and call it a task.
+# MEASURED 2026-10-27: the publisher accepted a body ending in "Nu intai",
+# wrote it to BOTH channels, and reported the publish as a normal success.
+function Test-BodyComplete {
+    param([Parameter(Mandatory = $true)][string]$Text)
+    $t = $Text.Trim()
+    if (-not $t) { return $false }
+    $lines = @($t -split "`r?`n" | Where-Object { $_.Trim() })
+    if ($lines.Count -eq 0) { return $false }
+    $last = $lines[$lines.Count - 1].TrimEnd()
+    if ($last -match '^\s*[-*+]\s+(.*)$') { $last = $Matches[1].TrimEnd() }
+    elseif ($last -match '^\s*\d+\.\s+(.*)$') { $last = $Matches[1].TrimEnd() }
+    if (-not $last) { return $false }
+    $c = $last[$last.Length - 1]
+    return ($c -eq '.' -or $c -eq '!' -or $c -eq '?' -or $c -eq [char]0x2026 -or
+            $c -eq ')' -or $c -eq ']' -or $c -eq '}' -or $c -eq '"' -or
+            $c -eq [char]0x201D -or $c -eq '`')
+}
+
 function Invoke-Publish {
     if (-not $Title) {
         Write-Err 'ERROR=-Publish needs -Title'
+        return 2
+    }
+    if (-not $Body.Trim()) {
+        Write-Err 'ERROR=-Publish needs -Body: a task without an instruction is not a task'
+        return 2
+    }
+    if (-not (Test-BodyComplete -Text $Body)) {
+        Write-Err 'ERROR=-Publish refused: the body ends mid-sentence. A truncated instruction is not a task.'
+        return 2
+    }
+    $scopeValue = $Scope.Trim().ToLower()
+    if ($scopeValue -ne 'cloud' -and $scopeValue -ne 'local' -and $scopeValue -ne 'ambele') {
+        Write-Err ('ERROR=-Publish refused: -Scope must be cloud, local or ambele, got: ' + $Scope)
         return 2
     }
     $stamp = Format-Stamp
@@ -332,16 +368,55 @@ function Invoke-Publish {
 
     # The secondary channel is written at the same time, so the Cloud has two
     # ways in. It is the same content, with the same task id.
+    # The secondary copy is written in the CONSUMER'S contract, not in the
+    # primary channel's format. MEASURED 2026-10-27: the publisher wrote the
+    # same free-form block into both channels, so the queue carried ZERO of
+    # the five fields the Cloud parses - and a ticket with no "scope: cloud"
+    # is a ticket the Cloud never executes. Contract: docs/CONTRACT-CLOUD-QUEUE.md
+    $livrareValue = $Livrare.Trim()
+    if (-not $livrareValue) { $livrareValue = 'QUEUE/DONE/' + $taskId + '.md' }
+    $queueBlock = @(
+        '',
+        ('### [' + $taskId + '] ' + $Title),
+        ('cerut de: local | data: ' + (Get-Date).ToString('yyyy-MM-dd')),
+        ('scope: ' + $scopeValue),
+        ('ce trebuie: ' + $Body.Trim()),
+        ('livrare: ' + $livrareValue),
+        ''
+    ) -join "`n"
     $queueHeader = @(
         '# TASKURI PENTRU CLOUD - canal secundar (GitHub)',
         '',
         '> Copia de rezerva a canalului Drive. Acelasi task id.',
         '> Daca puntea Drive e jos, asta ramane calea prin care Cloud-ul citeste.',
+        '>',
+        '> Formatul e contractul consumatorului: `### [id] titlu` + cerut de / data /',
+        '> scope / ce trebuie / livrare. Cloud ruleaza DOAR tichetele cu `scope: cloud`.',
+        '> Contractul: docs/CONTRACT-CLOUD-QUEUE.md.',
+        '> Poarta: scripts/queue-contract-check.ps1.',
         '',
         ('*Creatat: ' + (Get-Date).ToString('yyyy-MM-dd HH:mm') + '*'),
         ''
     ) -join "`n"
-    Add-TaskBlock -File $QueueFile -Block $block -Header $queueHeader
+    Add-TaskBlock -File $QueueFile -Block $queueBlock -Header $queueHeader
+
+    # The rule "same TASK_ID, two channels" is checked right after the write,
+    # not assumed. A publisher that wrote to one channel and reported two
+    # would be a lying publisher.
+    $driveHas = $false
+    if (Test-Path -LiteralPath $TaskFile) {
+        $driveHas = ([System.IO.File]::ReadAllText($TaskFile)).Contains($taskId)
+    }
+    $queueHas = $false
+    if (Test-Path -LiteralPath $QueueFile) {
+        $queueHas = ([System.IO.File]::ReadAllText($QueueFile)).Contains($taskId)
+    }
+    Write-Out ('DUAL_CHANNEL_DRIVE=' + $driveHas)
+    Write-Out ('DUAL_CHANNEL_QUEUE=' + $queueHas)
+    if (-not ($driveHas -and $queueHas)) {
+        Write-Err 'ERROR=publicare incompleta: TASK_ID nu apare in ambele canale'
+        return 1
+    }
 
     $stateFile = Join-Path $StateDir 'drive-bridge-last-publish.json'
     if (-not (Test-Path -LiteralPath $StateDir)) {
@@ -351,6 +426,8 @@ function Invoke-Publish {
         task_id    = $taskId
         title      = $Title
         stamp      = $stamp
+        scope      = $scopeValue
+        livrare    = $livrareValue
         drive_file = $TaskFile
         queue_file = $QueueFile
         published  = (Get-Date).ToString('o')

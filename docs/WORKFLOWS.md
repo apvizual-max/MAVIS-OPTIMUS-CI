@@ -259,6 +259,49 @@ doctorală: `SYNC_PROBLEMS=3`, **EXIT 1**.
 
 ---
 
+## W10 — Publicarea unei tichete în ambele canale, în format de contract
+
+> **Aditiv.** Măsurat 2026-10-27.
+
+O cerință pentru Cloud pornește din **coada secundară** și se scrie în
+**ambele** canale, cu același `TASK_ID`:
+
+```
+scripts\mavis-drive-bridge.ps1 -Publish -Title "<subiect>" -Body "<text>" [-Scope cloud]
+  → BRIDGE-DRIVE\TASKURI-PENTRU-CLOUD.md   ← canalul primar (Drive)
+  → QUEUE\TASKS-FOR-CLOUD.md                ← canalul secundar (GitHub)
+  → verifică: DUAL_CHANNEL_DRIVE / DUAL_CHANNEL_QUEUE
+```
+
+| Ce | Cum |
+|---|---|
+| Corp trunchiat (se oprește la mijloc de propoziție) | **refuzat**, exit 2 |
+| `scope` în afara setului `cloud`/`local`/`ambele` | **refuzat**, exit 2 |
+| Corp valid | scris în ambele, `DUAL_CHANNEL_*=True` |
+| `TASK_ID` absent dintr-un canal | **exit 1** — publicare incompletă |
+
+**Copia secundară se scrie în contractul consumatorului**, nu în formatul
+canalului primar: `### [id] titlu` + `cerut de` · `data` · `scope` ·
+`ce trebuie` · `livrare`. Contractul: `docs/CONTRACT-CLOUD-QUEUE.md`.
+
+### Verificarea
+
+```powershell
+powershell -NoProfile -File scripts\queue-contract-check.ps1
+```
+
+→ `QUEUE_PROBLEMS=0 UNKNOWN=0`, **EXIT 0** · 2 tichete · `CONTRACT_DRIFT=NO` ·
+`UNRECOGNISED_HEADERS=0` · `DONE_DIR=present`.
+
+Auto-proba: `scripts\queue-contract-check-selfcheck.ps1` — **11 probe**,
+`QUEUE_GATE_PROBLEMS=0 UNKNOWN=0 FALSIFIED=11`, EXIT 0. Falsificare în
+ambele sensuri: coadă conformă → 0; tichetă fără `scope` / cu `scope`
+necunoscut / fără `livrare` / trunchiată; `QUEUE/DONE` lipsă; id absent din
+canalul primar; contract live ilizibil → **2 (UNKNOWN, nu succes)**; contract
+derivat → 1.
+
+---
+
 ## Fluxuri pe care CI **nu** le atinge
 
 | Flux | Unde trăiește |

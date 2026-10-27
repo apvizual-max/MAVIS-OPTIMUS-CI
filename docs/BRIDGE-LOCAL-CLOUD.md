@@ -227,3 +227,51 @@ DriveFS, inclusiv cu `immutable=1`.
 
 Detalii complete: `docs/PUNTE-DRIVE-PRIMARA.md`,
 `docs/STARE-MASURATA-CI-2026-10-27.md`, `docs/ARHITECTURA-CI-CD.md` §8–§9.
+
+---
+
+## 10. Contractul consumatorului, măsurat (canalul secundar)
+
+> **Aditiv.** Măsurat 2026-10-27. Nu rescriu nimic de mai sus.
+
+### 10.1 Ce declarasem, și ce era
+
+Secțiunea „Canalul" de mai sus declară formatul corect:
+
+> `QUEUE/TASKS-FOR-CLOUD.md` | structurat: `### [id] titlu` + `cerut de / data / scope / ce trebuie / livrare`
+
+**Fișierul nu avea niciunul din cei cinci câmpuri.** Măsurat: 0 anteturi
+`### [id] titlu`, 0 `scope:`, 2 anteturi `## TASK-…` pe care Cloud nu le
+vede, și `QUEUE/DONE/` absent.
+
+Cloud execută **doar** tichetele cu `scope: cloud`. Deci coada era, pentru
+singurul cititor care contează, **vidă** — fără nicio eroare raportată.
+
+### 10.2 Contractul, citit de pe discul lui Cloud
+
+Nu din documentația mea. Din:
+
+- `MAVIS-CLOUD/.skills/mavis-cloud-to-local-reporting/SKILL.md` — cine citește
+  (linia 13), ce execută (linia 15), unde livrează (linia 16).
+- `MAVIS-CLOUD/QUEUE/TASKS-FOR-CLOUD.md` — blocul `## Format`.
+
+Snapshotul, cu data măsurării: `docs/CONTRACT-CLOUD-QUEUE.md`.
+
+### 10.3 Trei reguli care au devenit executabile
+
+| Propoziție (deja existentă în acest document) | Cum se execută acum |
+|---|---|
+| „același `TASK_ID` în ambele canale" | `DUAL_CHANNEL_DRIVE` / `DUAL_CHANNEL_QUEUE`, verificate după fiecare publicare; ieșire **1** dacă nu se potrivesc |
+| „instrucțiunea e completă" | corpul trunchiat e **refuzat** la publicare (exit 2) — nu mai ajunge la Cloud |
+| „Cloud citește `QUEUE/TASKS-FOR-CLOUD.md`" | poarta citește contractul **live**, de pe discul lui Cloud, și raportează `CONTRACT_DRIFT` |
+
+### 10.4 Instrumentele canalului secundar
+
+| Instrument | Ce face |
+|---|---|
+| `scripts/queue-contract-check.ps1` | verifică fiecare tichetă împotriva contractului **live**, existența țintei de livrare, paritatea `TASK_ID` între canale, și driftul de contract; exit `0` / `1` / `2` |
+| `scripts/queue-contract-check-selfcheck.ps1` | auto-proba, **11 probe**, falsificare în ambele sensuri; exit `2` pentru contract ilizibil |
+| `docs/CONTRACT-CLOUD-QUEUE.md` | contractul, cu proveniență și dată |
+
+**`2` nu e succes.** Când contractul live nu poate fi citit, poarta raportează
+UNKNOWN. Necunoscutul se raportează, nu se presupune.

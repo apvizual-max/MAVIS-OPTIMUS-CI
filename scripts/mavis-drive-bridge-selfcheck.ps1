@@ -17,6 +17,11 @@
 #   5. PROBE D (falsification): the orchestrator must REFUSE a publish with
 #      no subject. If it accepted it, the gate in it would be decorative.
 #   6. The channels must exist - Drive primary, GitHub secondary.
+#   7. PROBE F/G/H (the publisher): a TRUNCATED body and an UNKNOWN scope
+#      must be REFUSED, and a good publish must land in the consumer's
+#      contract format with the same TASK_ID in both channels. MEASURED
+#      2026-10-27: the publisher accepted a body ending in "Nu intai",
+#      wrote it to both channels, and reported the publish as a success.
 #
 # A DOWN transport does NOT fail this gate: the system is supposed to detect
 # it and fall back. What fails the gate is a transport that is broken and
@@ -298,6 +303,62 @@ if ($missingChannels -eq 0) {
     Write-Output 'OK   proba-canale - canalele Drive (4) si canalul secundar GitHub exista'
 } else {
     $problems++
+}
+
+# --- 7. PROBE F/G/H: the publisher must refuse a broken task --------------
+# MEASURED 2026-10-27: the publisher accepted a body ending in "Nu intai",
+# wrote it to BOTH channels, and reported the publish as a normal success.
+# A truncated instruction is not a task, and an unknown scope is not a
+# scope the Cloud knows.
+#
+# The probes run against a FIXTURE copy of the publisher, so the real
+# channels are never written by a test.
+$fixtureRoot = Join-Path $ProjectRoot 'state\tmp\bridge-selfcheck'
+if (Test-Path -LiteralPath $fixtureRoot) { Remove-Item -LiteralPath $fixtureRoot -Recurse -Force }
+New-Item -ItemType Directory -Path (Join-Path $fixtureRoot 'scripts') -Force | Out-Null
+New-Item -ItemType Directory -Path (Join-Path $fixtureRoot 'BRIDGE-DRIVE') -Force | Out-Null
+New-Item -ItemType Directory -Path (Join-Path $fixtureRoot 'QUEUE') -Force | Out-Null
+Copy-Item -LiteralPath $Orchestrator -Destination (Join-Path $fixtureRoot 'scripts\mavis-drive-bridge.ps1') -Force
+$fixtureScript = Join-Path $fixtureRoot 'scripts\mavis-drive-bridge.ps1'
+
+$resF = Invoke-Native -Program 'powershell' -Arguments @('-NoProfile', '-File', $fixtureScript, '-Publish', '-Title', 'Proba trunchiata', '-Body', 'Un corp care se opreste la mijloc, fara punct final')
+if ($resF.Code -eq 2) {
+    Write-Output 'OK   proba-trunchiere - o publicare cu corpul trunchiat e refuzata (exit 2)'
+} else {
+    $problems++
+    Write-Output ('FAIL proba-trunchiere - o publicare cu corpul trunchiat NU a fost refuzata (exit ' + $resF.Code + ')')
+}
+
+$resG = Invoke-Native -Program 'powershell' -Arguments @('-NoProfile', '-File', $fixtureScript, '-Publish', '-Title', 'Proba scope', '-Body', 'Corp complet, cu punct final.', '-Scope', 'nepro')
+if ($resG.Code -eq 2) {
+    Write-Output 'OK   proba-scope - o publicare cu scope necunoscut e refuzata (exit 2)'
+} else {
+    $problems++
+    Write-Output ('FAIL proba-scope - o publicare cu scope necunoscut NU a fost refuzata (exit ' + $resG.Code + ')')
+}
+
+$resH = Invoke-Native -Program 'powershell' -Arguments @('-NoProfile', '-File', $fixtureScript, '-Publish', '-Title', 'Proba contract', '-Body', 'Verifica formatul cozii. Spune ce ai masurat, in cifre.')
+$fixtureQueue = Join-Path $fixtureRoot 'QUEUE\TASKS-FOR-CLOUD.md'
+$fixtureDrive = Join-Path $fixtureRoot 'BRIDGE-DRIVE\TASKURI-PENTRU-CLOUD.md'
+$queueText = ''
+if (Test-Path -LiteralPath $fixtureQueue) { $queueText = [System.IO.File]::ReadAllText($fixtureQueue) }
+$driveTextF = ''
+if (Test-Path -LiteralPath $fixtureDrive) { $driveTextF = [System.IO.File]::ReadAllText($fixtureDrive) }
+$idMatch = [regex]::Match($queueText, '(?m)^###\s*\[([^\]]+)\]')
+$contractOk = ($queueText -match '(?m)^###\s*\[[^\]]+\]') -and
+              ($queueText -match '(?m)^cerut de:') -and
+              ($queueText -match '(?m)^scope:\s*(cloud|local|ambele)\s*$') -and
+              ($queueText -match '(?m)^ce trebuie:') -and
+              ($queueText -match '(?m)^livrare:\s*\S')
+$parityOk = $false
+if ($idMatch.Success -and $driveTextF) {
+    $parityOk = $driveTextF.Contains($idMatch.Groups[1].Value)
+}
+if ($contractOk -and $parityOk -and ($resH.Out -match 'DUAL_CHANNEL_DRIVE=True') -and ($resH.Out -match 'DUAL_CHANNEL_QUEUE=True')) {
+    Write-Output ('OK   proba-contract-publicat - blocul secundar e scris in contractul consumatorului, cu acelasi TASK_ID in ambele canale (' + $idMatch.Groups[1].Value + ')')
+} else {
+    $problems++
+    Write-Output 'FAIL proba-contract-publicat - blocul secundar nu e in contractul consumatorului, sau TASK_ID nu apare in ambele canale'
 }
 
 Write-Output ('BRIDGE_PROBLEMS=' + $problems + ' UNKNOWN=' + $unknown)

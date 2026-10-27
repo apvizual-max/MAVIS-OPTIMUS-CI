@@ -62,4 +62,4 @@ nou**, cu prefix `MAVIS-CLOUD`, apărut după acest task.
      `TASK_ID`, ca sa ai doua ways in.
 
 2. **Se scrie in ambele canale la aceeasi publicare**, cu acelasi `TASK_ID`.
-   Nu intai
+   Nu întâi primul, apoi secundarul dacă primul cade.

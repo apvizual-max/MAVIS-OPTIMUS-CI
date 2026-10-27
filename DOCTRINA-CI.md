@@ -315,3 +315,47 @@ Porțile întregi: `BRIDGE_PROBLEMS=0 UNKNOWN=0` (14 probe), dintre care
 probe-ul de doctorat „absent din cloud, dar propagare OK" → **respingut**.
 Cod de ieșire **4** când propagarea e `STALE` — transportul căzut nu
 blochează sistemul, dar **nu se raportează ca succes**.
+
+### 9.7 Un contract scris în proză nu e un contract
+
+> **Aditiv.** Măsurat 2026-10-27. Nu rescriu nimic de mai sus.
+
+Coada secundară avea **două tichete**, un antet care zicea totul despre ea,
+și era **inexecutabilă**. Contractul consumatorului spune: Cloud citește
+`QUEUE/TASKS-FOR-CLOUD.md` și rulează **doar** tichetele cu `scope: cloud`.
+Măsurat: **0 din 5** câmpuri de contract, **0** tichete cu `scope:`. Cloud ar
+fi executat **zero** tichete — fără să raporteze vreo eroare.
+
+Mai rău: **documentația mea spunea adevărul, fișierul nu.** `docs/BRIDGE-LOCAL-CLOUD.md`
+declara formatul corect cu câteva rânduri mai sus. Deci nu era o lipsă de
+cunoștințe — era o lipsă de **execuție**.
+
+**Regula:** o regulă care stă într-un document nu e o regulă, e o intenție.
+Dacă poate fi falsificată — și poate fi *executată fals* — atunci devine
+cod. Regula „același `TASK_ID` în ambele canale" a fost o propoziție; azi e
+o verificare făcută imediat după scriere (`DUAL_CHANNEL_DRIVE` /
+`DUAL_CHANNEL_QUEUE`), cu ieșire 1 dacă nu se potrivesc.
+
+**Și:** un defect trăiește în mai multe locuri simultan — aici, în **trei**:
+fișierul cozii, **generatorul** care o scria, și poarta care o lăsa să
+treacă. Repararea fișierului, singură, ar fi fost refăcută de următoarea
+publicare. Deci s-a reparat **generatorul** (§9.7.1), nu doar fișierul.
+
+#### 9.7.1 Ce înseamnă „executabil"
+
+| Propoziție | Formă executabilă |
+|---|---|
+| „Cloud citește doar tichete cu `scope: cloud`" | poarta respinge o tichetă fără `scope:` |
+| „același `TASK_ID` în ambele canale" | `DUAL_CHANNEL_DRIVE` / `DUAL_CHANNEL_QUEUE` după scriere |
+| „instrucțiunea e completă" | corpul trunchiat e **refuzat** la publicare (exit 2) |
+| „coada e în contractul Cloud-ului" | `queue-contract-check.ps1` citește contractul **live**, de pe discul lui Cloud, și raportează `CONTRACT_DRIFT` |
+| „ținta de livrare există" | `QUEUE/DONE/` trebuie să existe, sau poarta blochează |
+
+**Ultima linie e cea mai importantă:** poarta nu compară cu o copie a
+contractului, ci cu **contractul viu**. O copie ar fi o regulă care se
+învechise în tăcere; contractul viu e o măsurătoare. Când Cloud își schimbă
+formatul, `CONTRACT_DRIFT=YES` și poarta blochează — în loc să lase o coadă
+frumos formatată, necitibilă.
+
+**Și regula din §8.3 rămâne adevărată:** necunoscutul nu e succes. Când
+contractul live nu poate fi citit, poarta dă **2**, nu **0**.
