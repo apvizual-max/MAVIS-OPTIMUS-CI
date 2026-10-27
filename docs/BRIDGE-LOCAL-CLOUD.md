@@ -270,8 +270,77 @@ Snapshotul, cu data măsurării: `docs/CONTRACT-CLOUD-QUEUE.md`.
 | Instrument | Ce face |
 |---|---|
 | `scripts/queue-contract-check.ps1` | verifică fiecare tichetă împotriva contractului **live**, existența țintei de livrare, paritatea `TASK_ID` între canale, și driftul de contract; exit `0` / `1` / `2` |
-| `scripts/queue-contract-check-selfcheck.ps1` | auto-proba, **11 probe**, falsificare în ambele sensuri; exit `2` pentru contract ilizibil |
+| `scripts/queue-contract-check-selfcheck.ps1` | auto-proba, **14 probe**, falsificare în ambele sensuri; exit `2` pentru contract ilizibil |
 | `docs/CONTRACT-CLOUD-QUEUE.md` | contractul, cu proveniență și dată |
 
 **`2` nu e succes.** Când contractul live nu poate fi citit, poarta raportează
 UNKNOWN. Necunoscutul se raportează, nu se presupune.
+---
+
+## 11. Livrarea: tichetele ajung efectiv în repo-ul Cloud-ului (2026-10-27)
+
+> **Aditiv.** Nimic din secțiunile de mai sus nu se rescrie.
+
+### 11.1 Defectul măsurat
+
+Contractul consumatorului, citit de pe discul lui Cloud
+(`MAVIS-CLOUD/.skills/mavis-cloud-to-local-reporting/SKILL.md`, linia 12),
+spune:
+
+> `git pull --rebase origin main` — **mereu primul**. TASK-urile vin de aici.
+
+Deci Cloud-ul trage din **propriul repo**, `MAVIS-CLOUD`, și citește
+`QUEUE/TASKS-FOR-CLOUD.md` de acolo.
+
+Publisherul scria canalul secundar în folderul **CI**, adică în repo-ul
+`MAVIS-OPTIMUS-CI` — un repo din care Cloud-ul nu citește niciodată.
+
+| Unde | `TASK_ID`-uri, măsurat 2026-10-27 |
+|---|---|
+| coada locală (CI) | **2** |
+| coada din `MAVIS-CLOUD` `origin/main` | **0** |
+
+**Zero livrări.** Tichetele erau perfect formate — cele cinci câmpuri,
+`scope` corect, instrucțiune completă — și poarta spunea „totul în regulă",
+fiindcă verifica **forma** cozii, nu dacă coada **ajunge** la consumator.
+
+> O coadă poate fi impecabil formată și complet absentă. Poarta care cere
+> doar forma nu vede absența.
+
+### 11.2 Mecanismul de livrare
+
+`scripts/queue-deliver.ps1`:
+
+| Pas | Ce se măsoară |
+|---|---|
+| **sync** | clona Cloud-ului e adusă la vârful remote-ului: `--ff-only` dacă nu are nimic propriu, `merge --no-ff` dacă are — **ambele istorice păstrate** |
+| **scriere** | blocul e construit în contractul consumatorului și **recitit prin același parser**; un bloc care se citește ca două tichete, sau cu altă țintă de livrare, e **refuzat** |
+| **secrete** | `scan-staged-secrets.ps1 -StagedDiff` — doar liniile pe care le adaugă schimbarea, nu tot repo-ul |
+| **publicare** | `git push`, apoi verificare prin `ls-remote` **și** prin conținutul cozii la remote |
+
+| Cod | Sens |
+|---|---|
+| `0` | livrat și verificat la remote |
+| `1` | măsurat: `N` tichete locale lipsesc din coada Cloud-ului |
+| `2` | refuzat sau nemăsurabil — **nimic** publicat |
+| `4` | scris, dar **nepublicat** (UNKNOWN) |
+| `5` | push **refuzat** de remote — nimic publicat |
+
+Refuză, măsurat: corp trunchiat · corp gol · corp care redeclară un câmp
+al contractului · corp care ar deschide o tichetă fantomă.
+
+### 11.3 Poarta care vede absența
+
+`queue-contract-check.ps1` are acum proba `DELIVERY`: fiecare `TASK_ID`
+local trebuie să fie în coada **repo-ului Cloud-ului**, citită la vârful
+ramurii remote (`DELIVERY_SOURCE=`, `DELIVERED=n/m`). Plus o probă că
+skillul Cloud-ului încă declară `QUEUE/TASKS-FOR-CLOUD.md` drept cale de
+intrare — dacă Cloud mută intrarea, livrarea ajunge unde nimeni nu citește.
+
+### 11.4 Ce s-a schimbat în clona Cloud-ului
+
+Clona din `cloud-ingest/MAVIS-CLOUD` nu mai e doar sursă read-only: devine
+și **copia de lucru** a canalului secundar. Contractul consumatorului spune
+„Local scrie sarcina aici" — deci scrierea acolo nu e o încălcare, e
+contractul. Nimic nu se șterge: tichetele se **adaugă**, iar marcarea `[x]`
+pe care o pune Cloud-ul supraviețuiește.

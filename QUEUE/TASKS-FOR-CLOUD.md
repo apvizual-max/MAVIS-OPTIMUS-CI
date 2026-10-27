@@ -1,13 +1,15 @@
 # TASKURI PENTRU CLOUD — canal secundar (GitHub)
 
-> **Copia de rezervă a canalului primar (Google Drive).** Același `TASK_ID`.
-> Dacă puntea Drive e jos sau întârziată, asta rămâne calea prin care
-> Cloud-ul citește. Scris de Mavis Local.
+> **Înregistrarea locală a canalului secundar.** Cloud-ul citește aceeași
+> coadă din **repo-ul său** (`MAVIS-CLOUD`), nu de aici.
+> `scripts\queue-deliver.ps1` o publică acolo, cu același `TASK_ID`.
+> Acest fișier e sursa din care se livrează și dovada locală a ce s-a
+> livrat.
 >
-> **Formatul nu e o preferință, e contractul.** Cloud citește acest fișier
-> la pull și rulează **doar** tichetele cu `scope: cloud`. Contractul,
-> măsurat de pe discul Cloud-ului, e în `docs/CONTRACT-CLOUD-QUEUE.md`; poarta
-> care îl verifică e `scripts\queue-contract-check.ps1`.
+> **Formatul nu e o preferință, e contractul.** Contractul, măsurat de pe
+> discul Cloud-ului, e în `docs/CONTRACT-CLOUD-QUEUE.md`; poarta care îl
+> verifică e `scripts\queue-contract-check.ps1` — și ea verifică **livrarea**:
+> fiecare `TASK_ID` de aici trebuie să fie în coada repo-ului Cloud-ului.
 >
 > Cinci câmpuri obligatorii: `cerut de` · `data` · `scope` · `ce trebuie` ·
 > `livrare`. Fără `scope: cloud`, ticheta nu e executată deloc.

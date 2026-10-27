@@ -277,7 +277,7 @@ publisherul, nu doar coada.
 | Corp trunchiat și `scope` necunoscut → **refuz** (exit 2) | `scripts/mavis-drive-bridge.ps1 -Publish` |
 | `DUAL_CHANNEL_DRIVE` / `DUAL_CHANNEL_QUEUE` — „același TASK_ID" devine executabil | `scripts/mavis-drive-bridge.ps1 -Publish` |
 | Poarta contractului, cu **contract viu** de pe discul Cloud | `scripts/queue-contract-check.ps1` |
-| Auto-proba, 11 probe, falsificare în ambele sensuri | `scripts/queue-contract-check-selfcheck.ps1` |
+| Auto-proba, 14 probe, falsificare în ambele sensuri | `scripts/queue-contract-check-selfcheck.ps1` |
 
 ```powershell
 powershell -NoProfile -File scripts\queue-contract-check.ps1
@@ -321,3 +321,62 @@ reală rămâne neatinsă (hash identic înainte și după).
 
 Detalii: `docs/MAPARE-FOLDERE.md` §10 · `docs/WORKFLOWS.md` W11 ·
 `docs/STARE-MASURATA-CI-2026-10-27.md` §10 · `DOCTRINA-CI.md` §9.8
+
+---
+
+## Livrarea cozii — reparată și măsurată (2026-10-27, ~06:40)
+
+> **Aditiv.** Nimic din secțiunile de mai sus nu se rescrie.
+
+> **O coadă poate fi impecabil formată și complet absentă.** Poarta
+> verifica **forma** cozii și raporta sănătate pentru o coadă pe care nu o
+> citea nimeni.
+
+Contractul consumatorului, citit de pe discul lui Cloud, spune că Cloud-ul
+face `git pull --rebase origin main` în **propriul repo** și citește
+`QUEUE/TASKS-FOR-CLOUD.md` de acolo. Publisherul scria canalul secundar în
+repo-ul **CI**.
+
+| Măsurat, înainte | Valoare |
+|---|---|
+| `TASK_ID`-uri în coada locală (CI) | **2** |
+| `TASK_ID`-uri în coada pe care Cloud-ul o citește | **0** |
+| Poarta contractului | `QUEUE_PROBLEMS=0` — **verde, greșit** |
+
+### Reparare
+
+| Ce | Unde |
+|---|---|
+| Livrarea în repo-ul Cloud-ului: sync → scriere → secrete → commit → push → verificare | `scripts/queue-deliver.ps1` |
+| Parserul cozii, **o singură implementare** pentru poartă și livrare | `scripts/queue-lib.ps1` |
+| Poarta vede absența: fiecare `TASK_ID` local trebuie să fie în coada **Cloud-ului**, la vârful remote-ului | `scripts/queue-contract-check.ps1` (proba `DELIVERY`) |
+| Scanarea de secrete pe **dif**, nu pe tot indexul | `scripts/scan-staged-secrets.ps1 -StagedDiff` |
+| Auto-proba livrării: **15 probe**, falsificare în ambele sensuri | `scripts/queue-deliver-selfcheck.ps1` |
+| Auto-proba porții: **14 probe** (era 11) | `scripts/queue-contract-check-selfcheck.ps1` |
+
+### Măsurat, după
+
+| | |
+|---|---|
+| `TASK_ID`-uri livrate | **2** |
+| Commit în `MAVIS-CLOUD` | `4a88879` |
+| `REMOTE_HEAD` = `LOCAL_HEAD` | `4a88879` · `ls-remote` confirmat |
+| Poarta contractului | `DELIVERED=2/2` · `QUEUE_PROBLEMS=0 UNKNOWN=0` · **EXIT 0** |
+
+### Două defecte de poartă reparate în drum
+
+1. **Publisherul refuza calea prin joncțiune.** Compara două șiruri: calea
+   dată (C:\…\projects\…) și rădăcina reală (E:\Google\GDrive\…). Prin
+   joncțiune nu se potrivesc niciodată — deci publisherul refuza chiar
+   repo-ul pentru care a fost scris, iar auto-proba lui cădea cu 7 probleme.
+   Reparat cu `git rev-parse --show-prefix`: e gol **exact** când calea dată
+   e rădăcina repo-ului, iar joncțiunile, literele de disc, majusculele și
+   slash-urile sunt rezolvate de git, pentru că e întrebarea lui.
+2. **Scannerul de secrete bloca false.** Scana tot indexul repo-ului și
+   găsea 9 tipuri de token în documentație **deja publicată** (exemplele
+   oficiale din fișierele Cloud-ului). O acuzație falsă costă mai mult
+   decât un secret ratat. Modul `-StagedDiff` întreabă ce trebuie întrebat:
+   introduce **această** schimbare un secret?
+
+Detalii: `docs/BRIDGE-LOCAL-CLOUD.md` §11 · `docs/WORKFLOWS.md` W14 ·
+`docs/CONTRACT-CLOUD-QUEUE.md`.

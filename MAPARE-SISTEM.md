@@ -191,7 +191,10 @@ loc. Nimic nu s-a pierdut: istoricul e în `E:\Google\GitData-Optimus-CI`.
 | Poarta punții | `scripts\mavis-drive-bridge-selfcheck.ps1` | 19 probe, poate eșua |
 | Contractul cozii | `docs\CONTRACT-CLOUD-QUEUE.md` | consumatorul, citat de pe discul Cloud |
 | Poarta cozii | `scripts\queue-contract-check.ps1` | contract **viu**, drift, paritate, țintă de livrare |
-| Auto-proba cozii | `scripts\queue-contract-check-selfcheck.ps1` | 11 probe, falsificare în ambele sensuri |
+| Auto-proba cozii | `scripts\queue-contract-check-selfcheck.ps1` | 14 probe, falsificare în ambele sensuri |
+| Livrarea cozii | `scripts\queue-deliver.ps1` | scrie tichetele în repo-ul Cloud-ului si le publica; exit `0`/`1`/`2`/`4`/`5` |
+| Biblioteca cozii | `scripts\queue-lib.ps1` | parserul cozii, **o singura implementare** pentru poarta si livrare |
+| Auto-proba livrarii | `scripts\queue-deliver-selfcheck.ps1` | 15 probe, falsificare în ambele sensuri |
 | Măsurătorul combinării | `scripts\merge-check.ps1` | dry-run `merge-tree`: divergență, conflicte, arbore rezultat |
 | Auto-proba combinării | `scripts\merge-check-selfcheck.ps1` | 5 probe pe repo reale, falsificare în ambele sensuri |
 | Ținta de livrare | `QUEUE\DONE\` | unde Cloud scrie rezultatele |

@@ -46,6 +46,25 @@ function Invoke-Scanner {
     return @{ Code = $code; Out = ($out -join "`n") }
 }
 
+# The scanner over a repository, in the index-wide mode or in the diff mode.
+function Invoke-ScannerRepo {
+    param(
+        [Parameter(Mandatory = $true)][string]$Repo,
+        [switch]$StagedDiff
+    )
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    if ($StagedDiff) {
+        $out = & powershell -NoProfile -File $Scanner -StagedDiff -RepoPath $Repo 2>&1
+    } else {
+        $out = & powershell -NoProfile -File $Scanner -RepoPath $Repo 2>&1
+    }
+    $ErrorActionPreference = $prev
+    $code = $LASTEXITCODE
+    if ($null -eq $code) { $code = -1 }
+    return @{ Code = $code; Out = ($out -join "`n") }
+}
+
 # --- check 1: static shape of the scanner ---------------------------------
 if (-not (Test-Path -LiteralPath $Scanner)) {
     Fail 'scanner file missing'
@@ -175,6 +194,74 @@ if ($text5 -match 'SCAN_OK') {
 } else {
     Fail ('proba-index-real - indexul repo-ului are secrete sau scanarea a esuat')
     foreach ($l in @($out5)) { Write-Out ('   ' + $l) }
+}
+
+# --- check 6: the -StagedDiff mode measures THIS change --------------------
+# MEASURED 2026-10-27: the index-wide scan reported 9 blocks in MAVIS-CLOUD
+# for documentation that was ALREADY published, and it blocked a queue
+# delivery that carried no secret at all. The diff mode answers the narrow
+# question: does THIS change introduce a secret?
+#
+# Three probes, because the mode must be NARROWER, not WEAKER:
+#   a clean diff in a repo that already holds example tokens -> not blocked
+#   the same repo in the old index-wide mode                  -> still blocked
+#   a diff that ADDS a secret                                  -> blocked
+$diffRepo = Join-Path $TmpDir 'diff-mode-repo'
+if (Test-Path -LiteralPath $diffRepo) { Remove-Item -LiteralPath $diffRepo -Recurse -Force }
+New-Item -ItemType Directory -Path $diffRepo -Force | Out-Null
+$enc = New-Object System.Text.UTF8Encoding($false)
+
+$example = @(
+    ('AWS key example: ' + ('AKIA' + 'IOSFODNN7EXAMPLE')),
+    ('GitHub token example: ' + ('ghp_' + '0123456789abcdefghijABCDEFGHIJ'))
+) -join "`n"
+[System.IO.File]::WriteAllText((Join-Path $diffRepo 'docs-existing.md'), $example, $enc)
+$prev = $ErrorActionPreference
+$ErrorActionPreference = 'Continue'
+& git -C $diffRepo init -b main 2>&1 | Out-Null
+& git -C $diffRepo config user.name 'Fixture' | Out-Null
+& git -C $diffRepo config user.email 'fixture@localhost' | Out-Null
+& git -C $diffRepo add -A | Out-Null
+& git -C $diffRepo commit -m 'fixture: pre-existing documentation' 2>&1 | Out-Null
+[System.IO.File]::WriteAllText((Join-Path $diffRepo 'clean.md'), 'nothing to see here', $enc)
+& git -C $diffRepo add -- clean.md | Out-Null
+$ErrorActionPreference = $prev
+
+$rd = Invoke-ScannerRepo -Repo $diffRepo -StagedDiff
+$blocksd = 0
+if ($rd.Out -match 'BLOCKS=(\d+)') { $blocksd = [int]$Matches[1] }
+if ($rd.Code -eq 0 -and $blocksd -eq 0) {
+    Write-Out 'OK   proba-dif-curat - un diff curat NU e blocat, chiar daca repo-ul are deja documente cu exemple publicate'
+} else {
+    Fail ('proba-dif-curat - asteptat EXIT 0 cu BLOCKS=0, obtinut EXIT ' + $rd.Code + ' BLOCKS=' + $blocksd)
+}
+
+$ri = Invoke-ScannerRepo -Repo $diffRepo
+$blocksi = 0
+if ($ri.Out -match 'BLOCKS=(\d+)') { $blocksi = [int]$Matches[1] }
+if ($ri.Code -eq 1 -and $blocksi -ge 1) {
+    Write-Out ('OK   proba-dif-control - modul index detecteaza in continuare exemplele deja publicate (BLOCKS=' + $blocksi + '); diful este mai NARIC, nu mai slab')
+} else {
+    Fail ('proba-dif-control - asteptat EXIT 1 cu BLOCKS>=1, obtinut EXIT ' + $ri.Code + ' BLOCKS=' + $blocksi)
+}
+
+$introduced = @(
+    ('AKIA' + 'IOSFODNN7EXAMPLE'),
+    ('ghp_' + ('a1b2c3d4e5f6' + 'g7h8i9j0k1l2m3n4o5p6q7r8'))
+) -join "`n"
+[System.IO.File]::WriteAllText((Join-Path $diffRepo 'introduced.md'), $introduced, $enc)
+$prev = $ErrorActionPreference
+$ErrorActionPreference = 'Continue'
+& git -C $diffRepo add -- introduced.md 2>&1 | Out-Null
+$ErrorActionPreference = $prev
+
+$rs = Invoke-ScannerRepo -Repo $diffRepo -StagedDiff
+$blockss = 0
+if ($rs.Out -match 'BLOCKS=(\d+)') { $blockss = [int]$Matches[1] }
+if ($rs.Code -eq 1 -and $blockss -ge 1) {
+    Write-Out ('OK   proba-dif-secret - un secret adus de ACEASTA schimbare e blocat (BLOCKS=' + $blockss + ')')
+} else {
+    Fail ('proba-dif-secret - asteptat EXIT 1 cu BLOCKS>=1, obtinut EXIT ' + $rs.Code + ' BLOCKS=' + $blockss)
 }
 
 # --- verdict --------------------------------------------------------------

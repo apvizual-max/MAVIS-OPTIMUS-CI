@@ -118,19 +118,28 @@ if ($top.Code -ne 0) {
 }
 $topPath = $top.Out.Trim()
 $givenPath = (Resolve-Path -LiteralPath $repo).ProviderPath
-# Normalize before comparing: git prints forward slashes, Windows paths use
-# backslashes, and the drive letter case can differ. A comparison that does
-# not normalize would refuse the REAL repository - a gate that blocks the
-# legitimate case is as broken as one that blocks nothing.
-function Normalize-Path {
-    param([string]$p)
-    if (-not $p) { return '' }
-    return $p.Replace('/', '\').TrimEnd('\').ToLowerInvariant()
+# MEASURED 2026-10-27: comparing the two as STRINGS refuses the legitimate
+# case. This repository is reached through a junction (C:\...\projects\...
+# -> E:\Google\GDrive\...), git prints the PHYSICAL path, and the two strings
+# never match - so the publisher refused to publish the very repository it
+# was built for. The selfcheck went red with 7 problems for a gate that was
+# right about its purpose and blind about how the operator spells the path.
+#
+# `git rev-parse --show-prefix` answers the same question the way git itself
+# sees it: it is EMPTY exactly when the path given IS the repository root,
+# and it carries the relative path otherwise. Junctions, drive letters, case
+# and slashes are already resolved, because they are git's own question.
+$prefix = Invoke-Git -Arguments @('rev-parse', '--show-prefix') -WorkingDirectory $repo
+if ($prefix.Code -ne 0) {
+    Write-Out ('EROARE: nu pot determina pozitia in repo: ' + $repo)
+    exit 2
 }
-if ((Normalize-Path $topPath) -ne (Normalize-Path $givenPath)) {
+$prefixText = $prefix.Out.Trim()
+if ($prefixText -ne '') {
     Write-Out ('EROARE: calea nu e radacina unui repo.')
     Write-Out ('  data   : ' + $givenPath)
     Write-Out ('  repo   : ' + $topPath)
+    Write-Out ('  prefix : ' + $prefixText)
     Write-Out 'Publicarea e oprita: altfel s-ar publica alt repo decat cel cerut.'
     exit 2
 }

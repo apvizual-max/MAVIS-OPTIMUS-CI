@@ -1,4 +1,7 @@
-﻿# cloud-ingest/ = clonă read-only a lui MAVIS-CLOUD, păstrată local pentru comparație.
+﻿# cloud-ingest/ = clona MAVIS-CLOUD: sursa contractului consumatorului SI copia de lucru
+# a livrarii cozii secundare (contractul spune "Local scrie sarcina aici").
+# NU se comite: ar duplica date personale (CV-uri, telefon, clienti) intr-un repo nou,
+# si ar ingropa un repo in altul. Se acceseaza prin cale.
 # NU se comite: ar duplica date personale (CV-uri, telefon, clienți) într-un repo nou,
 # și ar îngropa un repo în altul. Se accesează prin cale.
 cloud-ingest/

@@ -24,10 +24,23 @@
 #      files when they are reachable, and compared with the local snapshot
 #      (docs/CONTRACT-CLOUD-QUEUE.md). If the Cloud changed its format and
 #      nobody noticed, the snapshot would be a beautiful lie.
+#   7. DELIVERY: every ticket id must be present in the queue OF THE CLOUD'S
+#      OWN REPOSITORY, read at the tip of the remote branch.
+#      MEASURED 2026-10-27: this is the probe that was MISSING. The queue
+#      was perfectly formed - all five fields, right scope, complete
+#      instruction - and it sat in the CI repo, which the Cloud never
+#      reads. 2 tickets local, 0 in the Cloud's queue, and the gate said
+#      everything was fine. A queue can be well formed and perfectly
+#      absent. This probe is the one that sees the absence.
+#   8. THE ENTRY PATH: the Cloud's own skill must still declare
+#      QUEUE/TASKS-FOR-CLOUD.md as its entry path. If the Cloud moves it,
+#      the delivery lands where nobody reads.
 #
 # Exit codes:
-#   0 = measured and true: tickets conform, contract has not drifted
-#   1 = at least one ticket breaks the contract, or the contract drifted
+#   0 = measured and true: tickets conform, they are delivered, contract has
+#       not drifted
+#   1 = at least one ticket breaks the contract, is not delivered, or the
+#       contract drifted
 #   2 = the measurement is incomplete (the live contract is unreadable).
 #       This is NOT a pass: an unmeasured state must never be reported as
 #       a healthy one.
@@ -40,10 +53,26 @@ param(
     [string]$QueueFile = '',
     [string]$DoneDir = '',
     [string]$DriveChannel = '',
-    [string]$ContractSnapshot = ''
+    [string]$ContractSnapshot = '',
+    [string]$Remote = 'origin',
+    [string]$Branch = 'main'
 )
 
 $ErrorActionPreference = 'Stop'
+
+# A terminating error must not leave a verdict-shaped exit code behind.
+trap {
+    [Console]::Error.WriteLine('ERROR=executia s-a oprit: ' + $_.Exception.Message)
+    if ($_.InvocationInfo) { [Console]::Error.WriteLine('LINIE: ' + $_.InvocationInfo.Line.Trim()) }
+    exit 2
+}
+
+$Lib = Join-Path $PSScriptRoot 'queue-lib.ps1'
+if (-not (Test-Path -LiteralPath $Lib)) {
+    [Console]::Error.WriteLine('ERROR=lipseste scripts\queue-lib.ps1: ' + $Lib)
+    exit 2
+}
+. $Lib
 
 if (-not $Root) { $Root = Split-Path -Parent $PSScriptRoot }
 if (-not $QueueFile) { $QueueFile = Join-Path $Root 'QUEUE\TASKS-FOR-CLOUD.md' }
@@ -51,95 +80,6 @@ if (-not $DoneDir) { $DoneDir = Join-Path $Root 'QUEUE\DONE' }
 if (-not $DriveChannel) { $DriveChannel = Join-Path $Root 'BRIDGE-DRIVE\TASKURI-PENTRU-CLOUD.md' }
 if (-not $ContractSnapshot) { $ContractSnapshot = Join-Path $Root 'docs\CONTRACT-CLOUD-QUEUE.md' }
 if (-not $CloudRoot) { $CloudRoot = Join-Path $Root 'cloud-ingest\MAVIS-CLOUD' }
-
-$LiveQueue = Join-Path $CloudRoot 'QUEUE\TASKS-FOR-CLOUD.md'
-$LiveSkill = Join-Path $CloudRoot '.skills\mavis-cloud-to-local-reporting\SKILL.md'
-
-function Write-Out {
-    param([Parameter(Mandatory = $true)][string]$Message)
-    [Console]::Out.WriteLine($Message)
-}
-
-# Extract the contract field names from a queue file, by reading the fenced
-# block under the "## Format" heading. The fields are declared in the
-# Cloud's own file, so this is a measurement, not a constant: if Cloud
-# renames a field, the extraction follows.
-function Get-ContractFields {
-    param([Parameter(Mandatory = $true)][string]$Text)
-    $lines = $Text -split "`r?`n"
-    $inFormat = $false
-    $inFence = $false
-    $block = New-Object System.Collections.Generic.List[string]
-    foreach ($line in $lines) {
-        if ($line -match '^#{2,3}\s*Format\b') { $inFormat = $true; continue }
-        if ($inFormat -and $line -match '^##\s') { $inFormat = $false }
-        if (-not $inFormat) { continue }
-        if ($line -match '^\s*```') {
-            if ($inFence) { break }
-            $inFence = $true
-            continue
-        }
-        if ($inFence) { $block.Add($line) }
-    }
-    if ($block.Count -eq 0) { return @() }
-    $text = ($block -join "`n")
-    $names = New-Object System.Collections.Generic.List[string]
-    # A field may be declared at the start of a line or after a pipe:
-    # "cerut de: local | data: YYYY-MM-DD" declares TWO fields.
-    foreach ($m in [regex]::Matches($text, '(?m)(?:^|\|)\s*([a-z][a-z ]{1,14})\s*:')) {
-        $n = $m.Groups[1].Value.Trim()
-        if ($names -notcontains $n) { $names.Add($n) }
-    }
-    return $names.ToArray()
-}
-
-# A value is complete when its last visible character closes a thought.
-# "Nu intai" is not complete; "si cum il accesezi." is.
-function Test-CompleteValue {
-    param([Parameter(Mandatory = $true)][string]$Value)
-    $v = $Value.Trim()
-    if (-not $v) { return $false }
-    $lines = @($v -split "`r?`n" | Where-Object { $_.Trim() })
-    if ($lines.Count -eq 0) { return $false }
-    $last = $lines[$lines.Count - 1].TrimEnd()
-    if ($last -match '^\s*[-*+]\s+(.*)$') { $last = $Matches[1].TrimEnd() }
-    elseif ($last -match '^\s*\d+\.\s+(.*)$') { $last = $Matches[1].TrimEnd() }
-    if (-not $last) { return $false }
-    $c = $last[$last.Length - 1]
-    $ok = ($c -eq '.' -or $c -eq '!' -or $c -eq '?' -or $c -eq [char]0x2026 -or
-           $c -eq ')' -or $c -eq ']' -or $c -eq '}' -or $c -eq '"' -or
-           $c -eq [char]0x201D -or $c -eq '`' -or $c -eq ':')
-    return $ok
-}
-
-# Split one ticket line into field declarations. A line may declare more
-# than one field ("cerut de: local | data: 2026-10-27"), and a value may
-# itself contain a pipe. Only a KNOWN field name starts a new field;
-# anything else is a continuation of the previous one.
-function Split-FieldLine {
-    param(
-        [Parameter(Mandatory = $true)][string]$Line,
-        [Parameter(Mandatory = $true)][string[]]$Known
-    )
-    $out = New-Object System.Collections.Generic.List[object]
-    $parts = @($Line -split '\s\|\s')
-    foreach ($part in $parts) {
-        $m = [regex]::Match($part, '^\s*([a-z][a-z ]{1,14})\s*:\s*(.*)$')
-        $isField = $false
-        $name = ''
-        if ($m.Success) {
-            $name = $m.Groups[1].Value.Trim()
-            $lower = $name.ToLower()
-            foreach ($k in $Known) { if ($k.ToLower() -eq $lower) { $isField = $true } }
-        }
-        if ($isField) {
-            $out.Add(@{ Name = $name; Value = $m.Groups[2].Value.Trim() })
-        } elseif ($out.Count -gt 0) {
-            $out[$out.Count - 1].Value = $out[$out.Count - 1].Value + "`n" + $part.Trim()
-        }
-    }
-    return $out.ToArray()
-}
 
 $problems = 0
 $unknown = 0
@@ -159,17 +99,22 @@ if ($required.Count -eq 0) {
     Write-Out ('EROARE: snapshotul contractului nu are blocul "## Format": ' + $ContractSnapshot)
     exit 2
 }
-# "detalii" is the CI's own extension: it preserves the original body of a
-# ticket and is not part of the Cloud's contract.
+
+# The live sources are read at the TIP of the Cloud's remote branch, which
+# is what the Cloud reads after its own pull. A working tree can be many
+# commits behind that tip, and a delivery that was never pushed is invisible
+# to the Cloud.
+$liveQueue = Get-CloudFileLive -CloudRoot $CloudRoot -Remote $Remote -Branch $Branch -RelativePath 'QUEUE/TASKS-FOR-CLOUD.md'
+$liveSkill = Get-CloudFileLive -CloudRoot $CloudRoot -Remote $Remote -Branch $Branch -RelativePath '.skills/mavis-cloud-to-local-reporting/SKILL.md'
+
 $known = @($required) + @('detalii')
 
 $contractSource = 'LOCAL-SNAPSHOT'
 $drift = 'UNKNOWN'
 $liveFields = @()
-if (Test-Path -LiteralPath $LiveQueue) {
-    $contractSource = 'MAVIS-CLOUD-LIVE'
-    $liveText = [System.IO.File]::ReadAllText($LiveQueue)
-    $liveFields = @(Get-ContractFields -Text $liveText)
+if ($liveQueue.Text) {
+    $contractSource = $liveQueue.Source
+    $liveFields = @(Get-ContractFields -Text $liveQueue.Text)
     if ($liveFields.Count -eq 0) {
         $drift = 'UNKNOWN'
     } else {
@@ -179,6 +124,8 @@ if (Test-Path -LiteralPath $LiveQueue) {
         }
         if ($same) { $drift = 'NO' } else { $drift = 'YES' }
     }
+} else {
+    $contractSource = 'MAVIS-CLOUD-LIVE-UNREADABLE'
 }
 
 Write-Out ('CONTRACT_SOURCE=' + $contractSource)
@@ -203,17 +150,7 @@ if (Test-Path -LiteralPath $DriveChannel) {
     Write-Out ('FAIL canal primar lipsa: ' + $DriveChannel)
 }
 
-$tickets = New-Object System.Collections.Generic.List[object]
-$current = $null
-foreach ($line in $qLines) {
-    if ($line -match '^###\s*\[([^\]]*)\]\s*(.*)$') {
-        if ($null -ne $current) { $tickets.Add($current) }
-        $current = [PSCustomObject]@{ Id = $Matches[1]; Title = $Matches[2]; Lines = New-Object System.Collections.Generic.List[string] }
-        continue
-    }
-    if ($null -ne $current) { $current.Lines.Add($line) }
-}
-if ($null -ne $current) { $tickets.Add($current) }
+$tickets = @(Get-QueueTickets -Text $queueText -Known $required)
 
 $ticketProblems = 0
 foreach ($t in $tickets) {
@@ -224,55 +161,31 @@ foreach ($t in $tickets) {
     if (-not $id) { Write-Out ('FAIL ' + $label + ' - id gol'); $bad = $true }
     if (-not $t.Title.Trim()) { Write-Out ('FAIL ' + $label + ' - titlu gol'); $bad = $true }
 
-    # collect the fields, with continuations
-    $fields = @{}
-    $order = New-Object System.Collections.Generic.List[string]
-    $lastName = ''
-    foreach ($line in $t.Lines.ToArray()) {
-        if ($line -match '^\s*###\s*\[') { break }
-        if (-not $line.Trim()) { continue }
-        $decls = @(Split-FieldLine -Line $line -Known $known)
-        if ($decls.Count -eq 0) {
-            if ($lastName) {
-                $fields[$lastName] = $fields[$lastName] + "`n" + $line.Trim()
-            }
-            continue
-        }
-        foreach ($d in $decls) {
-            $key = $d.Name.ToLower()
-            if (-not $fields.ContainsKey($key)) {
-                $fields[$key] = ''
-                $order.Add($key)
-            }
-            if ($d.Value) { $fields[$key] = $fields[$key] + $d.Value }
-            $lastName = $key
-        }
-    }
-
+    $fields = $t.Fields
     foreach ($f in $required) {
         $key = $f.ToLower()
-        if (-not $fields.ContainsKey($key) -or -not $fields[$key].Trim()) {
+        if (-not $fields.Contains($key) -or -not ([string]$fields[$key]).Trim()) {
             Write-Out ('FAIL ' + $label + ' - campul obligatoriu "' + $f + '" lipseste sau e gol')
             $bad = $true
         }
     }
 
-    if ($fields.ContainsKey('scope') -and $fields['scope'].Trim()) {
-        $sv = ($fields['scope'] -split '\|')[0].Trim().ToLower()
+    if ($fields.Contains('scope') -and ([string]$fields['scope']).Trim()) {
+        $sv = (([string]$fields['scope']) -split '\|')[0].Trim().ToLower()
         if ($sv -ne 'cloud' -and $sv -ne 'local' -and $sv -ne 'ambele') {
             Write-Out ('FAIL ' + $label + ' - valoarea scope necunoscuta: "' + $sv + '" (Cloud ruleaza doar cloud/local/ambele)')
             $bad = $true
         }
     }
 
-    if ($fields.ContainsKey('ce trebuie') -and $fields['ce trebuie'].Trim()) {
-        if (-not (Test-CompleteValue -Value $fields['ce trebuie'])) {
+    if ($fields.Contains('ce trebuie') -and ([string]$fields['ce trebuie']).Trim()) {
+        if (-not (Test-ValueComplete -Value ([string]$fields['ce trebuie']))) {
             Write-Out ('FAIL ' + $label + ' - valoarea "ce trebuie" se termina la mijlocul propozitiei (instructiune trunchiata)')
             $bad = $true
         }
     }
-    if ($fields.ContainsKey('detalii') -and $fields['detalii'].Trim()) {
-        if (-not (Test-CompleteValue -Value $fields['detalii'])) {
+    if ($fields.Contains('detalii') -and ([string]$fields['detalii']).Trim()) {
+        if (-not (Test-ValueComplete -Value ([string]$fields['detalii']))) {
             Write-Out ('FAIL ' + $label + ' - valoarea "detalii" se termina la mijlocul propozitiei')
             $bad = $true
         }
@@ -332,6 +245,48 @@ if ($lastLine) {
     }
 }
 
+# --- 5. THE DELIVERY: did the tickets reach the Cloud's own repo? --------
+# MEASURED 2026-10-27: this probe was missing, and its absence is why a
+# perfect queue was reported as healthy while the Cloud read zero tickets
+# from it. The Cloud pulls its OWN repo and reads the queue from there, so
+# the queue of that repo is the thing that must contain the ids.
+$deliveredCount = 0
+$notDelivered = New-Object System.Collections.Generic.List[string]
+foreach ($t in $tickets) {
+    if (-not $t.Id) { continue }
+    if ($liveQueue.Text -and ($liveQueue.Text -match [regex]::Escape($t.Id))) {
+        $deliveredCount++
+    } else {
+        $notDelivered.Add($t.Id)
+    }
+}
+Write-Out ('DELIVERY_SOURCE=' + $liveQueue.Source)
+Write-Out ('DELIVERED=' + $deliveredCount + '/' + $tickets.Count)
+
+if (-not $liveQueue.Text) {
+    $unknown++
+    Write-Out 'UNKNOWN livrare - coada repo-ului Cloud-ului nu poate fi citita; livrarea nu poate fi masurata'
+} elseif (-not $liveQueue.Definitive) {
+    $unknown++
+    Write-Out 'UNKNOWN livrare - sursa cozii Cloud-ului poate fi mai veche decat varful remote-ului; livrarea nu poate fi masurata'
+} else {
+    foreach ($id in $notDelivered) {
+        Write-Out ('FAIL livrare - ticheta [' + $id + '] nu este in coada repo-ului Cloud-ului. Cloud-ul citeste acolo, nu in repo-ul CI.')
+        $problems++
+    }
+}
+
+# --- 6. the Cloud's entry path -------------------------------------------
+if (-not $liveSkill.Text) {
+    $unknown++
+    Write-Out 'UNKNOWN cale de intrare - skillul Cloud-ului nu poate fi citit'
+} elseif ($liveSkill.Text -notmatch 'QUEUE/TASKS-FOR-CLOUD\.md') {
+    $problems++
+    Write-Out 'FAIL cale de intrare - skillul Cloud-ului nu mai declara QUEUE/TASKS-FOR-CLOUD.md drept calea de intrare'
+} else {
+    Write-Out 'CLOUD_ENTRY=QUEUE/TASKS-FOR-CLOUD.md'
+}
+
 # --- verdict --------------------------------------------------------------
 Write-Out ('QUEUE_PROBLEMS=' + $problems + ' UNKNOWN=' + $unknown)
 if ($problems -gt 0) {
@@ -342,5 +297,5 @@ if ($unknown -gt 0) {
     Write-Out 'Porta a trecut pe masuratorile care au putut rula, dar contractul live nu a putut fi comparat. Necunoscutul se raporteaza, nu se presupune.'
     exit 2
 }
-Write-Out 'Coada secundara e executabila de Cloud: toate tichetele au cele cinci campuri, scopul, instructiunea completa si tinta de livrare.'
+Write-Out 'Coada secundara e executabila de Cloud: toate tichetele au cele cinci campuri, scopul, instructiunea completa, tinta de livrare, SI sunt in coada repo-ului Cloud-ului.'
 exit 0

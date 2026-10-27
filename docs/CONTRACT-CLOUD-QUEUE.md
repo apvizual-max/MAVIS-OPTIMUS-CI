@@ -91,3 +91,34 @@ powershell -NoProfile -File "scripts\queue-contract-check.ps1"
 
 > Codul `2` există pentru un motiv: o poartă care nu poate măsura nu are
 > dreptul să spună „e bine". Necunoscutul se raportează, nu se presupune.
+
+---
+
+## Livrarea: unde stă de fapt coada (aditiv, 2026-10-27)
+
+> **Aditiv.** Contractul de mai sus nu se rescrie.
+
+Contractul spune *ce* citește Cloud-ul. Nu spune *de unde* îl ia. Iar
+această diferență este chiar defectul:
+
+| | |
+|---|---|
+| **Formatul** cozii | contractul de mai sus (`## Format`, cele cinci câmpuri) |
+| **Locația** cozii | `QUEUE/TASKS-FOR-CLOUD.md` **din repo-ul `MAVIS-CLOUD`** — acolo trage Cloud-ul cu `git pull --rebase origin main` |
+
+Coada din repo-ul **CI** (`MAVIS-OPTIMUS-CI`) este o copie locală de
+înregistrare, nu canalul. Măsurat 2026-10-27: 2 tichete în coada locală,
+**0** în coada pe care Cloud-ul o citește.
+
+### Cum se livrează
+
+`scripts/queue-deliver.ps1` scrie tichetele în repo-ul Cloud-ului și le
+publică. Ordinea: sync → scriere → scanare de secrete → commit → push →
+verificare la remote. Detalii: `docs/BRIDGE-LOCAL-CLOUD.md` §11.
+
+### Cum se verifică
+
+`scripts/queue-contract-check.ps1`, proba `DELIVERY`: fiecare `TASK_ID`
+local trebuie să fie în coada repo-ului Cloud-ului, citită la vârful
+ramurii remote. Fără această probă, poarta raporta sănătate pentru o coadă
+pe care nimeni nu o citește — exact ce s-a întâmplat.

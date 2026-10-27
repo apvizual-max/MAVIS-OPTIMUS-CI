@@ -470,3 +470,81 @@ Falsificare în ambele sensuri: poarta **stricată pe copie** →
 
 Ambele scripturi: **ASCII pur** (0 octeți peste `0x7F`), **fără BOM**,
 **0 erori de parse**.
+
+---
+
+## 11. Livrarea cozii în repo-ul Cloud-ului — măsurat (2026-10-27, ~06:40)
+
+> **Aditiv.** Nimic din secțiunile de mai sus nu se rescrie.
+
+### 11.1 Ce era greșit, măsurat
+
+Contractul consumatorului, citit de pe discul lui Cloud
+(`.skills/mavis-cloud-to-local-reporting/SKILL.md`, linia 12):
+
+> `git pull --rebase origin main` — mereu primul. TASK-urile vin de aici.
+
+Cloud-ul trage din **propriul repo** (`MAVIS-CLOUD`). Publisherul scria
+canalul secundar în repo-ul **CI** (`MAVIS-OPTIMUS-CI`).
+
+| Măsurătoare | Valoare |
+|---|---|
+| `TASK_ID`-uri în coada locală (CI) | **2** |
+| `TASK_ID`-uri în coada din `MAVIS-CLOUD` `origin/main` | **0** |
+| Dimensiunea cozii la remote | 1102 B, format vechi, 1 tichetă consumată (`[x]`) |
+| Poarta contractului, înainte | `QUEUE_PROBLEMS=0` — **verde, greșit** |
+| Divergența clonei Cloud-ului | 22 înapoi / 0 înainte |
+
+### 11.2 Instrumentele
+
+| Instrument | Ce face |
+|---|---|
+| `scripts/queue-lib.ps1` | parserul cozii — **o singură implementare** pentru poartă și livrare |
+| `scripts/queue-deliver.ps1` | sync → scriere → secrete → commit → push → verificare la remote |
+| `scripts/queue-deliver-selfcheck.ps1` | 15 probe, falsificare în ambele sensuri |
+| `scripts/queue-contract-check.ps1` | + proba `DELIVERY` și proba căii de intrare |
+| `scripts/scan-staged-secrets.ps1 -StagedDiff` | scanează **doar liniile adăugate** de schimbare |
+
+### 11.3 Măsurătoarea de după
+
+```
+DELIVERY_SOURCE=MAVIS-CLOUD-ORIGIN-MAIN
+DELIVERED=2/2
+CLOUD_ENTRY=QUEUE/TASKS-FOR-CLOUD.md
+QUEUE_PROBLEMS=0 UNKNOWN=0
+```
+
+| | |
+|---|---|
+| Commit în `MAVIS-CLOUD` | `4a88879` |
+| `REMOTE_HEAD` | `4a88879` |
+| `LOCAL_HEAD` | `4a88879` |
+| `ls-remote` pe `MAVIS-CLOUD` | `4a88879…  refs/heads/main` |
+
+### 11.4 Defecte găsite și reparate în acest rând
+
+| # | Defect | Măsurarea lui |
+|---|---|---|
+| 1 | Tichetele ajungeau într-un repo din care Cloud-ul nu citește | 2 local vs **0** la remote |
+| 2 | Poarta verifica **forma**, nu **livrarea** — verde pe o coadă absentă | `DELIVERED=0/2` după reparare |
+| 3 | `$push` (local) vs `[switch]$Push` (parametru): pushul **rulea**, apoi scriptul murea cu exit 1 — codul 1 însemna și „tichete lipsă" | crash după push, `EXIT=1` |
+| 4 | Livrarea reluată după un run blocat **adăuga ticheta a doua oară** ( lipsa se calcula față de remote, nu față de copia de lucru) | 2 apariții ale aceleiași tichete în coada remote-ului |
+| 5 | Un corp **gol** arunca o excepție, iar crashul ieșea cu cod de verdict | `Test-ValueComplete` cu `AllowEmptyString` + `trap` → exit 2 |
+| 6 | Un câmp declarat de două ori era înglobat în tăcut de parser | contor de declarații + refuz |
+| 7 | Publisherul **refuza calea prin joncțiune** (C: → E:) → 7 probleme la auto-proba lui | `git rev-parse --show-prefix` |
+| 8 | Scannerul de secrete bloca false, pe documentație **deja publicată** | 9 blocuri pe fișiere existente în `MAVIS-CLOUD` |
+| 9 | Scannerul se bloca pe **propriul cod** (tokenuri-exemplu scrise literal într-un comentariu) | `proba-cod-propriu` → BLOCKS=1 |
+| 10 | Coada locală purta un header care spunea că Cloud-ul citește acolo | header corectat pe loc |
+
+### 11.5 Starea porților după
+
+| Poartă | Rezultat |
+|---|---|
+| `queue-contract-check.ps1` | `QUEUE_PROBLEMS=0 UNKNOWN=0` · `DELIVERED=2/2` · EXIT 0 |
+| `queue-contract-check-selfcheck.ps1` | `QUEUE_GATE_PROBLEMS=0 UNKNOWN=0 FALSIFIED=14` · EXIT 0 |
+| `queue-deliver-selfcheck.ps1` | `DELIVER_GATE_PROBLEMS=0 FALSIFIED=15` · EXIT 0 |
+| `scan-staged-secrets-selfcheck.ps1` | `SECRET_PROBLEMS=0 UNKNOWN=0` · EXIT 0 |
+| `publish-ci-selfcheck.ps1` | 13 probe, incl. **joncțiune** · EXIT 0 |
+
+Detalii: `docs/BRIDGE-LOCAL-CLOUD.md` §11 · `docs/WORKFLOWS.md` W14 ·
+`README.md`.

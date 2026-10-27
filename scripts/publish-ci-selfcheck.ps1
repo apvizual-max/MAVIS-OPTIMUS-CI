@@ -308,6 +308,30 @@ $r4b = Invoke-Publisher -RepoPath $subDir
 $remoteAfter4b = Get-RemoteHead -Bare $f1.Bare
 Test-Probe -Label 'subdirector de repo -> exit 2, NU se publica parintele' -Ok (($r4b.Code -eq 2) -and ($remoteBefore4b -eq $remoteAfter4b)) -Detail ('exit=' + $r4b.Code + ' | remote_neschimbat=' + ($remoteBefore4b -eq $remoteAfter4b))
 
+# --- 4c. the SAME repository addressed through a JUNCTION must be accepted ---
+# MEASURED 2026-10-27: the publisher compared the given path with the
+# repository root as STRINGS. Through a junction the two can never match -
+# git prints the physical path, the caller spells the alias - so the
+# publisher refused the legitimate case, and this selfcheck went red with 7
+# problems on a gate that was right about its purpose and blind about how
+# the operator spells the path.
+# The gate must not care how the path is spelled. This probe is the proof.
+$junctionPath = Join-Path $TmpRoot 'junction-alias'
+if (Test-Path -LiteralPath $junctionPath) { Remove-Item -LiteralPath $junctionPath -Recurse -Force }
+$junctionMade = $false
+try {
+    New-Item -ItemType Junction -Path $junctionPath -Target $f1.Work -ErrorAction Stop | Out-Null
+    $junctionMade = $true
+} catch {
+    Write-Out ('NOTE proba-jonctiune - nu s-a putut crea jonctiunea: ' + $_.Exception.Message)
+}
+if ($junctionMade) {
+    $remoteBefore4c = Get-RemoteHead -Bare $f1.Bare
+    $r4c = Invoke-Publisher -RepoPath $junctionPath
+    $remoteAfter4c = Get-RemoteHead -Bare $f1.Bare
+    Test-Probe -Label 'acelasi repo prin jonctiune -> acceptat, nu refuzat' -Ok (($r4c.Code -eq 0) -and ($remoteBefore4c -eq $remoteAfter4c)) -Detail ('exit=' + $r4c.Code + ' | remote_neschimbat=' + ($remoteBefore4c -eq $remoteAfter4c))
+}
+
 # --- 5. the REAL repository, dry run only: the real remote must not move ---
 $realRemote = (Invoke-Git -WorkingDirectory $RealRoot -Arguments @('ls-remote', 'origin', 'refs/heads/main')).Out.Trim()
 $r5 = Invoke-Publisher -RepoPath $RealRoot

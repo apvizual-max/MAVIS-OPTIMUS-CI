@@ -74,7 +74,7 @@
 | `mavis-drive-bridge-selfcheck.ps1` | **Poarta punții** — 19 probe | `BRIDGE_PROBLEMS=0 UNKNOWN=0` |
 | `drivefs_probe.py` | Sonda read-only în baza DriveFS | `--title` · `--newest` · `--root-state` · `--pending` · `--staleness` |
 | `queue-contract-check.ps1` | **Poarta cozii secundare** — contractul consumatorului, viu | exit `0`/`1`/`2`; `2` = contract ilizibil = UNKNOWN |
-| `queue-contract-check-selfcheck.ps1` | **Poarta porții de contract** — 11 probe | `QUEUE_GATE_PROBLEMS=0 UNKNOWN=0 FALSIFIED=11` |
+| `queue-contract-check-selfcheck.ps1` | **Poarta porții de contract** — 14 probe | `QUEUE_GATE_PROBLEMS=0 UNKNOWN=0 FALSIFIED=11` |
 | `scan-staged-secrets.ps1` | **Poarta de secrete** pe index | `BLOCKS` / `WARNS` |
 | `scan-staged-secrets-selfcheck.ps1` | **Poarta porții de secrete** — 7 probe | `SECRET_PROBLEMS=0 UNKNOWN=0` |
 | `mavis-sync.ps1` | **Puntea zilnică** Local↔Cloud (task 08:30) | cale derivată din `$PSScriptRoot` · `exit` propriu · taskul `MavisSyncBridge` |
@@ -192,7 +192,10 @@ UNRECOGNISED_HEADERS=0        DONE_DIR=present            EXIT 0
 |---|---|---|
 | `docs/CONTRACT-CLOUD-QUEUE.md` | document | contractul consumatorului, cu proveniență și dată |
 | `scripts/queue-contract-check.ps1` | poartă | contract **viu**, drift, paritate `TASK_ID`, țintă de livrare |
-| `scripts/queue-contract-check-selfcheck.ps1` | auto-probă | 11 probe, falsificare în ambele sensuri |
+| `scripts/queue-contract-check-selfcheck.ps1` | auto-probă | 14 probe, falsificare în ambele sensuri |
+| `scripts/queue-lib.ps1` | **parserul cozii** | o singura implementare, pentru poarta si livrare |
+| `scripts/queue-deliver.ps1` | **livrarea cozii** în repo-ul Cloud-ului | exit `0`/`1`/`2`/`4`/`5` |
+| `scripts/queue-deliver-selfcheck.ps1` | **auto-proba livrarii** | 15 probe |
 | `QUEUE/DONE/README.md` | țintă | folderul în care Cloud livrează |
 
 Delta: **+1 document, +2 scripturi, +1 folder** — **zero** fișiere șterse,

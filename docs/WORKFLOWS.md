@@ -427,3 +427,52 @@ nicăieri pe mașină. Atunci, și numai atunci, `bun gdrive-oauth.js` cu consol
 ---
 
 *2026-10-27 · Mavis Local · măsurat · aditiv*
+
+---
+
+## W14. Livrarea cozii în repo-ul Cloud-ului (2026-10-27)
+
+> **Aditiv.** Nimic din secțiunile de mai sus nu se rescrie.
+
+**Când:** după ce scrii o tichetă în coada locală (`QUEUE/TASKS-FOR-CLOUD.md`),
+înainte să o consideri livrată.
+
+**De ce:** Cloud-ul citește coasa din **propriul repo** (`MAVIS-CLOUD`), nu
+din repo-ul CI. Măsurat 2026-10-27: 2 tichete locale, **0** la Cloud. Coada
+era impecabil formată și nu ajungea nicăieri.
+
+### Pași
+
+```powershell
+# 1. măsoară ce nu a ajuns (read-only; nu scrie nimic)
+powershell -NoProfile -File scripts\queue-deliver.ps1 -Status
+
+# 2. livrează: scrie, comitează în clona Cloud-ului, publică, verifică
+powershell -NoProfile -File scripts\queue-deliver.ps1 -Deliver -Push
+
+# 3. poarta vede absența și confirmă prezența
+powershell -NoProfile -File scripts\queue-contract-check.ps1
+```
+
+### Când te oprește (toate măsurate)
+
+| Situație | Cod | Ce s-a întâmplat |
+|---|---|---|
+| corp trunchiat sau gol | `2` | refuzat, nimic scris |
+| corp care redeclară un câmp | `2` | refuzat, nimic scris |
+| corp care ar deschide o tichetă fantomă | `2` | refuzat, nimic scris |
+| secret în schimbare | `2` | refuzat, nimic comitat |
+| fără `-Push` | `4` | scris local, **nepublicat** |
+| push refuzat de remote | `5` | nimic publicat |
+
+### Reguli
+
+- Livrarea e **aditivă**: tichetele se adaugă, nu se rescriu. Marcarea `[x]`
+  a Cloud-ului supraviețuiește.
+- Sync-ul păstrează **ambele istorice**: `--ff-only` când clona nu are nimic
+  propriu, `merge --no-ff` când are.
+- Se verifică **la remote**, nu prin codul de ieșire al lui `git`.
+- Dacă ticheta e deja în coada remote-ului, rularea e idempotentă: nu se
+  adaugă a doua oară.
+
+Detalii: `docs/BRIDGE-LOCAL-CLOUD.md` §11 · `docs/CONTRACT-CLOUD-QUEUE.md`.

@@ -12,6 +12,9 @@
 #   -ProbeFile <f>   : scan one file's content. Used by the selfcheck to prove
 #                      the detector CAN FAIL. A gate that cannot fail is not a
 #                      gate.
+#   -StagedDiff      : scan ONLY the lines the staged change adds. The
+#                      question is "does this change introduce a secret", not
+#                      "does this repository contain the string AKIA".
 #
 # Exit codes (the script's OWN, never inherited):
 #   0 = clean (no blocking secret)
@@ -22,7 +25,8 @@
 
 param(
     [string]$RepoPath = '',
-    [string]$ProbeFile = ''
+    [string]$ProbeFile = '',
+    [switch]$StagedDiff
 )
 
 $ErrorActionPreference = 'Stop'
@@ -131,6 +135,55 @@ function Invoke-Scan {
         $r = Scan-Lines -Lines $lines -Origin $ProbeFile
         $blocks += $r.Blocks
         $warns += $r.Warns
+    } elseif ($StagedDiff) {
+        # ONLY the lines this change ADDS.
+        #
+        # MEASURED 2026-10-27: the index-wide scan reported 9 blocks in a
+        # repository whose files were ALREADY published - documentation that
+        # lists EXAMPLE tokens (an AWS-style access key id and a GitHub
+        # token placeholder, both with the official dummy values). Those are
+        # pre-existing and public; blocking a queue delivery because of
+        # them is a false accusation, and a false accusation costs more than
+        # a missed secret.
+        #
+        # The question that matters is narrow and answerable: does THIS
+        # change introduce a secret? The staged diff is exactly that.
+        #
+        # NOTE: the example values above are described, not written. A
+        # literal in this file would make the scanner block its own source.
+        $git = Get-Git
+        if (-not $git) {
+            Write-Err 'ERROR=no git on PATH'
+            return 2
+        }
+        $repo = $RepoPath
+        if (-not $repo) { $repo = (Get-Location).Path }
+        $probe = Invoke-Git -Git $git -Repo $repo -GitArgs @('rev-parse', '--git-dir')
+        if ($probe.Code -ne 0) {
+            Write-Err ('ERROR=not a git repo: ' + $repo)
+            return 2
+        }
+        $diff = Invoke-Git -Git $git -Repo $repo -GitArgs @('diff', '--cached', '-U0', '--no-color')
+        if ($diff.Code -ne 0) {
+            Write-Err ('ERROR=cannot read the staged diff: ' + $repo)
+            return 2
+        }
+        $currentFile = '(staged)'
+        $added = 0
+        foreach ($l in @($diff.Out)) {
+            $line = [string]$l
+            if ($line -match '^\+\+\+ b/(.*)$') { $currentFile = $Matches[1]; continue }
+            if ($line -match '^\+\+\+ ') { continue }
+            if (-not $line.StartsWith('+')) { continue }
+            $added++
+            $r = Scan-Lines -Lines @($line.Substring(1)) -Origin $currentFile
+            $blocks += $r.Blocks
+            $warns += $r.Warns
+        }
+        $scanned = $added
+        if ($added -eq 0) {
+            Write-Out 'SCANNED=0 - nimic in index nu e nou; nu e verdict de curatenie, e lipsa de material.'
+        }
     } else {
         $git = Get-Git
         if (-not $git) {
