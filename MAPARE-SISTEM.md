@@ -209,10 +209,11 @@ derivează din gitdir-ul repo-ului propriu (`scripts\git-scratch.ps1`), deci
 laboratorul urmează repository-ul în loc să hard-codeze o cale de mașină.
 
 **Măsurat 2026-10-27:** în arborele CI erau **63 de directorii `.git`** de
-fixture, în plus față de cele ale proiectelor. După mutare: **0**. Cele 32
-rămase în mirror sunt în proiecte **surori** (CD: 21, `AI_Tools`: 8 clonelor
-vendor, Plugins-Config: 2, PKMS: 1) — **în afara frontierei acestui
-proiect**, deci neatinse.
+fixture, în plus față de cele ale proiectelor. După mutare: **0**. În
+subarborele `CASA\OPTIMUS - Prime` au rămas **32** de directorii `.git`, toți
+în proiecte **surori** (CD: 21, `AI_Tools`: 8 clonelor vendor,
+Plugins-Config: 2, PKMS: 1); în tot mirrorul `E:\Google\GDrive` sunt **34**.
+Sunt **în afara frontierei acestui proiect**, deci neatinse.
 
 ### Joncțiunile
 

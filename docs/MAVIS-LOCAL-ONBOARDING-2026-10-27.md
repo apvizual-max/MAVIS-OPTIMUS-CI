@@ -62,15 +62,19 @@ Google Drive for Desktop (DriveFS) **administrează spațiul** din
 
 Deci: **tot ce înseamnă date git local stă în afara mirrorului**, într-un
 **singur folder** pe proiect: `E:\Google\GitData-Optimus-CI\`. În arborele
-proiectului, `.git` e **un fișier** de 38–43 de octeți care spune
-`gitdir: E:/Google/GitData-Optimus-CI/<subfolder>`.
+proiectului, `.git` e **un fișier** de 42–60 de octeți care spune
+`gitdir: E:/Google/GitData-Optimus-CI/<subfolder>`. Măsurat: 42 B (rădăcina
+proiectului), 55 B (`cloud-ingest\MAVIS-CLOUD\.git`), 60 B
+(`cloud-ingest\MAVIS-OPTIMUS-CI\.git`).
 
 > **Măsurat înainte/după (2026-10-27):** în arborele CI erau **63 de
 > directorii `.git`** în plus față de cele ale proiectelor — toate erau
-> fixture-uri de test. După mutare: **0**. Celelalte 32 care au rămas în
-> mirror sunt în proiecte **surori** (CD: 21, `AI_Tools`: 8 clonelor
-> vendor, Plugins-Config: 2, PKMS: 1) — **în afara frontierei acestui
-> proiect**, deci neatinse.
+> fixture-uri de test. După mutare: **0**. În subarborele
+> `CASA\OPTIMUS - Prime` au rămas **32** de directorii `.git`, toți în
+> proiecte **surori** (CD: 21, `AI_Tools`: 8 clonelor vendor,
+> Plugins-Config: 2, PKMS: 1); în tot mirrorul `E:\Google\GDrive` sunt **34**
+> (plus 2 în `02-1-ALEX-SOT` și `02-2-4-AI_Skills_SOT`). Sunt **în afara
+> frontierei acestui proiect**, deci neatinse.
 >
 > **Consolidare (2026-10-27, 11:40).** Gitdata acestui proiect a fost
 > adusă într-**un singur folder**, `E:\Google\GitData-Optimus-CI\`, cu patru
@@ -263,8 +267,9 @@ Skillul: `mavis-google-access-skill` (în `~/.minimax/agents/mavis/skills/`).
 | `mavis-git-install-skill` | ridicarea unui repo nou | idem |
 | `mavis-autonomous-operator-skill` | **se încarcă primul** | idem |
 
-La nivel general, `mavis` are **76 de skilluri**. La nivel de proiect, sursa
-canonică e `tools\google-access\`.
+La nivel general, `mavis` are **80 de foldere de skilluri**, dintre care
+**78** conțin `SKILL.md` (cele două fără: `.jules` și `state`). La nivel de
+proiect, sursa canonică e `tools\google-access\`.
 
 ---
 
@@ -277,6 +282,21 @@ canonică e `tools\google-access\`.
   Nu se atinge: nu sunt ale lui Popy.
 - **Orice repo care nu e al lui Popy** — nici măsurătoare scriind în el, nici
   hook, nici config.
+
+### Ce rămâne de reparat în CD — măsurat 2026-10-27
+
+CD are încă **5 repo-uri `.git` vii** ale acestor două repo-uri:
+
+- `Optimus_CD (by Jules)\work\10-25-2026-GitHub_Repos\{MAVIS-CLOUD,
+  MAVIS-OPTIMUS-CI}\.git`
+- `Optimus_CD (by Jules)\work\10-26-2026-GitHub_Repos\{MAVIS-CLOUD,
+  MAVIS-OPTIMUS-CI}\.git`
+- `Optimus_CD (by Jules)\state\tmp\scratch-gh\.git`
+
+mtime 25 și 26 octombrie — **anterioare** consolidării din 27 octombrie, deci
+neatinse de acest lucru. Sunt **frontiera CD**: expunerea la conflict DriveFS
+există acolo, și se repară cu același instrument
+(`scripts\git-scratch.ps1` + `scripts\relocate-gitdata.ps1`), în sesiunea CD.
 
 ---
 
