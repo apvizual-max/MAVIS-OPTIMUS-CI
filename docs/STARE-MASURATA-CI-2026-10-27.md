@@ -256,4 +256,91 @@ dreptul să spună „merge".
 
 ---
 
+## 8. Puntea zilnică (task 08:30) — ruptă și reparată
+
+> **Aditiv.** Măsurat 2026-10-27, ~02:10. Nimic de mai sus nu se rescrie.
+
+### 8.1 Ce era stricat
+
+Rularea zilnică de la **08:30** — taskul `MavisSyncBridge` — **nu mai
+funcționa**. Trei măsurători independente:
+
+| Măsurătoare | Valoare | Metodă |
+|---|---|---|
+| `LastTaskResult` | **2147942667** = `0x8007010B` (`ERROR_DIRECTORY`) | `Get-ScheduledTaskInfo` |
+| Ultimul log scris | **`mavis-sync-2026-10-25.log`** — de 25 oct | `logs\mavis-sync-*.log` |
+| Acțiunea taskului | indica folderul **eliminat** `…\projects\Mavis-Optimus-Continuous-Integration\` | `(Get-ScheduledTask).Actions` |
+
+Căderea începe odată cu consolidarea pe `E:` (26 oct). Taskul indica un
+folder care nu mai există → `ERROR_DIRECTORY` → nu s-a mai scris niciun log
+de la 25 oct încolo.
+
+### 8.2 Trei defecte, în trei locuri
+
+| # | Unde | Defect | Reparare |
+|---|---|---|---|
+| 1 | **Taskul Windows** | acțiunea indica folderul eliminat | re-pointată la `…\projects\Optimus_CI (by Mavis)` |
+| 2 | **`scripts/mavis-sync.ps1`** | `$HQ` hardcodat pe calea eliminată → „clone-ul Cloud lipseste", ieșire 1 | `$HQ = Split-Path -Parent $PSScriptRoot` — **path-independent** |
+| 3 | **`scripts/mavis-sync.ps1`** | se termina fără `exit` → moștenea `$LASTEXITCODE` de la ultima comandă git | `exit` explicit: `0` = puntea a mers, `4` = pull eșuat măsurat, `1` = nu s-a putut măsura |
+
+**Doar repararea scriptului nu ar fi reparat puntea.** Taskul ar fi
+continuat să apele un folder inexistent, iar scriptul reparat nu s-ar fi
+apucat niciodată. Defectul era în **trei locuri**, și fiecare trebuia
+găsit.
+
+### 8.3 O etichetă care afirma ceva fals
+
+La prima rulare după reparare, scriptul a comitat automat fișierele mele
+cu mesajul:
+
+```
+cloud: ingest 2026-10-27 02:08 (citire read-only din MAVIS-CLOUD)
+```
+
+**Fals.** `cloud-ingest/` este în `.gitignore` (măsurat:
+`git check-ignore -v cloud-ingest/MAVIS-CLOUD` → `.gitignore:4:cloud-ingest/`),
+deci **niciun octet din MAVIS-CLOUD nu poate ajunge într-un comit**. Eticheta
+afirma o proveniență pe care comitul nu o avea — și prima rulare a pus în
+istoric o reparație de script etichetată drept ingest.
+
+Reparat: mesajul spune acum ce se comite efectiv
+(`local: checkpoint … ; cloud-ingest/ e gitignored, deci nu continut din cloud`).
+
+### 8.4 Poarta nouă, cu falsificare în ambele sensuri
+
+`scripts/mavis-sync-selfcheck.ps1` — **9 probe**, `SYNC_PROBLEMS=0
+UNKNOWN=0 FALSIFIED=4`, **EXIT 0**:
+
+| Probă | Ce cere |
+|---|---|
+| `proba-cale` | radacina e derivată din `$PSScriptRoot`, nu hardcodată |
+| `proba-iesire` | scriptul are `exit` explicit → codul îi e propriu |
+| `proba-eticheta` | mesajul de comit nu afirma conținut din cloud |
+| `proba-falsificare` ×4 | copii doctorate (cale veche / fără `$PSScriptRoot` / fără `exit` / etichetă falsă) → **detectate** |
+| `proba-poarta` | poarta de interzicere a push-ului e **intactă** (`SelfTest` = `POARTA\|TRECUT`) |
+
+**Falsificarea porții pe scriptul real:** o copie doctorală (cale veche +
+fără `exit`) → **3 FAIL, `SYNC_PROBLEMS=3`, EXIT 1**. Poarta poate eșua.
+
+**O lecție din construcția porții:** detectorul de cale trebuie să citească
+**doar codul executabil**, nu comentariile — altfel ar reproșa propria
+documentare a defectului. Prima versiune a porții a raportat fals FAIL pe
+scriptul deja reparat, pentru că finds în comentariul meu numele folderului
+eliminat. Detectorul a fost reparat, **nu** comentariul.
+
+### 8.5 Măsurătoarea de după
+
+| | Înainte | După |
+|---|---|---|
+| `LastTaskResult` | **2147942667** (`0x8007010B`) | **0** |
+| Ultimul log | 25 oct | **27 oct, 02:14** |
+| Conținutul logului | — | `PAS1_CLOUD\|exit_pull=0` · `PAS2_LOCAL\|status=curat` · `FINAL\|…\|impingere=NEEXECUTATA` · „OK — sincronizare fara conflict, fara divergent" |
+| `mavis-sync.ps1` | ieșire 1, „clone-ul Cloud lipseste" | ieșire **0** |
+| `SYNC_PROBLEMS` | — | **0** · `FALSIFIED=4` · EXIT 0 |
+
+**Puntea zilnică e vie din nou**, și e acum **măsurabilă**: are cod de ieșire
+propriu, poartă, și falsificare.
+
+---
+
 *2026-10-27 · Mavis Local · măsurat*

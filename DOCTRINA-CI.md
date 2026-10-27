@@ -199,6 +199,40 @@ Regula generalizată, din aceeași familie cu „proxy ≠ măsurătoare":
 > resursei, nu starea ei curentă. Și o poartă care acceptă necunoscutul
 > drept verdict favorabil nu e o poartă — e o decorare.**
 
+### 8.3 Un defect trăiește în mai multe locuri simultan
+
+> **Aditiv.** Măsurat 2026-10-27. Nu rescriu nimic de mai sus.
+
+Puntea zilnică (task 08:30) era ruptă. Cauza **nu** era una — erau trei,
+în trei straturi diferite:
+
+1. **Taskul Windows** indica folderul eliminat.
+2. **Scriptul** avea calea hardcodată pe același folder.
+3. **Scriptul** nu avea cod de ieșire propriu.
+
+Repararea **unuia** dintre ele nu ar fi reparat puntea: taskul ar fi
+continuat să apele un folder inexistent, iar scriptul reparat nu s-ar fi
+apucat niciodată. Fiecare rând trebuia găsit și reparat.
+
+**Regula:** când o cale se schimbă, **nu cauți doar scripturile care o
+folosesc**. Caută în toate straturile care o pot referi — taskuri
+programate, wrapper-e, configurații, shortcut-uri. O referință ruptă
+strămoară nu se vede din scriptul care o consumă.
+
+**Și:** o referință la un folder **eliminat** trebuie căutată prin
+**substrin**, nu prin potrivire exactă — inclusiv în comentarii și în
+documente, unde poate să fi rămas ca istoric. De aceea detectorul porții
+citește **doar codul executabil**: altfel ar reproșa propria documentare a
+defectului. Prima lui versiune a raportat un FAIL fals, pe scriptul deja
+reparat, pentru că găsise numele folderului eliminat în comentariul meu.
+
+**Încă un corol, din aceeași zi:** o etichetă care afirmă o proveniență
+falsă este un defect, chiar dacă conținutul e corect. `cloud-ingest/` era în
+`.gitignore`, deci comitul **nu putea** conține octeți din cloud — dar se
+eticheta „cloud: ingest". Prima rulare a pus în istoric o reparație de
+script drept ingest. **O etichetă trebuie să spună ce e în cutie, nu ce
+ți-ai dori să fie.**
+
 ---
 
 ## 9. Cele două canale, și cum se alege între ele

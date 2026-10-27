@@ -75,6 +75,8 @@
 | `drivefs_probe.py` | Sonda read-only în baza DriveFS | `--title` · `--newest` · `--root-state` · `--pending` · `--staleness` |
 | `scan-staged-secrets.ps1` | **Poarta de secrete** pe index | `BLOCKS` / `WARNS` |
 | `scan-staged-secrets-selfcheck.ps1` | **Poarta porții de secrete** — 7 probe | `SECRET_PROBLEMS=0 UNKNOWN=0` |
+| `mavis-sync.ps1` | **Puntea zilnică** Local↔Cloud (task 08:30) | cale derivată din `$PSScriptRoot` · `exit` propriu |
+| `mavis-sync-selfcheck.ps1` | **Poarta punții zilnice** — 9 probe | `SYNC_PROBLEMS=0 UNKNOWN=0 FALSIFIED=4` |
 | `mavis-sync.ps1` | Sincronizarea zilnică Local↔Cloud | taskul `MavisSyncBridge`, 08:30 |
 | `run-sync-logged.ps1` | Rulează sincronizarea cu log datat | `-DryRun` disponibil |
 | `meta-prompt.ps1` | Generează meta-prompt-ul de pornire | — |

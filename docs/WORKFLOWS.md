@@ -214,6 +214,51 @@ nu rulează încă nimic pentru acest repo.** Se activează la push, cu R0.
 
 ---
 
+## W9 — Puntea zilnică (task 08:30)
+
+> **Aditiv.** Măsurat 2026-10-27.
+
+Rulează singură, la **07:30/08:30**, prin taskul Windows `MavisSyncBridge`.
+
+```
+MavisSyncBridge (task Windows)
+  → scripts\run-sync-logged.ps1     ← wrapper cu log datat
+    → scripts\mavis-sync.ps1        ← puntea propriu-zisa
+      PAS1: pull read-only din MAVIS-CLOUD (cloud-ingest\)
+      PAS2: commit LOCAL automat, fara impingere
+      FINAL: impingere=NEEXECUTATA, poarta_R0=ramane_la_Popy
+```
+
+| Cod | Ce înseamnă |
+|---|---|
+| `0` | puntea a mers: pull reușit, comit făcut sau nimic de comitat |
+| `4` | **măsurat**: pull-ul a eșuat (divergență, conflict) |
+| `1` | **nu s-a putut măsura**: clone-ul Cloud lipsește sau remote inaccesibil |
+| `2` | poarta a refuzat: scriptul conține un verb interzis |
+
+**Codul de ieșire e propriu**, nu moștenit de la ultima comandă git.
+
+### Verificarea
+
+```powershell
+powershell -NoProfile -File scripts\mavis-sync-selfcheck.ps1
+```
+
+Noua poartă, **9 probe**: cale derivată din `$PSScriptRoot` · `exit` explicit
+· etichetă de comit onestă · 4 falsificări (copii doctorate → detectate) ·
+poarta de interzicere a push-ului intactă.
+
+Măsurat: `SYNC_PROBLEMS=0 UNKNOWN=0 FALSIFIED=4`, **EXIT 0**. Pe o copie
+doctorală: `SYNC_PROBLEMS=3`, **EXIT 1**.
+
+> **Defect reparat 2026-10-27:** puntea zilnică era ruptă în **trei locuri**
+> simultan — taskul Windows, calea hardcodată din `mavis-sync.ps1`, și lipsa
+> unui `exit` propriu. Doar repararea scriptului nu ar fi reparat-o: taskul
+> ar fi continuat să apele un folder inexistent. Detalii:
+> `docs/STARE-MASURATA-CI-2026-10-27.md` §8.
+
+---
+
 ## Fluxuri pe care CI **nu** le atinge
 
 | Flux | Unde trăiește |
