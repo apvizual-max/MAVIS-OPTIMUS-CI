@@ -9,12 +9,21 @@
 
 Ai ajuns în cartierul general. **Trei rânduri și știi tot:**
 
+0. **cel mai întâi:** `docs/MAVIS-LOCAL-ONBOARDING-2026-10-27.md` — onboardingul
+   complet: topologia fizică măsurată, cele două canale, contractul cozii,
+   cele șapte porți cu exit codes, **unde stă datele git**, starea Google
+   Access. E scris pentru un agent cu zero memorie.
 1. citește `DOCTRINA-CI.md` — cum lucrez
 2. citește `docs/CONFLICTE-DOZTRINA.md` — ce s-a hotărât și de ce
 3. citește `docs/ARHITECTURA-CI-CD.md` — cine ține ce, și unde e CD
 
 Apoi citește `MAPARE-SISTEM.md` — unde stă tot.
-Pentru cifrele de azi: `docs/STARE-MASURATA-CI.md`.
+Pentru cifrele de azi: `docs/STARE-MASURATA-CI-2026-10-27.md`.
+
+**Unde stă datele git:** în `E:\Google\GitData-*`, **în afara mirrorului
+DriveFS**. În arbore, `.git` e un fișier pointer. Fixture-urile porților stau
+în `E:\Google\GitScratch-Optimus-CI`. Instrumentele:
+`scripts/git-scratch.ps1` · `scripts/relocate-gitdata.ps1`.
 
 ---
 
