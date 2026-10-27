@@ -169,6 +169,9 @@ E:\Google\GDrive\GDrive-Second_Brain_PKMS\02_Areas\02-2-AI-SOT\CASA\OPTIMUS - Pr
 │                publish-ci.ps1 · publish-ci-selfcheck.ps1
 │                mavis-sync-selfcheck.ps1
 │                merge-check.ps1 · merge-check-selfcheck.ps1
+├── tools\                       ← SURSA containerului Google (reconstruibil din GitHub)
+│   └── google-access\            server.mjs · Dockerfile · probe.mjs · provision-grant.cjs
+│                                  watch-reauth.ps1 · README.md · .dockerignore · .gitignore
 ├── .github\workflows\            ← plasa de siguranță a serverului
 │   └── ci-verify.yml
 ├── blueprint\ · cloud-ingest\ (clonă + copie de lucru a livrării) · logs\ · state\ (ignorat de git)
@@ -208,6 +211,10 @@ loc. Nimic nu s-a pierdut: istoricul e în `E:\Google\GitData-Optimus-CI`.
 | Starea de azi | `docs\STARE-MASURATA-CI-2026-10-27.md` | cifre + metode |
 | Snapshot remote | `docs\STARE-MAVIS-OPTIMUS-CI-REMOTE.md` | alt AI lucrează acolo |
 | Specificația punții | `docs\PUNTE-DRIVE-PRIMARA.md` | arhitectura + latența |
+| **Sursa containerului Google** | `tools\google-access\` | 6 fișiere, SHA256 identic cu sursa vie → **reconstruibil din GitHub**; credentialul exclus |
+| Răspunsurile Cloud-ului | `BRIDGE-DRIVE\INTRARI-CLOUD\` | 2 rapoarte de operare (08:49, 12:07) |
+| Task consumat, arhivat prin mutare | `BRIDGE-DRIVE\ISTORIC\` | conținut păstrat integral |
+| Handoff pentru CD | `docs\HANDOFF-CD-2026-10-27-PUNTEA-DRIVE-PRIMARA-GOOGLE-ACCESS.md` | SHA256 identic cu `Optimus_CD (by Jules)\_Handoffs\` |
 
 ### Topologia Drive, corectată
 

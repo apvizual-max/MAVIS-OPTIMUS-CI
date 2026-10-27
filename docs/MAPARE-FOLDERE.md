@@ -249,4 +249,39 @@ conflictul produs de git, nu simulat.
 
 ---
 
+## 11. `tools/` — sursele containerului Google
+
+> **Aditiv.** Măsurat 2026-10-27, ~09:00.
+
+| Fișier | Ce e |
+|---|---|
+| `tools\google-access\server.mjs` | serverul MCP (25 unelte); sursa vie e în `C:\Users\apviz\.minimax\google-access\` |
+| `tools\google-access\Dockerfile` | imaginea `google-access:1.0.2` · `GA_PORT=8766` · healthcheck care își derivează portul din `process.env.GA_PORT` |
+| `tools\google-access\probe.mjs` | proba: handshake + apeluri reale + **verificare de identitate**; exit `0`/`1`/`2` (`2` = UNKNOWN, nu succes) |
+| `tools\google-access\provision-grant.cjs` | provisionarea grantului (scope-uri Google) — un singur credential, autentificare permanentă |
+| `tools\google-access\watch-reauth.ps1` | notificarea de re-autentificare (task orar `Google_Access_Watch`) |
+| `tools\google-access\README.md` | cum se construiește și se rulează |
+| `tools\google-access\.dockerignore` · `.gitignore` | contextul de build + **credentialul exclus din git** |
+
+**De ce contează:** sursa e în GitHub → sistemul se reconstruiește din GitHub,
+nu de pe un singur disc. Cele 6 fișiere au **SHA256 identic** cu sursa vie.
+`data\credentials.json` (singurul secret) stă **în afara** arborelui versionat.
+
+### Ce s-a mai adăugat în puntea primară
+
+| Ce | Unde | Ce e |
+|---|---|---|
+| Răspunsuri ale Cloud-ului | `BRIDGE-DRIVE\INTRARI-CLOUD\` | 2 rapoarte de operare (08:49, 12:07) |
+| Task consumat, **arhivat prin mutare** | `BRIDGE-DRIVE\ISTORIC\MAVIS-LOCAL-2026-10-27-0815-ARHIVAT-TASK-2026-10-27-0735.md` | conținut păstrat integral |
+| Livrări ale Cloud-ului | `QUEUE\DONE\` | artefactele marcate de Cloud |
+| Handoff pentru CD | `docs\HANDOFF-CD-2026-10-27-PUNTEA-DRIVE-PRIMARA-GOOGLE-ACCESS.md` | identic prin SHA256 cu `Optimus_CD (by Jules)\_Handoffs\` |
+
+**Regula de excludere reparată:** `chats/` a fost renumerit în Drive cu
+`Google_Connect/` (27 oct, 08:02) → `.gitignore` excludea un nume mort, iar
+`scripts\mavis-sync.ps1:189` face `git add -A` + commit automat: **drum de
+scurgere spre un repo public**. Regula acoperă acum `Google_Connect/` **și**
+`**/Mavis-Cloud_Google-Setup-Session/`.
+
+---
+
 *2026-10-27 · Mavis Local · măsurat · aditiv*

@@ -623,3 +623,93 @@ poată fi **remăsurată identică** de altcineva.
 | Clona `MAVIS-CLOUD` | 475 fișiere (fără `.git`) · HEAD = `origin/main` = `4a88879` · arbore curat |
 | Arborele CI (fără `state/`, fără `.git/`) | 561 fișiere · 14.208.300 B · 68 fișiere urmărite de git |
 | `Get-ScheduledTask MavisSyncBridge` | `StartBoundary 2026-10-12T07:30:00+02:00` · `StartWhenAvailable=True` · `LastTaskResult=0` (27 oct 02:14) |
+
+---
+
+## 13. Puntea bidirecțională, `Google_Access`, OAuth și filtrele Gmail
+
+> **Aditiv.** Nimic din §1–§12 nu se rescrie — acolo e măsurătoarea acelui
+> moment. Aici e **starea de la sfârșitul zilei**, măsurată `2026-10-27,
+> 06:00–09:05Z`.
+
+### 13.1 Puntea a devenit bidirecțională
+
+| Ce | Valoare | Cum a fost măsurat |
+|---|---|---|
+| Răspunsuri ale Cloud-ului | **2** (08:49 și 12:07, ora lui) | fișiere noi în `BRIDGE-DRIVE/INTRARI-CLOUD/` |
+| Răspunsuri trimise înapoi | **2** (`0815`, `0844`) | `DUAL_CHANNEL_DRIVE=True` + `DUAL_CHANNEL_QUEUE=True`; livrate `8ad1c12` / `3e5a0a7` |
+| Tichete în coadă | **5** · `DELIVERED=5/5` | `queue-contract-check.ps1`, contractul citit de pe discul Cloud |
+| Marcate `[x]` de Cloud | **3** (`0005`, `0735`, `0815`) | oglindite în copia locală |
+| Lăsată deschisă intenționat | **1** (`0103`) | decizia Cloud-ului |
+| `MAVIS-OPTIMUS-CI` | `5c4e1cf` = `origin/main`, divergență **0 0** | `ls-remote` + `rev-list --left-right --count` |
+| `MAVIS-CLOUD` | `3e5a0a7` = `origin/main`, divergență **0 0** | idem |
+
+### 13.2 Containerul `Google_Access`
+
+| Ce | Valoare | Cum a fost măsurat |
+|---|---|---|
+| Stare | `running` · `healthy` · FailingStreak **0** | `docker inspect .State.Health` |
+| Imagine | `google-access:1.0.2` | `docker images` |
+| Grant | **live**, 9 scope-uri, `reauth_required: false` | `AUTH_STATUS` din probă: „token minted" |
+| Unelte | **25** | handshake + apeluri de tool reale |
+| Apeluri reale | Drive **5** fișiere · Gmail **3** mesaje · Books **403** (refuz explicit de scope, raportat ca atare) | `node probe.mjs` → `VERDICT=PASS`, exit 0 |
+| **Sursa în GitHub** | `tools\google-access\` — 6 fișiere, SHA256 identic cu sursa vie, credential exclus prin `.gitignore` | copiere prin script + SHA256 pe fiecare fișier |
+
+Containerul e **reconstruibil din GitHub**, nu de pe un singur disc.
+
+### 13.3 Cele 8 defecte reparate în acest rând
+
+| # | Defect | Măsurarea lui |
+|---|---|---|
+| 1 | Healthcheck-ul proba `8765` în timp ce containerul rula cu `GA_PORT=8766` | `unhealthy` la 9 intervale consecutive, serviciul răspundea HTTP 200 cu `grant=live` |
+| 2 | Proba măsura **alt serviciu** (python, `hc-backend`) și ieșea cu **cod 0** | `HANDSHAKE=FAILED`, `TOOLS=0`, exit 0 |
+| 3 | `server.mjs:32` — a treia sursă de adevăr despre port (fallback 8765) | corectat la 8766 |
+| 4 | `google-auth.js` amesteca `client_id`/`secret` de la un client cu `refresh_token` de la altul | `invalid_grant` / `unauthorized_client`; falsificat: **5/8 cad** contra codului vechi, **8/8 trec** contra celui nou |
+| 5 | `fix-mavis-filters.js` apela `PATCH` pe filtre — **metoda nu există** | discovery document Gmail v1: doar DELETE/GET/LIST/CREATE → 404 „Method not found"; plus etichete hardcodate (4 din 5 sărite) |
+| 6 | `publish-ci-selfcheck` se aprindea roșu când publisherul făcea ce trebuie | așteptare derivată din starea măsurată; falsificat pe clonă murdară: refuz corect (exit 2), remote neatins |
+| 7 | Protocolul se contrazicea despre **cine arhivează** (README vs antetul cozii) | „Cloud-ul marchează, Local mută" — într-un singur loc |
+| 8 | Regula de excludere ancorată la un nume mort → **drum de scurgere spre un repo PUBLIC** | `mavis-sync.ps1:189` → `git add -A` + commit automat |
+
+Filtrele Gmail `MAVIS/*`: **5 din 5 reparate** (celelalte 14 neatinse),
+verificate independent prin API — 19 filtre, 5 cu acolade, fiecare cu eticheta vie.
+
+### 13.4 Defectul 8, în detaliu — de ce a fost cel mai periculos
+
+`chats/` (transcrierile sesiunilor) a fost **renumerit în Drive** cu
+`Google_Connect/` pe 27 oct, 08:02, iar renumirea a coborât în arborele CI.
+`.gitignore` excludea `chats/` — deci, după renumerire, regula nu mai prindea
+nimic: `git status` arăta `?? Google_Connect/`. Iar `scripts\mavis-sync.ps1:189`
+rulează `git add -A` + **commit automat** în rădăcina CI: următoarea rulare a
+punții zilnice ar fi pus transcrierile în `MAVIS-OPTIMUS-CI`, care e **public**.
+
+Reparat: regula acoperă acum **numele curent** (`Google_Connect/`) **și numele
+marcant al raftului** (`**/Mavis-Cloud_Google-Setup-Session/`), ca să reziste la
+o viitoare redenumire a părintelui. Falsificat: `git check-ignore -v` arată
+ambele reguli, `Google_Connect/` a dispărut din `git status`, iar materialul
+mutat **nu conține secrete** (doar `client_id`, identificator public).
+
+### 13.5 Patru ieșiri de task de fundal recuperate
+
+Busola spunea „2 fără ieșire disponibilă". Astăzi au devenit lizibile încă
+4 ieșiri din 22 oct — care confirmă, independent, că eșecul de suite e
+**preexistent pe `main`**, nu imputabil unui PR:
+
+| Task | Ieșire | Ce dovedește |
+|---|---|---|
+| `bg_4141328b` | `MAIN_DEPLOY_EXIT=0` · `MAIN_SUITE_EXIT=1` | pe `main`: deployul trece, suita pică — baza de eșec e anterioară propunerii |
+| `bg_5e13ef66` | `PR3_DEPLOY_EXIT=0` (checkout pe ramura PR3) | PR3 nu introduce eșecul de deploy |
+| `bg_e0f7e39f` | `TRIAGE_EXIT=0` · Backbone #33–#37 `ADAPT/VERIFY=PASS` · SENTINEL_PRIME #1/#2 `UNVERIFIED` · #3 `REJECT/VERIFY=FAIL` | verdictele de triaj ale acelui moment (PR #1–#5 au fost închise/merge-uite pe 24 oct) |
+| `bg_658ee6fc` | reluare de reproducibilitate: `test_deployment` → EXIT 1 | eșecul e reproducibil pe starea de bază |
+
+### 13.6 Măsurătorile de după
+
+| | |
+|---|---|
+| Bateria de porți | **8 porți, toate EXIT 0** (queue · queue-selfcheck · deliver-selfcheck · secrete · punte · punte-selfcheck · sync · merge · publish 13/13, `FALSIFIED=13`) |
+| `queue-contract-check.ps1` | `TICKETS=5` · `TICKET_PROBLEMS=0` · `DELIVERED=5/5` · `QUEUE_PROBLEMS=0 UNKNOWN=0` · EXIT 0 |
+| `MAVIS-OPTIMUS-CI` | `5c4e1cf` = `origin/main` · divergență `0 0` · `main` unic |
+| `MAVIS-CLOUD` | `3e5a0a7` = `origin/main` · divergență `0 0` · `main` unic |
+| Container | `running` · `healthy` · FailingStreak 0 · proba `VERDICT=PASS` exit 0 |
+| Arborele CI | curat (`git status --porcelain` gol) |
+| CD | neatins, în afară de `_Handoffs/` (SHA256 identic cu `docs/`) |
+

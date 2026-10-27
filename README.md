@@ -390,3 +390,32 @@ repo-ul **CI**.
 
 Detalii: `docs/BRIDGE-LOCAL-CLOUD.md` §11 · `docs/WORKFLOWS.md` W14 ·
 `docs/CONTRACT-CLOUD-QUEUE.md`.
+
+---
+
+## Puntea bidirecțională, `Google_Access` și filtrele Gmail — starea măsurată (2026-10-27, ~09:00)
+
+> **Aditiv.** Nimic din secțiunile de mai sus nu se rescrie.
+
+| | |
+|---|---|
+| Canal primar | **Google Drive** — `BRIDGE-DRIVE/`, cloud_id `1V87h9Pbw52chSVNkxQ_NNuMh-CLfZeuI` |
+| Canal secundar | **GitHub** — `QUEUE/TASKS-FOR-CLOUD.md`, scris simultan |
+| Puntea | **bidirecțională**: 2 răspunsuri primite de la Cloud, 2 trimise înapoi |
+| Coada | `TICKETS=5` · `DELIVERED=5/5` · `QUEUE_PROBLEMS=0 UNKNOWN=0` |
+| Container Google | `Google_Access` · `running/healthy` · FailingStreak 0 · 25 unelte · grant live (9 scope-uri) |
+| Sursa lui | `tools\google-access\` în GitHub → **reconstruibil**, credential exclus |
+| Filtre Gmail `MAVIS/*` | **5 din 5 reparate** (14 neatinse) |
+| Repo-uri | `MAVIS-OPTIMUS-CI` `5c4e1cf` · `MAVIS-CLOUD` `3e5a0a7` — ambele `= origin/main`, divergență `0 0` |
+
+**O regulă reparată care conta:** transcrierile de sesiune au fost **renumerite
+în Drive** (`chats/` → `Google_Connect/`), deci `.gitignore` nu mai le excludea
+pe niciun nume — iar `scripts\mavis-sync.ps1:189` face `git add -A` + commit
+automat: următoarea rulare a punții zilnice ar fi pus **conținut personal**
+într-un repo **public**. Regula acoperă acum ambele nume, plus numele marcant
+al raftului.
+
+Detalii: `docs/STARE-MASURATA-CI-2026-10-27.md` §13 ·
+`docs/HANDOFF-CD-2026-10-27-PUNTEA-DRIVE-PRIMARA-GOOGLE-ACCESS.md` ·
+`docs/MAPARE-FOLDERE.md` §11
+
