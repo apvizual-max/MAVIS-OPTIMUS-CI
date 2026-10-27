@@ -28,7 +28,16 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$HQ    = 'C:\Users\apviz\.minimax-agent\projects\Mavis-Optimus-Continuous-Integration'
+# Calea radacinii CI e DERIVATA din locul scriptului, nu hardcodata.
+#
+# MASURAT 2026-10-27: calea era hardcodata pe
+# 'C:\Users\apviz\.minimax-agent\projects\Mavis-Optimus-Continuous-Integration'
+# - folderul eliminat in consolidarea pe E:. Puntea zilnica (task 08:30) si-a
+# raportat "clone-ul Cloud lipseste" si a iesit cu cod 1: un transport
+# functional, cu o cale moarta in el. Repararea o singura data ar fi fost o
+# poveste; de aceea exista acum o proba care verifica existenta clone-ului
+# (mavis-sync-selfcheck.ps1).
+$HQ    = Split-Path -Parent $PSScriptRoot
 $CLOUD = Join-Path $HQ 'cloud-ingest\MAVIS-CLOUD'
 
 # INCAPSULA - wrapper pentru apelurile native.
