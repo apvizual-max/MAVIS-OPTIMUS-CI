@@ -419,3 +419,54 @@ decizia lui nu e blocată de lipsa de pregătire. E o alegere de contract
 ---
 
 *2026-10-27 · Mavis Local · măsurat*
+
+---
+
+## 10. Instrumentul combinării istoricului
+
+> **Aditiv.** Măsurat 2026-10-27 · metodă: rulare directă pe repo-ul real.
+
+### 10.1 Ce măsoară
+
+`scripts\merge-check.ps1` (6861 B) — **dry-run**: `fetch` + divergență +
+`git merge-tree --write-tree` + diff per parte. Nu atinge arborele de lucru,
+nu creează commit, nu împinge.
+
+| Ieșire | Valoare |
+|---|---|
+| `REMOTE_STATE` | `LIVE` — `fetch` reușit, măsurătoarea e pe remote-ul viu |
+| `DIVERGENCE_BEHIND` / `AHEAD` | `5` / `24` |
+| `LOCAL` / `OTHER` | `576a500c…` / `3da55fff…` |
+| `MERGE_TREE` | `8b11d68dd1847cc450276eca76030bf4818540fa` |
+| `MERGE_CLEAN` / `CONFLICT_FILES` | `yes` / `0` |
+| merged vs **local** | 6 fișiere, +74 / −13 — **lucrarea CD** |
+| merged vs **remote** | 38 fișiere, +7309 / −230 — **lucrarea mea** |
+| `VERDICT` | `curat - o singura operatie de combinare, fara rezolvare manuala` |
+
+Ieșire: `0` curat · `1` conflict (fișierele sunt numite) · `2` **nemăsurabil**.
+
+### 10.2 Auto-proba și falsificarea
+
+`scripts\merge-check-selfcheck.ps1` (10142 B) — **5 probe pe repo reale**:
+conflictul e produs de git, nu simulat.
+
+```
+MERGE_GATE_PROBLEMS=0 UNKNOWN=0 FALSIFIED=5     EXIT 0
+```
+
+Falsificare în ambele sensuri: poarta **stricată pe copie** →
+`MERGE_GATE_PROBLEMS=3`, `POARTA A BLOCAT`, exit **1**; poarta reală neatinsă
+(hash SHA256 identic înainte și după).
+
+### 10.3 Două defecte măsurate în auto-probă
+
+1. **`-Other` al fixture-ului se scurgea în proba 5.** `origin/sideB` există
+   doar în repo-ul de test; pe repo-ul real divergența era ilizibilă →
+   UNKNOWN. Repar: `-Other` opțional + `-RealRoot` explicit.
+2. **`Write-Out` cu `Mandatory` arunca excepție** când poarta nu scrie nimic
+   → crash pe calea de diagnostic, cu exit 1 **indistinctibil** de blocarea
+   porții. Repar: `AllowEmptyString` în ambele scripturi; blocarea se
+   dovedește acum prin marcaj, nu prin codul de ieșire.
+
+Ambele scripturi: **ASCII pur** (0 octeți peste `0x7F`), **fără BOM**,
+**0 erori de parse**.

@@ -77,9 +77,10 @@
 | `queue-contract-check-selfcheck.ps1` | **Poarta porții de contract** — 11 probe | `QUEUE_GATE_PROBLEMS=0 UNKNOWN=0 FALSIFIED=11` |
 | `scan-staged-secrets.ps1` | **Poarta de secrete** pe index | `BLOCKS` / `WARNS` |
 | `scan-staged-secrets-selfcheck.ps1` | **Poarta porții de secrete** — 7 probe | `SECRET_PROBLEMS=0 UNKNOWN=0` |
-| `mavis-sync.ps1` | **Puntea zilnică** Local↔Cloud (task 08:30) | cale derivată din `$PSScriptRoot` · `exit` propriu |
+| `mavis-sync.ps1` | **Puntea zilnică** Local↔Cloud (task 08:30) | cale derivată din `$PSScriptRoot` · `exit` propriu · taskul `MavisSyncBridge` |
 | `mavis-sync-selfcheck.ps1` | **Poarta punții zilnice** — 9 probe | `SYNC_PROBLEMS=0 UNKNOWN=0 FALSIFIED=4` |
-| `mavis-sync.ps1` | Sincronizarea zilnică Local↔Cloud | taskul `MavisSyncBridge`, 08:30 |
+| `merge-check.ps1` | **Măsurătorul combinării istoricului** — dry-run, nu atinge arborele | exit `0`/`1`/`2`; `2` = nemăsurabil ≠ curat |
+| `merge-check-selfcheck.ps1` | **Poarta măsurătorului** — 5 probe pe repo reale | `MERGE_GATE_PROBLEMS=0 UNKNOWN=0 FALSIFIED=5` |
 | `run-sync-logged.ps1` | Rulează sincronizarea cu log datat | `-DryRun` disponibil |
 | `meta-prompt.ps1` | Generează meta-prompt-ul de pornire | — |
 | `snapshot-vault.ps1` | Snapshot al vault-ului | — |
@@ -196,6 +197,39 @@ UNRECOGNISED_HEADERS=0        DONE_DIR=present            EXIT 0
 
 Delta: **+1 document, +2 scripturi, +1 folder** — **zero** fișiere șterse,
 zero rescrise, zero atinse în CD.
+
+---
+
+## 10. Instrumentul combinării istoricului
+
+> **Aditiv.** Măsurat 2026-10-27.
+
+Repo-ul CI e lucrat **în paralel** de alt AI (sesiunea CD). Deci există două
+istorice: `main` local (commiturile mele, automate, neîmpinse fără R0) și
+`origin/main` (commiturile celuilalt AI). Combinarea lor e o operație de R0 —
+iar R0 merită **fapte, nu opțiuni**.
+
+`scripts\merge-check.ps1` măsoară **fără să atingă arborele** și fără să
+împingă nimic:
+
+| Ce măsoară | Cum |
+|---|---|
+| Cât de depărtate sunt istoriculele | `git rev-list --left-right --count` |
+| Dacă merge-ul e curat sau conflict | `git merge-tree --write-tree` (dry-run) |
+| Care fișiere conflictuează | exit 1 + **numele** fișierului, unul pe rând |
+| Ce arbore ar rezulta | id-ul arborelui, pentru comparație |
+
+Exit: `0` = curat · `1` = conflict · `2` = **nemăsurabil** — care **nu** e
+„curat".
+
+**Măsurat pe repo-ul real:** `REMOTE_STATE=LIVE` · `DIVERGENCE_BEHIND=5`
+`DIVERGENCE_AHEAD=24` · `MERGE_CLEAN=yes` · `CONFLICT_FILES=0` · arborele
+`8b11d68dd1847cc450276eca76030bf4818540fa` · merged vs local **6 fișiere**
+(+74/−13 — lucrarea CD) · merged vs remote **38 fișiere** (+7309/−230 — lucrarea
+mea).
+
+Auto-proba: `scripts\merge-check-selfcheck.ps1` — **5 probe pe repo reale**,
+conflictul produs de git, nu simulat.
 
 ---
 

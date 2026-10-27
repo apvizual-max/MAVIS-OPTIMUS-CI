@@ -359,3 +359,26 @@ frumos formatată, necitibilă.
 
 **Și regula din §8.3 rămâne adevărată:** necunoscutul nu e succes. Când
 contractul live nu poate fi citit, poarta dă **2**, nu **0**.
+
+### 9.8 Un instrument care nu poate eșua nu e un instrument
+
+> **Aditiv.** Măsurat 2026-10-27.
+
+Combinarea istoricului cu al celuilalt AI a fost, la un moment dat, o
+**alegere** între „rebaza curată" și „merge cu rezolvare manuală". Niciuna nu
+avea măsurătoare. Azi are: `scripts\merge-check.ps1` — dry-run, nu atinge
+arborele, nu împinge nimic, raportează divergența, conflictele **pe fișier** și
+arborele rezultat.
+
+**Regula:** înainte de orice operație cu R0 există un instrument care spune
+**ce se va întâmpla**. Iar când instrumentul spune „nu se poate măsura",
+răspunsul e **2** — nu „probabil curat".
+
+**Și regula măsurătorii, dusă la capăt:** instrumentul de măsurătoare trebuie
+să poată eșua. Prima auto-probă a raportat **succes prin crash** — o excepție
+terminantă (un parametru `Mandatory` care respingea șirul gol) producea tot
+exit 1. Iar un exit 1 dintr-o excepție e **indistinctibil** de exit 1-ul
+porții. Deci blocarea se dovedește prin **marcajul porții** —
+`POARTA A BLOCAT`, `MERGE_GATE_PROBLEMS>0` — nu prin codul de ieșire.
+
+**Codul de ieșire e o amprentă. Marcajul e o măsurătoare.**

@@ -281,3 +281,37 @@ powershell -NoProfile -File scripts\queue-contract-check.ps1
 
 Detalii: `docs/CONTRACT-CLOUD-QUEUE.md` · `docs/BRIDGE-LOCAL-CLOUD.md` §10 ·
 `docs/STARE-MASURATA-CI-2026-10-27.md` §9 · `DOCTRINA-CI.md` §9.7
+
+---
+
+## Instrumentul combinării istoricului — măsurat (2026-10-27)
+
+> **Aditiv.** Nimic din secțiunile de mai sus nu se rescrie.
+
+Repo-ul CI e lucrat **în paralel** de alt AI (CD). Deci există două istorice,
+iar combinarea lor a fost o **alegere** fără măsurătoare. Acum are instrument:
+`scripts/merge-check.ps1` — **dry-run**: nu atinge arborele de lucru, nu
+creează commit, nu împinge nimic.
+
+```powershell
+powershell -NoProfile -File scripts\merge-check.ps1
+```
+→ `REMOTE_STATE=LIVE` · `DIVERGENCE_BEHIND=5 DIVERGENCE_AHEAD=24` ·
+`MERGE_CLEAN=yes` · `CONFLICT_FILES=0` · arborele `8b11d68…` ·
+`VERDICT=curat - o singura operatie de combinare, fara rezolvare manuala` ·
+**EXIT 0**
+
+| Ieșire | Ce înseamnă |
+|---|---|
+| `0` | merge curat — o singură operație, fără rezolvare manuală |
+| `1` | conflict — fișierele sunt **numite**, cu rezolvare manuală |
+| `2` | **nemăsurabil** — și asta **nu** e „curat" |
+
+Auto-proba: `scripts/merge-check-selfcheck.ps1` — 5 probe pe repo reale
+(conflictul e produs de git, nu simulat) → `MERGE_GATE_PROBLEMS=0 UNKNOWN=0
+FALSIFIED=5`, EXIT 0. Falsificare în sens invers: poarta **stricată pe
+copie** → `MERGE_GATE_PROBLEMS=3`, `POARTA A BLOCAT`, exit 1 — iar poarta
+reală rămâne neatinsă (hash identic înainte și după).
+
+Detalii: `docs/MAPARE-FOLDERE.md` §10 · `docs/WORKFLOWS.md` W11 ·
+`docs/STARE-MASURATA-CI-2026-10-27.md` §10 · `DOCTRINA-CI.md` §9.8

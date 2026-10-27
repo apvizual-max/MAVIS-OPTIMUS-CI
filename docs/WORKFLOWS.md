@@ -302,6 +302,44 @@ derivat → 1.
 
 ---
 
+## W11 — Combinarea istoricului, măsurată înainte de R0
+
+> **Aditiv.** Măsurat 2026-10-27.
+
+Când `origin/main` a avansat (alt AI lucrează în paralel), istoriculele **nu**
+se combină la guess. Se măsoară întâi:
+
+```
+powershell -NoProfile -File scripts\merge-check.ps1
+```
+
+→ `REMOTE_STATE=LIVE` · `DIVERGENCE_BEHIND=… DIVERGENCE_AHEAD=…` ·
+`MERGE_CLEAN=yes` · `CONFLICT_FILES=0` · `VERDICT=curat`
+
+| Situație | Ieșire | Ce înseamnă |
+|---|---|---|
+| Istorice identice | `MERGE_CLEAN=NA` | nimic de combinat |
+| Merge curat | exit **0** | o singură operație, fără rezolvare manuală |
+| Conflict | exit **1** | fișierele sunt **numite**; rezolvare manuală |
+| Nemăsurabil (remote neatins, git absent, ref inexistent) | exit **2** | **nu** e „curat" |
+
+**`fetch` e partea măsurătorii.** Un verdict „curat" luat de pe un ref remote
+învechit e un verdict fals. De aceea măsurătoarea face `fetch` înainte și
+raportează `REMOTE_STATE=LIVE` sau `STALE`.
+
+### Verificarea
+
+```
+powershell -NoProfile -File scripts\merge-check-selfcheck.ps1
+```
+
+→ `MERGE_GATE_PROBLEMS=0 UNKNOWN=0 FALSIFIED=5`, EXIT 0. Falsificare în
+ambele sensuri: poarta **stricată pe copie** → `MERGE_GATE_PROBLEMS=3`,
+`POARTA A BLOCAT`, exit 1 — iar poarta reală rămâne neatinsă (hash identic
+înainte și după).
+
+---
+
 ## Fluxuri pe care CI **nu** le atinge
 
 | Flux | Unde trăiește |

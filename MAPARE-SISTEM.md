@@ -161,6 +161,9 @@ E:\Google\GDrive\GDrive-Second_Brain_PKMS\02_Areas\02-2-AI-SOT\CASA\OPTIMUS - Pr
 │                drivefs_probe.py · mavis-drive-bridge.ps1
 │                mavis-drive-bridge-selfcheck.ps1
 │                scan-staged-secrets.ps1 · scan-staged-secrets-selfcheck.ps1
+│                queue-contract-check.ps1 · queue-contract-check-selfcheck.ps1
+│                mavis-sync-selfcheck.ps1
+│                merge-check.ps1 · merge-check-selfcheck.ps1
 ├── .github\workflows\            ← plasa de siguranță a serverului
 │   └── ci-verify.yml
 ├── blueprint\ · cloud-ingest\ (read-only) · logs\ · state\ (ignorat de git)
@@ -189,6 +192,8 @@ loc. Nimic nu s-a pierdut: istoricul e în `E:\Google\GitData-Optimus-CI`.
 | Contractul cozii | `docs\CONTRACT-CLOUD-QUEUE.md` | consumatorul, citat de pe discul Cloud |
 | Poarta cozii | `scripts\queue-contract-check.ps1` | contract **viu**, drift, paritate, țintă de livrare |
 | Auto-proba cozii | `scripts\queue-contract-check-selfcheck.ps1` | 11 probe, falsificare în ambele sensuri |
+| Măsurătorul combinării | `scripts\merge-check.ps1` | dry-run `merge-tree`: divergență, conflicte, arbore rezultat |
+| Auto-proba combinării | `scripts\merge-check-selfcheck.ps1` | 5 probe pe repo reale, falsificare în ambele sensuri |
 | Ținta de livrare | `QUEUE\DONE\` | unde Cloud scrie rezultatele |
 | Poarta de secrete | `scripts\scan-staged-secrets.ps1` | 9 forme fixe + atribuiri cu valoare |
 | Workflow de server | `.github\workflows\ci-verify.yml` | raportează, nu blochează |
