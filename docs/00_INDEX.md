@@ -1,6 +1,6 @@
 ﻿# 00_INDEX — 02_Areas/02-2-AI-SOT/CASA/OPTIMUS - Prime/Optimus_CI (by Mavis)/docs
 
-**21 fișiere · 207 KB · 1 subfoldere**
+**21 fișiere · 209 KB · 1 subfoldere**
 
 > Generat automat de `02_Areas/02-2-AI-SOT/02-2-1-AI-Kit/AI-Kit_manual/build-index.ps1` și `align-index.ps1`. Nu edita manual — rulează scriptul din nou.
 > Randul **De ce e aici** de mai sus, daca exista, se pastreaza la fiecare regenerare.
@@ -30,7 +30,7 @@ _Fiecare raft e legat la indexul lui. Un index care nu e legat nu e în arbore._
 | `CONFLICTE-DOZTRINA.md` | 6 KB | 2026-10-24 |
 | `CONTRACT-CLOUD-QUEUE.md` | 5 KB | 2026-10-27 |
 | `GIT-GITHUB-PROCEDURI.md` | 9 KB | 2026-10-27 |
-| `HANDOFF-CD-2026-10-27-PUNTEA-DRIVE-PRIMARA-GOOGLE-ACCESS.md` | 16 KB | 2026-10-27 |
+| `HANDOFF-CD-2026-10-27-PUNTEA-DRIVE-PRIMARA-GOOGLE-ACCESS.md` | 18 KB | 2026-10-27 |
 | `HANDOFF-TERMENARE-DEVELOPMENT-2026-10-27.md` | 14 KB | 2026-10-27 |
 | `INVENTAR-REPO-URI.md` | 7 KB | 2026-10-27 |
 | `MAPARE-FOLDERE.md` | 13 KB | 2026-10-27 |

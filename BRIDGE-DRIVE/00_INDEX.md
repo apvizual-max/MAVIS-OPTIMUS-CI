@@ -1,6 +1,6 @@
 ﻿# 00_INDEX — 02_Areas/02-2-AI-SOT/CASA/OPTIMUS - Prime/Optimus_CI (by Mavis)/BRIDGE-DRIVE
 
-**3 fișiere · 15 KB · 2 subfoldere**
+**3 fișiere · 18 KB · 2 subfoldere**
 
 > Generat automat de `02_Areas/02-2-AI-SOT/02-2-1-AI-Kit/AI-Kit_manual/build-index.ps1` și `align-index.ps1`. Nu edita manual — rulează scriptul din nou.
 > Randul **De ce e aici** de mai sus, daca exista, se pastreaza la fiecare regenerare.
@@ -26,5 +26,5 @@ _Fiecare raft e legat la indexul lui. Un index care nu e legat nu e în arbore._
 |---|---|---|
 | `INTENTII.md` | 497 B | 2026-10-27 |
 | `README-BRIDGE-DRIVE.md` | 6 KB | 2026-10-27 |
-| `TASKURI-PENTRU-CLOUD.md` | 9 KB | 2026-10-27 |
+| `TASKURI-PENTRU-CLOUD.md` | 12 KB | 2026-10-27 |
 

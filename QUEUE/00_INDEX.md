@@ -1,13 +1,13 @@
 ﻿# 00_INDEX — 02_Areas/02-2-AI-SOT/CASA/OPTIMUS - Prime/Optimus_CI (by Mavis)/QUEUE
 
-**1 fișiere · 11 KB · 1 subfoldere**
+**1 fișiere · 15 KB · 1 subfoldere**
 
 > Generat automat de `02_Areas/02-2-AI-SOT/02-2-1-AI-Kit/AI-Kit_manual/build-index.ps1` și `align-index.ps1`. Nu edita manual — rulează scriptul din nou.
 > Randul **De ce e aici** de mai sus, daca exista, se pastreaza la fiecare regenerare.
 
 ## Ce e aici
 
-Singura extensie prezentă e `.md` (1 din 1 fișiere). Un raft copil: `DONE`; cel mai mare element din folder e `TASKS-FOR-CLOUD.md` (11 KB)
+Singura extensie prezentă e `.md` (1 din 1 fișiere). Un raft copil: `DONE`; cel mai mare element din folder e `TASKS-FOR-CLOUD.md` (15 KB)
 
 ## Cuvinte cheie
 
@@ -17,11 +17,11 @@ Singura extensie prezentă e `.md` (1 din 1 fișiere). Un raft copil: `DONE`; ce
 
 _Fiecare raft e legat la indexul lui. Un index care nu e legat nu e în arbore._
 
-- [`DONE`](<DONE/00_INDEX.md>) — 1 fișiere · 0 subfoldere
+- [`DONE`](<DONE/00_INDEX.md>) — 3 fișiere · 0 subfoldere
 
 ## Fișiere
 
 | Fișier | Dimensiune | Modificat |
 |---|---|---|
-| `TASKS-FOR-CLOUD.md` | 11 KB | 2026-10-27 |
+| `TASKS-FOR-CLOUD.md` | 15 KB | 2026-10-27 |
 
