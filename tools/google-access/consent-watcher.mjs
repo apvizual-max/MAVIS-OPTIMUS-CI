@@ -165,6 +165,6 @@ server.listen(PORT, () => {
 });
 
 setTimeout(() => {
-  console.log("TIMEOUT=1 (niciun cod in 90 min)");
+  console.log("TIMEOUT=1 (niciun cod in 180 min)");
   process.exit(0);
-}, 90 * 60 * 1000);
+}, 180 * 60 * 1000);

@@ -72,9 +72,9 @@ proiectului), 55 B (`cloud-ingest\MAVIS-CLOUD\.git`), 60 B
 > fixture-uri de test. După mutare: **0**. În subarborele
 > `CASA\OPTIMUS - Prime` au rămas **32** de directorii `.git`, toți în
 > proiecte **surori** (CD: 21, `AI_Tools`: 8 clonelor vendor,
-> Plugins-Config: 2, PKMS: 1); în tot mirrorul `E:\Google\GDrive` sunt **34**
-> (plus 2 în `02-1-ALEX-SOT` și `02-2-4-AI_Skills_SOT`). Sunt **în afara
-> frontierei acestui proiect**, deci neatinse.
+> Plugins-Config: 2, PKMS: 1). În tot mirrorul `E:\Google\GDrive` sunt **34**,
+> adică **32 + 1** în `02-1-ALEX-SOT` **+ 1** în `02-2-4-AI_Skills_SOT`. Sunt
+> **în afara frontierei acestui proiect**, deci neatinse.
 >
 > **Consolidare (2026-10-27, 11:40).** Gitdata acestui proiect a fost
 > adusă într-**un singur folder**, `E:\Google\GitData-Optimus-CI\`, cu patru
@@ -224,15 +224,27 @@ Detalii: `docs\GIT-GITHUB-PROCEDURI.md`.
 
 ## 7. Google Access — starea măsurată
 
-| Ce | Valoare |
+| Ce | Valoare — măsurat 2026-10-27 13:28 |
 |---|---|
-| Container | `Google_Access`, imagine `google-access:1.0.4`, healthy, `--restart unless-stopped` |
+| Container | `Google_Access`, imagine `google-access:1.0.9`, healthy, recreat 13:26:47, `--restart unless-stopped` |
 | Endpoint | `http://127.0.0.1:8766/mcp` (doar loopback) |
 | Grant | **LIVE**, `reauth_required: false` |
-| Scope granted | **28** |
-| Unelte | **26** |
+| Scope granted | **32** |
+| Unelte | **32** |
 | Secret | **niciunul în imagine** — refresh token în volumul montat `/data` |
-| Sursă vie ≡ container | `server.mjs` sha256 `bd09f1df…` — **identic** |
+| Sursă vie ≡ container ≡ repo | `server.mjs` sha256 `8429fa51…` — **identic în toate trei** |
+
+> **Cifrele din tabel sunt volatile, nu o promisiune.** Alte sesiuni
+> reconstruiesc imaginea activ: măsurat **8 build-uri într-o zi** (`1.0.2` la
+> 07:57 → `1.0.9` la 13:26). Remeasurează înainte să citești tabelul ca
+> adevăr curent:
+>
+> ```powershell
+> python "<CI>\tools\google-access\sync-source.py"     # sursă vie ≡ container ≡ repo
+> docker exec Google_Access node -e "fetch('http://127.0.0.1:8766/health').then(r=>r.json()).then(j=>console.log(j.tools,j.grant,j.reauth_required))"
+> ```
+>
+> Ultima rulare (13:28): `PROBLEMS=0 COPIED=10`, `MATCH=true`, `LEAKED_PATHS=0`.
 
 Sursa vie e în `C:\Users\apviz\.minimax\google-access\`, oglindă în
 `tools\google-access\`. Resincronizarea e **un instrument**, nu o copie
@@ -250,8 +262,8 @@ imaginii înseamnă că repo-ul nu mai descrie sistemul care rulează.
 > **Doar două scope-uri rămân inaccesibile**, și nu pentru că nu au fost
 > cerute: `sites` (API-ul nu mai există) și `keep` (Google nu publică scope
 > acordabil). Măsurat: acele două **invalidau întreaga cerere**, deci cele
-> 28 valide nu treceau. Au fost scoase din `FULL_SCOPES`, cu motivul scris în
-> sursă.
+> 28 valide de atunci nu treceau. Au fost scoase din `FULL_SCOPES`, cu motivul
+> scris în sursă. Azi grantul e lățit la **32** de scope-uri.
 
 Skillul: `mavis-google-access-skill` (în `~/.minimax/agents/mavis/skills/`).
 
@@ -283,20 +295,29 @@ proiect, sursa canonică e `tools\google-access\`.
 - **Orice repo care nu e al lui Popy** — nici măsurătoare scriind în el, nici
   hook, nici config.
 
-### Ce rămâne de reparat în CD — măsurat 2026-10-27
+### Ce rămâne de reparat în CD — măsurat 2026-10-27 13:22
 
-CD are încă **5 repo-uri `.git` vii** ale acestor două repo-uri:
+CD are **21 de directoare `.git`** în mirror, nu 5:
 
-- `Optimus_CD (by Jules)\work\10-25-2026-GitHub_Repos\{MAVIS-CLOUD,
-  MAVIS-OPTIMUS-CI}\.git`
-- `Optimus_CD (by Jules)\work\10-26-2026-GitHub_Repos\{MAVIS-CLOUD,
-  MAVIS-OPTIMUS-CI}\.git`
-- `Optimus_CD (by Jules)\state\tmp\scratch-gh\.git`
+- **16 clone de lucru reale** pe ramuri de feature ale lui Jules:
+  `Optimus_CD (by Jules)\work\10-25-2026-GitHub_Repos\` (6 repo-uri) și
+  `work\10-26-2026-GitHub_Repos\` (10 repo-uri) — mtime 25 și 26 octombrie,
+  **anterioare** consolidării din 27 octombrie, deci neatinse de acest lucru.
+- **5 fixture-uri de probă**: `Optimus_CD (by Jules)\state\tmp\{gate-probe,
+  gh-lp-probe, lp-test, scan-probe, scratch-gh}\.git`.
+- Rădăcina CD e **deja consolidată**: pointer `.git` (37 B, creat 26 oct
+  15:14) → `E:\Google\GitData-Optimus-CD`.
 
-mtime 25 și 26 octombrie — **anterioare** consolidării din 27 octombrie, deci
-neatinse de acest lucru. Sunt **frontiera CD**: expunerea la conflict DriveFS
-există acolo, și se repară cu același instrument
-(`scripts\git-scratch.ps1` + `scripts\relocate-gitdata.ps1`), în sesiunea CD.
+**Starea worktree-ului CD, măsurată:** `git status --porcelain` = **165** rânduri
+= **127** fișiere șterse (toate recuperabile din HEAD `dac4f79`; măsurat
+`DELETED_NOT_RECOVERABLE=0`) + **35** neurmărite + 2 modificate + 1 type-change.
+Cele **35 neurmărite** (`_Handoffs\HANDOFF-CD-2026-10-27-*`,
+`docs\ARHITECTURA-CI-CD.md`, `DOCTRINA-JULES.md`…) există **doar pe disc** — nu
+în git. Prioritatea CD: commit pentru ele, înainte de orice mutare.
+
+Sunt **frontiera CD**: expunerea la conflict DriveFS există acolo, și se repară
+cu același instrument (`scripts\git-scratch.ps1` + `scripts\relocate-gitdata.ps1`),
+în sesiunea CD.
 
 ---
 
@@ -308,13 +329,16 @@ lucrarea ei e făcută, dar raportul nu s-a scris. Ce s-a întâmplat, măsurat:
 
 1. **Consimțământul.** Popy a apăsat Allow; `consent-result.json` a consemnat
    `TOKEN_ENDPOINT_HTTP=200`, `REFRESH_PROBE_HTTP=200`, `PERMANENT=1`,
-   **28 scope-uri**, `probe_verdict: PASS`.
+   **28 scope-uri la acel moment** (azi: **32**, grantul a fost lățit din nou
+   de sesiunea sursă), `probe_verdict: PASS`.
 2. **Defectul care bloca:** `keep` + `sites` în `FULL_SCOPES` invalidau
    întreaga cerere (`invalid_scope`). Scoase.
 3. **API-uri activate:** `books.googleapis.com` și `chat.googleapis.com`
    lipseau din proiect; activate.
 4. **Rebuild:** imaginea a mers `1.0.0 → 1.0.4`; containerul recreat de
-   două ori; instrumentele au urcat 25 → 26.
+   două ori; instrumentele au urcat 25 → 26. Sesiunea sursă a continuat după
+   ultimul ei mesaj: până la 13:26 azi imaginea a ajuns la **`1.0.9`**
+   (**8 build-uri**), instrumentele la **32**, scope-urile la **32**.
 
 **Atenție:** sesiunea sursă a continuat să lucreze după ultimul ei mesaj
 (noi fișiere la 10:42, rebuild la 10:42). Înainte de a rescrie ceva în

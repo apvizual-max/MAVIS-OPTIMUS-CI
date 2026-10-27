@@ -13,8 +13,38 @@
 const fs = require("node:fs");
 const path = require("node:path");
 
-const GL = "C:\\Users\\apviz\\.minimax-agent\\projects\\google-layer";
-const grant = require(path.join(GL, "google-grant.js"));
+
+// MEASURED DEFECT 2026-10-27: the module path was a hardcoded absolute
+// path to a folder that later moved. The consent exchange died with
+// MODULE_NOT_FOUND AFTER the human had already clicked Allow - the click is
+// the expensive part, so the path must not be a second source of truth.
+// Resolution order: explicit override, next to this script, then the known
+// project roots. A miss is a loud exit 7 with the searched list, never a
+// stack trace that reads like a crash.
+const LAYER_CANDIDATES = [
+  process.env.GA_LAYER_DIR,
+  path.join(__dirname, "google-layer"),
+  path.join(__dirname, "..", "google-layer"),
+  "C:\\Users\\apviz\\.minimax-agent\\projects\\Mavis-Google_Access\\google-layer",
+  "C:\\Users\\apviz\\.minimax-agent\\projects\\google-layer",
+].filter(Boolean);
+
+let grant = null;
+let grantPath = "";
+for (const dir of LAYER_CANDIDATES) {
+  const candidate = path.join(dir, "google-grant.js");
+  if (!fs.existsSync(candidate)) continue;
+  grant = require(candidate);
+  grantPath = candidate;
+  break;
+}
+if (!grant) {
+  console.error("ERROR=google-grant.js not found");
+  console.error("SEARCHED=" + LAYER_CANDIDATES.join(" | "));
+  console.error("FIX=set GA_LAYER_DIR, or place google-layer/google-grant.js next to this script");
+  process.exit(7);
+}
+console.log("GRANT_MODULE=" + grantPath);
 
 const DATA_DIR = "C:\\Users\\apviz\\.minimax\\google-access\\data";
 const OUT = path.join(DATA_DIR, "credentials.json");

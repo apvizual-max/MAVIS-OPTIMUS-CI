@@ -47,6 +47,10 @@ async function readMetadata() {
 }
 
 async function register(meta) {
+  // MEASURED: sending scope:"mcp" is refused with 400 invalid_client_metadata.
+  // The server accepts the RFC 7591 body without a scope and assigns its own
+  // (the 30 values listed in scopes_supported). The authorization request then
+  // asks for exactly the scope the server returned.
   const body = {
     client_name: "Google_Access (local MCP container)",
     client_uri: "https://mcp.extendlm.com/",
@@ -54,7 +58,6 @@ async function register(meta) {
     grant_types: ["authorization_code", "refresh_token"],
     response_types: ["code"],
     token_endpoint_auth_method: "none",
-    scope: SCOPE,
   };
   const res = await fetch(meta.registration_endpoint, {
     method: "POST",
@@ -105,7 +108,7 @@ function exchange(meta, reg, code, verifier) {
     "&code_challenge=" + encodeURIComponent(challenge) +
     "&code_challenge_method=S256" +
     "&state=" + encodeURIComponent(state) +
-    "&scope=" + encodeURIComponent(SCOPE);
+    (reg.scope ? "&scope=" + encodeURIComponent(reg.scope) : "");
 
   log("AUTH_URL=" + url);
 
@@ -178,10 +181,10 @@ function exchange(meta, reg, code, verifier) {
   });
 
   setTimeout(() => {
-    log("TIMEOUT=1 (nicio autorizare in 60 min)");
+    log("TIMEOUT=1 (nicio autorizare in 180 min)");
     server.close();
     process.exitCode = 6;
-  }, 60 * 60 * 1000);
+  }, 180 * 60 * 1000);
 })().catch((e) => {
   log("FATAL=" + e.message);
   process.exitCode = 3;
