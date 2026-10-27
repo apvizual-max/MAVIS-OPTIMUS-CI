@@ -75,7 +75,11 @@ async function exchangeCode(code, clientId, clientSecret, redirectUri) {
   const argv = process.argv.slice(2);
   const codeIdx = argv.indexOf("--from-code");
   const clientIdx = argv.indexOf("--client");
-  const redirectUri = "urn:ietf:wg:oauth:2.0:oob";
+  const redirectIdx = argv.indexOf("--redirect-uri");
+  // The redirect_uri sent to the token endpoint MUST be identical to the one
+  // used in the authorization request. A consent made for http://localhost
+  // exchanged as urn:ietf:wg:oauth:2.0:oob fails with redirect_uri_mismatch.
+  const redirectUri = redirectIdx !== -1 ? argv[redirectIdx + 1] : "urn:ietf:wg:oauth:2.0:oob";
 
   if (codeIdx !== -1) {
     const code = argv[codeIdx + 1];
@@ -85,7 +89,19 @@ async function exchangeCode(code, clientId, clientSecret, redirectUri) {
       process.exit(2);
     }
     let clientId, clientSecret, label;
-    if (which === "secrets") {
+    if (which === "container") {
+      // The credential the container itself uses. Its client_id is exactly the
+      // one the consent URL was built with, so the code exchange cannot
+      // mismatch clients - and its secret is the one that issued the code.
+      const c = readJson(OUT);
+      if (!c || !c.client_id || !c.client_secret) {
+        console.log("ERROR=no credential in " + OUT);
+        process.exit(3);
+      }
+      clientId = c.client_id;
+      clientSecret = c.client_secret;
+      label = "container:" + c.client_id.slice(0, 28);
+    } else if (which === "secrets") {
       const sc = secretClient();
       if (!sc) {
         console.log("ERROR=no client secret found under " + SECRETS_DIR);

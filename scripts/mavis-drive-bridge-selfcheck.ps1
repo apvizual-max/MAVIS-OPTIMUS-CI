@@ -50,6 +50,15 @@ $ProjectRoot = Split-Path -Parent $ScriptsDir
 $BridgeDir = Join-Path $ProjectRoot 'BRIDGE-DRIVE'
 $Orchestrator = Join-Path $ScriptsDir 'mavis-drive-bridge.ps1'
 $Probe = Join-Path $ScriptsDir 'drivefs_probe.py'
+# The fixture copies are built OUTSIDE the Google Drive mirror, so DriveFS
+# never administers files underneath a live probe.
+$ScratchLib = Join-Path $PSScriptRoot 'git-scratch.ps1'
+if (-not (Test-Path -LiteralPath $ScratchLib)) {
+    Write-Output ('EROARE: lipseste scripts\git-scratch.ps1: ' + $ScratchLib)
+    exit 2
+}
+. $ScratchLib
+$ScratchRoot = Assert-ScratchOutsideMirror -ScratchRoot (Get-GitScratchRoot -ProjectRoot $ProjectRoot) -ProjectRoot $ProjectRoot
 
 $problems = 0
 $unknown = 0
@@ -313,7 +322,7 @@ if ($missingChannels -eq 0) {
 #
 # The probes run against a FIXTURE copy of the publisher, so the real
 # channels are never written by a test.
-$fixtureRoot = Join-Path $ProjectRoot 'state\tmp\bridge-selfcheck'
+$fixtureRoot = Join-Path $ScratchRoot 'bridge-selfcheck'
 if (Test-Path -LiteralPath $fixtureRoot) { Remove-Item -LiteralPath $fixtureRoot -Recurse -Force }
 New-Item -ItemType Directory -Path (Join-Path $fixtureRoot 'scripts') -Force | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $fixtureRoot 'BRIDGE-DRIVE') -Force | Out-Null

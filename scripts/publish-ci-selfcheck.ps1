@@ -55,6 +55,17 @@ if (-not (Test-Path -LiteralPath $Publisher)) {
 $RealRootDefault = Split-Path -Parent $ScriptsDir
 if (-not $RealRoot) { $RealRoot = $RealRootDefault }
 
+# The fixtures are git repositories of their own. They are built OUTSIDE the
+# Google Drive mirror, so DriveFS never administers a live .git directory.
+# MEASURED 2026-10-27: 90+ .git directories used to live inside the mirror.
+$ScratchLib = Join-Path $PSScriptRoot 'git-scratch.ps1'
+if (-not (Test-Path -LiteralPath $ScratchLib)) {
+    Write-Output ('EROARE: lipseste scripts\git-scratch.ps1: ' + $ScratchLib)
+    exit 2
+}
+. $ScratchLib
+$ScratchRoot = Assert-ScratchOutsideMirror -ScratchRoot (Get-GitScratchRoot -ProjectRoot $RealRootDefault) -ProjectRoot $RealRootDefault
+
 # FIXTURES MUST NOT SURVIVE A RUN.
 # Measured defect: the fixture root was a fixed path, so `git clone` into an
 # EXISTING directory failed (destination path already exists) and the probes
@@ -70,7 +81,7 @@ if (-not $RealRoot) { $RealRoot = $RealRootDefault }
 # a function at CALL time, so a cleanup that calls Write-Out before the
 # function exists dies with "The term 'Write-Out' is not recognized" - and
 # that is a crash of the GATE, not a report. Measured 2026-10-27.
-$TmpRootBase = Join-Path $RealRootDefault 'state\tmp\publish-selfcheck'
+$TmpRootBase = Join-Path $ScratchRoot 'publish-selfcheck'
 $runStamp = (Get-Date -Format 'yyyyMMdd-HHmmss-fff')
 $TmpRoot = Join-Path $TmpRootBase ('run-' + $runStamp)
 

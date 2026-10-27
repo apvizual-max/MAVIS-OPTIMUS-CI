@@ -53,7 +53,16 @@ if (-not (Test-Path -LiteralPath $RealRoot)) {
     Write-Output ('EROARE: repo real inexistent: ' + $RealRoot)
     exit 2
 }
-$TmpRoot = Join-Path $RealRootDefault 'state\tmp\merge-selfcheck'
+# The fixtures are git repositories of their own. They are built OUTSIDE the
+# Google Drive mirror, so DriveFS never administers a live .git directory.
+$ScratchLib = Join-Path $PSScriptRoot 'git-scratch.ps1'
+if (-not (Test-Path -LiteralPath $ScratchLib)) {
+    Write-Output ('EROARE: lipseste scripts\git-scratch.ps1: ' + $ScratchLib)
+    exit 2
+}
+. $ScratchLib
+$ScratchRoot = Assert-ScratchOutsideMirror -ScratchRoot (Get-GitScratchRoot -ProjectRoot $RealRootDefault) -ProjectRoot $RealRootDefault
+$TmpRoot = Join-Path $ScratchRoot 'merge-selfcheck'
 if (Test-Path -LiteralPath $TmpRoot) { Remove-Item -LiteralPath $TmpRoot -Recurse -Force }
 New-Item -ItemType Directory -Path $TmpRoot -Force | Out-Null
 

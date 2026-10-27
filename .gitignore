@@ -63,3 +63,16 @@ chats/
 # (supravietuieste unei renumeriri viitoare a parintelui).
 Google_Connect/
 **/Mavis-Cloud_Google-Setup-Session/
+
+# --- Arhiva artefactelor Cloud (2026-10-27) -------------------------------
+# Mavis_Cloud_Artefacts_arhive-10-27-2026/ = copii de lucru ale artefactelor
+# pe care Cloud-ul le produce in cursul zilei (CV-uri, documente de proces,
+# note de integrare Google).
+#
+# MASURAT 2026-10-27: fara aceasta regula, "git add -A" - pe care
+# scripts/mavis-sync.ps1:189 il ruleaza automat in radacina CI - ar adauga
+# 104 cai, dintre care unele contin client_secret, refresh_token, access_token
+# si parole. MAVIS-OPTIMUS-CI este PUBLIC: orice octet aici ajunge libil
+# tuturor. Nu se comite.
+Mavis_Cloud_Artefacts_arhive-*/
+**/Mavis_Cloud_Artefacts_arhive-*/

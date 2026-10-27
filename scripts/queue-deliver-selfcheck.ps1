@@ -265,7 +265,16 @@ function Count-Occurrences {
     return $n
 }
 
-$TmpRoot = Join-Path $RealRoot 'state\tmp\queue-deliver-selfcheck'
+# The fixtures include real git repositories. They are built OUTSIDE the
+# Google Drive mirror, so DriveFS never administers a live .git directory.
+$ScratchLib = Join-Path $PSScriptRoot 'git-scratch.ps1'
+if (-not (Test-Path -LiteralPath $ScratchLib)) {
+    Write-Output ('EROARE: lipseste scripts\git-scratch.ps1: ' + $ScratchLib)
+    exit 2
+}
+. $ScratchLib
+$ScratchRoot = Assert-ScratchOutsideMirror -ScratchRoot (Get-GitScratchRoot -ProjectRoot $RealRoot) -ProjectRoot $RealRoot
+$TmpRoot = Join-Path $ScratchRoot 'queue-deliver-selfcheck'
 if (-not (Test-Path -LiteralPath $TmpRoot)) {
     New-Item -ItemType Directory -Path $TmpRoot -Force | Out-Null
 }

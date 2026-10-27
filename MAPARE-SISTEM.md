@@ -177,6 +177,35 @@ E:\Google\GDrive\GDrive-Second_Brain_PKMS\02_Areas\02-2-AI-SOT\CASA\OPTIMUS - Pr
 ├── blueprint\ · cloud-ingest\ (clonă + copie de lucru a livrării) · logs\ · state\ (ignorat de git)
 ```
 
+### Unde stă datele git locale
+
+**Regula:** tot ce înseamnă date git local stă **în afara mirrorului**, în
+`E:\Google\GitData-*`. În arborele proiectului, `.git` e **un fișier**
+pointer, nu un director.
+
+| Repo | `.git` în arbore | Gitdir | Remote |
+|---|---|---|---|
+| Optimus CI | `.git` | `E:/Google/GitData-Optimus-CI` | `MAVIS-OPTIMUS-CI` |
+| Clona Cloud | `cloud-ingest\MAVIS-CLOUD\.git` | `E:/Google/GitData-MAVIS-CLOUD` | `MAVIS-CLOUD` |
+| Clona CI | `cloud-ingest\MAVIS-OPTIMUS-CI\.git` | `E:/Google/GitData-MAVIS-OPTIMUS-CI` | `MAVIS-OPTIMUS-CI` |
+| CD *(alt proiect)* | `.git` | `E:/Google/GitData-Optimus-CD` | de creat |
+| PKMS *(alt proiect)* | `.git` | `E:/Google/GitData-PKMS` | `pkms-vault-automation` |
+
+**De ce.** DriveFS administrează spațiul din `E:\Google\GDrive\` cât timp
+sincronizează: materializează, înlocuiește, șterge. Un `.git\` viu n-are
+nicio problemă într-un arbore normal; într-un arbore sincronizat, are.
+
+**Fixture-urile porților** — repository-uri git de test — stau în
+`E:\Google\GitScratch-Optimus-CI`, tot în afara mirrorului. Radicalul se
+derivează din gitdir-ul repo-ului propriu (`scripts\git-scratch.ps1`), deci
+laboratorul urmează repository-ul în loc să hard-codeze o cale de mașină.
+
+**Măsurat 2026-10-27:** în arborele CI erau **63 de directorii `.git`** de
+fixture, în plus față de cele ale proiectelor. După mutare: **0**. Cele 32
+rămase în mirror sunt în proiecte **surori** (CD: 21, `AI_Tools`: 8 clonelor
+vendor, Plugins-Config: 2, PKMS: 1) — **în afara frontierei acestui
+proiect**, deci neatinse.
+
 ### Joncțiunile
 
 | Acces rapid | Sursa fizică |

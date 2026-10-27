@@ -15,10 +15,20 @@
 //
 // The scope of the current grant is what Google granted at consent time:
 // drive, gmail.modify, calendar, documents, spreadsheets, presentations,
-// forms. Tools that need a scope outside that set (photos, keep, tasks,
-// sites, script, chat) DO NOT silently fail: they report the missing scope
+// forms. Tools that need a scope outside that set (photos, tasks, script,
+// chat, youtube, books) DO NOT silently fail: they report the missing scope
 // and point at google_scope_upgrade, which prints the one consent URL that
 // widens everything in a single click.
+//
+// Two scopes were REMOVED from the widening set on measured grounds:
+//   - https://www.googleapis.com/auth/sites -> the Google Sites API was
+//     retired; the scope is no longer in Google's scope registry, so asking
+//     for it fails the WHOLE consent request with invalid_scope.
+//   - https://www.googleapis.com/auth/keep  -> Google publishes no grantable
+//     user OAuth scope for the Keep API (workspace-admin only), so it is
+//     rejected as invalid for the same reason.
+// One invalid scope invalidates all 28 others. Verified against the
+// authoritative discovery documents and against the live consent screen.
 //
 // ASCII ONLY. Runs on node:22-slim.
 
@@ -38,6 +48,39 @@ const HOST = process.env.GA_HOST || "127.0.0.1";
 
 const OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const EXTENDLM_MCP_URL = process.env.GA_EXTENDLM_URL || "https://mcp.extendlm.com/mcp";
+
+// ---------------------------------------------------------------------------
+// API hosts - ONE source of truth, measured from the discovery documents.
+//
+// Measured defect 2026-10-27: a single "https://www.googleapis.com" base made
+// 8 of 14 services answer 404. Each API has its own host:
+//   drive/calendar/books -> www.googleapis.com
+//   gmail -> gmail.googleapis.com      tasks -> tasks.googleapis.com
+//   docs -> docs.googleapis.com        sheets -> sheets.googleapis.com
+//   slides -> slides.googleapis.com    forms -> forms.googleapis.com
+//   photoslibrary -> photoslibrary.googleapis.com
+//   script -> script.googleapis.com    chat -> chat.googleapis.com
+//   youtube -> youtube.googleapis.com  people -> people.googleapis.com
+//   keep -> keep.googleapis.com        sites -> sites.googleapis.com
+const API_BASE = {
+  drive: "https://www.googleapis.com",
+  gmail: "https://gmail.googleapis.com",
+  calendar: "https://www.googleapis.com",
+  docs: "https://docs.googleapis.com",
+  sheets: "https://sheets.googleapis.com",
+  slides: "https://slides.googleapis.com",
+  forms: "https://forms.googleapis.com",
+  photoslibrary: "https://photoslibrary.googleapis.com",
+  books: "https://www.googleapis.com",
+  tasks: "https://tasks.googleapis.com",
+  keep: "https://keep.googleapis.com",
+  sites: "https://sites.googleapis.com",
+  script: "https://script.googleapis.com",
+  chat: "https://chat.googleapis.com",
+  youtube: "https://youtube.googleapis.com",
+  people: "https://people.googleapis.com",
+};
+
 
 // The full set Popy asked for: everything Google that is not Google Cloud.
 // Used ONLY when generating a widening consent URL - never to widen silently.
@@ -64,8 +107,6 @@ const FULL_SCOPES = [
   "https://www.googleapis.com/auth/photoslibrary.appendonly",
   "https://www.googleapis.com/auth/books",
   "https://www.googleapis.com/auth/tasks",
-  "https://www.googleapis.com/auth/keep",
-  "https://www.googleapis.com/auth/sites",
   "https://www.googleapis.com/auth/script.projects",
   "https://www.googleapis.com/auth/chat.messages",
   "https://www.googleapis.com/auth/youtube.upload",
@@ -203,11 +244,12 @@ function scopeOf(tool) {
     gcalendar_create: ["https://www.googleapis.com/auth/calendar.events"],
     gphotos_list: ["https://www.googleapis.com/auth/photoslibrary.readonly"],
     gbooks_search: [],
-    gkeep_list: ["https://www.googleapis.com/auth/keep"],
+    gkeep_list: [],
     gtasks_list: ["https://www.googleapis.com/auth/tasks"],
-    gsites_list: ["https://www.googleapis.com/auth/sites"],
-    gscript_list: ["https://www.googleapis.com/auth/script.projects"],
+    gsites_list: [],
+    gscript_list: ["https://www.googleapis.com/auth/drive"],
     gchat_spaces: ["https://www.googleapis.com/auth/chat.messages"],
+    gcontacts_list: ["https://www.googleapis.com/auth/contacts"],
     youtube_my_videos: ["https://www.googleapis.com/auth/youtube.readonly"],
     youtube_upload: ["https://www.googleapis.com/auth/youtube.upload"],
   };
@@ -238,7 +280,7 @@ const TOOLS = [
   {
     name: "google_scope_upgrade",
     description:
-      "Prints the ONE consent URL that widens the credential to every Google API scope (photos, keep, tasks, sites, script, chat, youtube, full mail). One click in a browser, permanent afterwards. Use the client whose secret is in the mounted secrets volume.",
+      "Prints the ONE consent URL that widens the credential to every grantable Google API scope (photos, tasks, script, chat, youtube, books, contacts, full mail). One click in a browser, permanent afterwards. Use the client whose secret is in the mounted secrets volume.",
     inputSchema: {
       type: "object",
       properties: {
@@ -476,6 +518,15 @@ const TOOLS = [
     },
   },
   {
+    name: "gcontacts_list",
+    description: "List Google Contacts through the People API (needs the contacts scope).",
+    inputSchema: {
+      type: "object",
+      properties: { max_results: { type: "number" } },
+      additionalProperties: false,
+    },
+  },
+  {
     name: "notebooklm_ask",
     description:
       "Ask NotebookLM through the ExtendLM MCP server (https://mcp.extendlm.com/mcp). Needs an ExtendLM token: put it in /data/extendlm.json as {\"token\":\"...\"}. The browser extension must be connected.",
@@ -613,17 +664,17 @@ const IMPL = {
   },
 
   async gdrive_read(args) {
-    const meta = await gfetch("/drive/v3/files/" + args.file_id + "?fields=id,name,mimeType,size");
+    const meta = await gfetch(API_BASE.drive + "/drive/v3/files/" + args.file_id + "?fields=id,name,mimeType,size");
     const m = meta.mimeType || "";
     if (m === "application/vnd.google-apps.document") {
-      const t = await gfetch("/drive/v3/files/" + args.file_id + "/export?mimeType=text/plain", { raw: true });
+      const t = await gfetch(API_BASE.drive + "/drive/v3/files/" + args.file_id + "/export?mimeType=text/plain", { raw: true });
       return { id: meta.id, name: meta.name, mime_type: m, text: t.text };
     }
     if (m === "application/vnd.google-apps.spreadsheet") {
-      const t = await gfetch("/drive/v3/files/" + args.file_id + "/export?mimeType=text/csv", { raw: true });
+      const t = await gfetch(API_BASE.drive + "/drive/v3/files/" + args.file_id + "/export?mimeType=text/csv", { raw: true });
       return { id: meta.id, name: meta.name, mime_type: m, text: t.text };
     }
-    const t = await gfetch("/drive/v3/files/" + args.file_id + "?alt=media", { raw: true });
+    const t = await gfetch(API_BASE.drive + "/drive/v3/files/" + args.file_id + "?alt=media", { raw: true });
     return { id: meta.id, name: meta.name, mime_type: m, text: t.text.slice(0, 200000) };
   },
 
@@ -633,9 +684,9 @@ const IMPL = {
     const meta = { name: args.name, mimeType: mime };
     if (args.folder_id) meta.parents = [args.folder_id];
     if (mime === "application/vnd.google-apps.document") {
-      const doc = await gfetch("/drive/v3/files", { method: "POST", body: JSON.stringify(meta) });
+      const doc = await gfetch(API_BASE.drive + "/drive/v3/files", { method: "POST", body: JSON.stringify(meta) });
       if (body) {
-        await gfetch("/documents/v1/documents/" + doc.id + ":batchUpdate", {
+        await gfetch(API_BASE.docs + "/v1/documents/" + doc.id + ":batchUpdate", {
           method: "POST",
           body: JSON.stringify({
             requests: [{ insertText: { location: { index: 1 }, text: body } }],
@@ -648,7 +699,7 @@ const IMPL = {
     const encoded = b64url(Buffer.from(body, "utf8"));
     const payload =
       "--" + boundary + "\r\nContent-Type: " + mime + "\r\n\r\n" + body + "\r\n--" + boundary + "--";
-    const created = await gfetch("/upload/drive/v3/files?uploadType=multipart", {
+    const created = await gfetch(API_BASE.drive + "/upload/drive/v3/files?uploadType=multipart", {
       method: "POST",
       headers: { "Content-Type": "multipart/related; boundary=" + boundary },
       body: payload,
@@ -658,7 +709,7 @@ const IMPL = {
       const p2 =
         "--" + boundary + "\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n" + json +
         "\r\n--" + boundary + "\r\nContent-Type: " + mime + "\r\n\r\n" + body + "\r\n--" + boundary + "--";
-      return gfetch("/upload/drive/v3/files?uploadType=multipart", {
+      return gfetch(API_BASE.drive + "/upload/drive/v3/files?uploadType=multipart", {
         method: "POST",
         headers: { "Content-Type": "multipart/related; boundary=" + boundary },
         body: p2,
@@ -675,7 +726,7 @@ const IMPL = {
     const messages = r.messages || [];
     const brief = [];
     for (const m of messages.slice(0, max)) {
-      const d = await gfetch("/gmail/v1/users/me/messages/" + m.id + "?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date");
+      const d = await gfetch(API_BASE.gmail + "/gmail/v1/users/me/messages/" + m.id + "?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date");
       const h = d.payload ? d.payload.headers || [] : [];
       const get = (n) => (h.find((x) => x.name.toLowerCase() === n) || {}).value || "";
       brief.push({ id: m.id, threadId: m.threadId, subject: get("subject"), from: get("from"), date: get("date") });
@@ -684,7 +735,7 @@ const IMPL = {
   },
 
   async gmail_read(args) {
-    const r = await gfetch("/gmail/v1/users/me/messages/" + args.message_id + "?format=full");
+    const r = await gfetch(API_BASE.gmail + "/gmail/v1/users/me/messages/" + args.message_id + "?format=full");
     const h = r.payload ? r.payload.headers || [] : [];
     const get = (n) => (h.find((x) => x.name.toLowerCase() === n) || {}).value || "";
     let body = "";
@@ -699,7 +750,7 @@ const IMPL = {
 
   async gmail_send(args) {
     const raw = rawEmail(args);
-    const r = await gfetch("/gmail/v1/users/me/messages/send", {
+    const r = await gfetch(API_BASE.gmail + "/gmail/v1/users/me/messages/send", {
       method: "POST",
       body: JSON.stringify({ raw: b64url(Buffer.from(raw, "utf8")) }),
     });
@@ -708,7 +759,7 @@ const IMPL = {
 
   async gmail_draft(args) {
     const raw = rawEmail(args);
-    const r = await gfetch("/gmail/v1/users/me/drafts", {
+    const r = await gfetch(API_BASE.gmail + "/gmail/v1/users/me/drafts", {
       method: "POST",
       body: JSON.stringify({ message: { raw: b64url(Buffer.from(raw, "utf8")) } }),
     });
@@ -716,7 +767,7 @@ const IMPL = {
   },
 
   async gdocs_get(args) {
-    const d = await gfetch("/documents/v1/documents/" + args.document_id);
+    const d = await gfetch(API_BASE.docs + "/v1/documents/" + args.document_id);
     const read = (p) => (p.textRun ? p.textRun.content : "");
     let text = "";
     const walk = (el) => {
@@ -734,12 +785,12 @@ const IMPL = {
   },
 
   async gdocs_create(args) {
-    const d = await gfetch("/documents/v1/documents", {
+    const d = await gfetch(API_BASE.docs + "/v1/documents", {
       method: "POST",
       body: JSON.stringify({ title: args.title }),
     });
     if (args.body) {
-      await gfetch("/documents/v1/documents/" + d.documentId + ":batchUpdate", {
+      await gfetch(API_BASE.docs + "/v1/documents/" + d.documentId + ":batchUpdate", {
         method: "POST",
         body: JSON.stringify({
           requests: [{ insertText: { location: { index: 1 }, text: args.body } }],
@@ -750,7 +801,7 @@ const IMPL = {
   },
 
   async gdocs_update(args) {
-    const r = await gfetch("/documents/v1/documents/" + args.document_id + ":batchUpdate", {
+    const r = await gfetch(API_BASE.docs + "/v1/documents/" + args.document_id + ":batchUpdate", {
       method: "POST",
       body: JSON.stringify({
         requests: [{ insertText: { location: { index: 1 }, text: args.text } }],
@@ -762,14 +813,14 @@ const IMPL = {
   async gsheets_read(args) {
     const range = args.range || "A1:Z100";
     const r = await gfetch(
-      "/sheets/v4/spreadsheets/" + args.spreadsheet_id + "/values/" + encodeURIComponent(range)
+      API_BASE.sheets + "/v4/spreadsheets/" + args.spreadsheet_id + "/values/" + encodeURIComponent(range)
     );
     return { spreadsheet_id: args.spreadsheet_id, range, values: r.values || [] };
   },
 
   async gsheets_write(args) {
     const r = await gfetch(
-      "/sheets/v4/spreadsheets/" + args.spreadsheet_id + "/values/" + encodeURIComponent(args.range) + "?valueInputOption=RAW",
+      API_BASE.sheets + "/v4/spreadsheets/" + args.spreadsheet_id + "/values/" + encodeURIComponent(args.range) + "?valueInputOption=RAW",
       { method: "PUT", body: JSON.stringify({ range: args.range, values: args.values }) }
     );
     return { spreadsheet_id: args.spreadsheet_id, updated: r.updatedCells, range: r.updatedRange };
@@ -779,12 +830,12 @@ const IMPL = {
     const p = new URLSearchParams({ maxResults: String(Math.min(Number(args.max_results || 25), 250)) });
     if (args.time_min) p.set("timeMin", args.time_min);
     if (args.time_max) p.set("timeMax", args.time_max);
-    const r = await gfetch("/calendar/v3/calendars/primary/events?" + p.toString());
+    const r = await gfetch(API_BASE.calendar + "/calendar/v3/calendars/primary/events?" + p.toString());
     return { count: (r.items || []).length, events: (r.items || []).map((e) => ({ id: e.id, summary: e.summary, start: e.start, end: e.end, location: e.location })) };
   },
 
   async gcalendar_create(args) {
-    const r = await gfetch("/calendar/v3/calendars/primary/events", {
+    const r = await gfetch(API_BASE.calendar + "/calendar/v3/calendars/primary/events", {
       method: "POST",
       body: JSON.stringify({
         summary: args.summary,
@@ -798,14 +849,14 @@ const IMPL = {
 
   async gphotos_list(args) {
     const r = await gfetch(
-      "/photoslibrary/v1/photos?pageSize=" + Math.min(Number(args.page_size || 25), 100)
+      API_BASE.photoslibrary + "/v1/mediaItems?pageSize=" + Math.min(Number(args.page_size || 25), 100)
     );
-    return { count: (r.photos || []).length, photos: (r.photos || []).map((p) => ({ id: p.id, created: p.mediaMetadata && p.mediaMetadata.dateTaken })) };
+    return { count: (r.mediaItems || []).length, photos: (r.mediaItems || []).map((p) => ({ id: p.id, created: p.mediaMetadata && p.mediaMetadata.dateTaken })) };
   },
 
   async gbooks_search(args) {
     const r = await gfetch(
-      "https://www.googleapis.com/books/v1/volumes?q=" + encodeURIComponent(args.q) + "&maxResults=" + Math.min(Number(args.max_results || 10), 40)
+      API_BASE.books + "/books/v1/volumes?q=" + encodeURIComponent(args.q) + "&maxResults=" + Math.min(Number(args.max_results || 10), 40)
     );
     return {
       count: (r.items || []).length,
@@ -819,35 +870,59 @@ const IMPL = {
   },
 
   async gkeep_list() {
-    const r = await gfetch("/keep/v1/notes?pageSize=50");
+    const r = await gfetch(API_BASE.keep + "/v1/notes?pageSize=50");
     return { count: (r.notes || []).length, notes: (r.notes || []).map((n) => ({ name: n.name, title: n.title })) };
   },
 
   async gtasks_list() {
-    const r = await gfetch("/tasks/v1/users/@me/lists");
+    const r = await gfetch(API_BASE.tasks + "/tasks/v1/users/@me/lists");
     return { lists: (r.items || []).map((l) => ({ id: l.id, title: l.title })) };
   },
 
   async gsites_list() {
-    const r = await gfetch("/sites/v1/sites");
+    const r = await gfetch(API_BASE.sites + "/v1/sites");
     return { sites: (r.site || r.sites || []).map((s) => ({ name: s.name, url: s.url })) };
   },
 
   async gscript_list() {
-    const r = await gfetch("/script/v1/projects");
-    return { projects: (r.projects || []).map((p) => ({ script_id: p.scriptId, title: p.title })) };
+    const r = await gfetch(
+      API_BASE.drive +
+        "/drive/v3/files?q=" +
+        encodeURIComponent("mimeType='application/vnd.google-apps.script' and trashed=false") +
+        "&pageSize=25&fields=files(id,name,modifiedTime)"
+    );
+    return {
+      source: "drive file list (the Apps Script API publishes no projects.list method)",
+      count: (r.files || []).length,
+      projects: (r.files || []).map((p) => ({ script_id: p.id, title: p.name })),
+    };
   },
 
   async gchat_spaces() {
-    const r = await gfetch("/chat/v1/spaces");
+    const r = await gfetch(API_BASE.chat + "/v1/spaces");
     return { spaces: (r.spaces || []).map((s) => ({ name: s.name, displayName: s.displayName })) };
   },
 
   async youtube_my_videos(args) {
     const r = await gfetch(
-      "https://www.googleapis.com/youtube/v3/channels/mine?part=contentDetails,id,snippet"
+      API_BASE.youtube + "/youtube/v3/channels?part=contentDetails,id,snippet&mine=true"
     );
     return { channel: r.items && r.items[0] ? r.items[0].snippet.title : null, channel_id: r.items && r.items[0] ? r.items[0].id : null };
+  },
+
+  async gcontacts_list(args) {
+    const p = new URLSearchParams({
+      personFields: "names,emailAddresses",
+      pageSize: String(Math.min(Number(args.max_results || 25), 100)),
+    });
+    const r = await gfetch(API_BASE.people + "/v1/people/me/connections?" + p.toString());
+    return {
+      count: (r.connections || []).length,
+      contacts: (r.connections || []).map((c) => ({
+        name: c.names && c.names[0] ? c.names[0].displayName : null,
+        email: c.emailAddresses && c.emailAddresses[0] ? c.emailAddresses[0].value : null,
+      })),
+    };
   },
 
   async notebooklm_ask(args) {

@@ -13,7 +13,17 @@ $ErrorActionPreference = 'Stop'
 
 $ScriptRoot = Split-Path -Parent $PSScriptRoot
 $Scanner = Join-Path $ScriptRoot 'scripts\scan-staged-secrets.ps1'
-$TmpDir = Join-Path $ScriptRoot 'state\tmp'
+$ScratchLib = Join-Path $PSScriptRoot 'git-scratch.ps1'
+if (-not (Test-Path -LiteralPath $ScratchLib)) {
+    Write-Output ('ERROR=lipseste scripts\git-scratch.ps1: ' + $ScratchLib)
+    exit 2
+}
+. $ScratchLib
+# The fixtures include a real git repository (diff-mode-repo). They are built
+# OUTSIDE the Google Drive mirror, so DriveFS never administers a live .git
+# directory.
+$ScratchRoot = Assert-ScratchOutsideMirror -ScratchRoot (Get-GitScratchRoot -ProjectRoot $ScriptRoot) -ProjectRoot $ScriptRoot
+$TmpDir = Join-Path $ScratchRoot 'secrets-selfcheck'
 
 $problems = 0
 $unknown = 0
