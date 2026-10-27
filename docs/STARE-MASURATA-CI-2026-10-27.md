@@ -713,3 +713,54 @@ Busola spunea „2 fără ieșire disponibilă". Astăzi au devenit lizibile în
 | Arborele CI | curat (`git status --porcelain` gol) |
 | CD | neatins, în afară de `_Handoffs/` (SHA256 identic cu `docs/`) |
 
+---
+
+## 14. Al treilea răspuns al Cloud-ului (08:52) — coada e închisă
+
+> **Aditiv.** Nimic din §1–§13 nu se rescrie. Măsurat `2026-10-27, ~09:15Z`.
+
+### 14.1 Ce a venit
+
+| Ce | Valoare | Cum a fost măsurat |
+|---|---|---|
+| Răspunsuri ale Cloud-ului | **3** (08:49, 12:07, **08:52**) | fișiere noi în `BRIDGE-DRIVE/INTRARI-CLOUD/` |
+| Tichete marcate `[x]` de Cloud | **5 din 5** (erau 3) | marcajele citite **la vârful remote** al lui `MAVIS-CLOUD` (`930da7c`), nu din amintire |
+| Livrabile în `QUEUE/DONE/` la Cloud | **5** | `git ls-tree origin/main QUEUE/DONE/` |
+| Coada locală, după oglindire | `TICKETS=5` · `TICKET_PROBLEMS=0` · `DELIVERED=5/5` · `QUEUE_PROBLEMS=0 UNKNOWN=0` | `queue-contract-check.ps1` · auto-proba 14/14 |
+
+### 14.2 Ce a reparat Cloud-ul — verificat de mine, nu preluat
+
+`taxonomy.js` era sursa lui unică de adevăr, dar 6 scripturi o ocoleau: patru
+foloseau `startsWith('MAVIS/')` (ar fi numărat **1 din 9** etichete), două aveau
+**8 nume hardcodate** (ar fi creat 7 etichete noi, goale).
+
+Verificat **independent**, în clona lui, la `930da7c`:
+
+| Probă | Rezultat |
+|---|---|
+| `startsWith('MAVIS/')` în cele 6 scripturi | **0** apariții (metoda veche dă 1) |
+| Referință la `taxonomy.js` | **6 din 6** |
+| `node --check` pe cele 6 | exit **0** la toate |
+
+### 14.3 Starea oglindită local
+
+| Ce | Ce am făcut |
+|---|---|
+| Marcaje | `0103` și `0844` → `[x]`, cu linia `CONSUMAT` (ca `0815`) |
+| Livrabile Cloud-ului | **4** copiate în `QUEUE/DONE/` (al 5-lea, `0815`, era deja acolo) |
+| Arhive | **4** secțiuni arhivate în `BRIDGE-DRIVE/ISTORIC/` (`0005`, `0103`, `0815`, `0844`); `0735` era deja |
+| Antetul cozii primare | corectat: „Cloud-ul marchează; **Local mută**" — era contradicția rămasă |
+| Clona `MAVIS-CLOUD` | sincronizată `3e5a0a7` → `930da7c` (ff-only, divergență 0/0) |
+
+**Nu s-a amputat nimic:** secțiunile rămân în canalul primar, iar arhiva e
+**copie** cu conținutul păstrat integral — deci poarta de paritate rămâne
+satisfăcută (`TICKETS=5`, `DELIVERED=5/5`), și nu stinge.
+
+### 14.4 O neconcordanță de nume, măsurată
+
+Livrabilele Cloud-ului referă `RASPUNS-MAVIS-CLOUD-2026-10-27-0812-raspuns-0844-etichete-live.md`,
+dar fișierul din canalul primar e `...0852-...` (ora din antetul lui: 08:52 /
+05:52 UTC). **Nu redenumesc fișierele celeilalte instanțe** — e înregistrat în
+arhivă ca notă, nu corectat în loc.
+
+

@@ -401,8 +401,8 @@ Detalii: `docs/BRIDGE-LOCAL-CLOUD.md` §11 · `docs/WORKFLOWS.md` W14 ·
 |---|---|
 | Canal primar | **Google Drive** — `BRIDGE-DRIVE/`, cloud_id `1V87h9Pbw52chSVNkxQ_NNuMh-CLfZeuI` |
 | Canal secundar | **GitHub** — `QUEUE/TASKS-FOR-CLOUD.md`, scris simultan |
-| Puntea | **bidirecțională**: 2 răspunsuri primite de la Cloud, 2 trimise înapoi |
-| Coada | `TICKETS=5` · `DELIVERED=5/5` · `QUEUE_PROBLEMS=0 UNKNOWN=0` |
+| Puntea | **bidirecțională**: **3** răspunsuri primite de la Cloud, 2 trimise înapoi |
+| Coada | `TICKETS=5` · `DELIVERED=5/5` · `QUEUE_PROBLEMS=0 UNKNOWN=0` · **coada e închisă**: 5/5 marcate `[x]` de Cloud |
 | Container Google | `Google_Access` · `running/healthy` · FailingStreak 0 · 25 unelte · grant live (9 scope-uri) |
 | Sursa lui | `tools\google-access\` în GitHub → **reconstruibil**, credential exclus |
 | Filtre Gmail `MAVIS/*` | **5 din 5 reparate** (14 neatinse) |

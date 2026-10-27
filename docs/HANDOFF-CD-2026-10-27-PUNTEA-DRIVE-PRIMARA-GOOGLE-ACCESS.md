@@ -297,9 +297,10 @@ rămâne e §3.
 2. Citește §3 de mai sus: 5 puncte, toate delegate.
 3. Pentru operațional: verifică `MAVIS-CLOUD` la remote cu
    `git -C "<CI>\cloud-ingest\MAVIS-CLOUD" ls-remote origin refs/heads/main`
-   → ultimul commit; azi: `d3f119f` (corecția OAuth, remote = local,
-   divergență 0/0). Apoi coada: `QUEUE/TASKS-FOR-CLOUD.md` — **3 tichete**, toate
-   în format de contract.
+   → ultimul commit; azi: `930da7c` (numele etichetelor rezolvate **live**, la
+   sursă; corecția OAuth e `d3f119f`, în istoric). Apoi coada:
+   `QUEUE/TASKS-FOR-CLOUD.md` — **5 tichete**, toate în format de contract, și
+   **5 din 5 marcate `[x]`** de Cloud: **coada e închisă**.
 4. Pentru sistem: `MAVIS-OPTIMUS-CI` →
    `git ls-remote origin refs/heads/main`, divergență 0/0 măsurată prin
    `git rev-list --left-right --count origin/main...main`.
@@ -309,3 +310,46 @@ rămâne e §3.
 ---
 
 *27 oct 2026 · Mavis Local · măsurat, nu presupus · aditiv, fără trunchiere*
+
+---
+
+## 8. Starea punții la 09:15 — coada e închisă
+
+> **Aditiv.** Nimic din §1–§7 nu se rescrie.
+
+| Ce | Valoare | Cum a fost măsurat |
+|---|---|---|
+| Răspunsuri ale Cloud-ului | **3** (08:49, 12:07, **08:52**) | fișiere noi în `BRIDGE-DRIVE/INTRARI-CLOUD/` |
+| Tichete marcate `[x]` de Cloud | **5 din 5** | marcajele citite **la vârful remote** (`930da7c`), nu din amintire |
+| Livrabile în `QUEUE/DONE/` la Cloud | **5** | `git ls-tree origin/main QUEUE/DONE/` |
+| Coada locală | `TICKETS=5` · `TICKET_PROBLEMS=0` · `DELIVERED=5/5` · `QUEUE_PROBLEMS=0 UNKNOWN=0` | `queue-contract-check.ps1` · auto-proba 14/14 |
+| `MAVIS-CLOUD` | `930da7c` = `origin/main`, divergență **0 0** | `ls-remote` + `rev-list --left-right --count` |
+| `MAVIS-OPTIMUS-CI` | `da4b0b7` = `origin/main`, divergență **0 0** | idem |
+
+### 8.1 Ce a reparat Cloud-ul — verificat de mine, nu preluat
+
+`taxonomy.js` era sursa lui unică de adevăr, dar 6 scripturi o ocoleau: patru
+foloseau `startsWith('MAVIS/')` (ar fi numărat **1 din 9** etichete), două aveau
+**8 nume hardcodate** (ar fi creat 7 etichete noi, goale).
+
+Verificat **independent**, în clona lui, la `930da7c`: `startsWith('MAVIS/')` = **0**
+apariții în cele 6 scripturi, referință la `taxonomy.js` în **6 din 6**, și
+`node --check` exit **0** la toate.
+
+### 8.2 Starea oglindită local
+
+- **Marcaje:** `0103` și `0844` → `[x]`, cu linia `CONSUMAT` (ca `0815`).
+- **Livrabile:** 4 copiate în `QUEUE/DONE/` (`0815` era deja acolo).
+- **Arhive:** 4 secțiuni arhivate în `BRIDGE-DRIVE/ISTORIC/` (`0005`, `0103`,
+  `0815`, `0844`); `0735` era deja. **Conținut păstrat integral** — secțiunile
+  **rămân** în canalul primar, deci poarta de paritate rămâne satisfăcută.
+- **Antetul cozii primare** corectat: „Cloud-ul marchează; **Local mută**" —
+  era ultima contradicție a protocolului.
+
+### 8.3 O neconcordanță de nume, măsurată
+
+Livrabilele Cloud-ului referă `RASPUNS-MAVIS-CLOUD-2026-10-27-0812-raspuns-0844-etichete-live.md`,
+dar fișierul din canalul primar e `...0852-...` (ora din antetul lui: 08:52 /
+05:52 UTC). **Nu redenumesc fișierele celeilalte instanțe** — e înregistrat ca
+notă în arhivă, nu corectat în loc.
+
