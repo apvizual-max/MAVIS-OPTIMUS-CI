@@ -17,6 +17,7 @@ E:\Google\GDrive\GDrive-Second_Brain_PKMS\02_Areas\02-2-AI-SOT\CASA\OPTIMUS - Pr
 │   ├── CI-POLICY.md             politica CI: puntea, guvernanța, porțile
 │   ├── BRIDGE-LOCAL-CLOUD.md    puntea, adaptată la R0
 │   ├── PUNTE-DRIVE-PRIMARA.md   canalul primar Drive, cu măsurătorile
+│   ├── CONTRACT-CLOUD-QUEUE.md  contractul cozii secundare, citat de pe discul Cloud
 │   ├── GIT-GITHUB-PROCEDURI.md  procedurile Git/GitHub, cu mecanism și probe
 │   ├── ARHITECTURA-CI-CD.md     convenția care separă CI de CD
 │   ├── PROTOCOL-DENUMIRE-LOCAL-CLOUD.md  protocolul de denumire
@@ -29,6 +30,8 @@ E:\Google\GDrive\GDrive-Second_Brain_PKMS\02_Areas\02-2-AI-SOT\CASA\OPTIMUS - Pr
 │   └── arhiva\handoffs-vechi\   handoff-uri consumate — **mutate, nu șterse**
 ├── BRIDGE-DRIVE\                canalul primar (Google Drive)
 ├── QUEUE\                       canalul secundar (GitHub)
+│   ├── TASKS-FOR-CLOUD.md       coada, în contractul consumatorului
+│   └── DONE\                    ținta de livrare a lui Cloud
 ├── scripts\                     instrumentele
 ├── .github\workflows\           plasa de siguranță a serverului
 │   └── ci-verify.yml
@@ -182,7 +185,11 @@ loc. Nimic nu s-a pierdut: istoricul e în `E:\Google\GitData-Optimus-CI`.
 | Canal secundar | `QUEUE\TASKS-FOR-CLOUD.md` | rezervă, scris simultan |
 | Măsurătorul Drive | `scripts\drivefs_probe.py` | singura sursă de adevăr, API-ul e rupt |
 | Orquestratorul punții | `scripts\mavis-drive-bridge.ps1` | scrie **și** măsoară |
-| Poarta punții | `scripts\mavis-drive-bridge-selfcheck.ps1` | 14 probe, poate eșua |
+| Poarta punții | `scripts\mavis-drive-bridge-selfcheck.ps1` | 19 probe, poate eșua |
+| Contractul cozii | `docs\CONTRACT-CLOUD-QUEUE.md` | consumatorul, citat de pe discul Cloud |
+| Poarta cozii | `scripts\queue-contract-check.ps1` | contract **viu**, drift, paritate, țintă de livrare |
+| Auto-proba cozii | `scripts\queue-contract-check-selfcheck.ps1` | 11 probe, falsificare în ambele sensuri |
+| Ținta de livrare | `QUEUE\DONE\` | unde Cloud scrie rezultatele |
 | Poarta de secrete | `scripts\scan-staged-secrets.ps1` | 9 forme fixe + atribuiri cu valoare |
 | Workflow de server | `.github\workflows\ci-verify.yml` | raportează, nu blochează |
 | Starea de azi | `docs\STARE-MASURATA-CI-2026-10-27.md` | cifre + metode |

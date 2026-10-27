@@ -112,7 +112,7 @@
 
 | Ce | Unde | Regula |
 |---|---|---|
-| **Skillurile Mavis** | `C:\Users\apviz\.minimax\agents\mavis\skills\` | 4 skilluri extinse aditiv: `mavis-optimus-continuous-integration-skill`, `mavis-cloud-bridge-skill`, `mavis-local-to-cloud-reporting`, `mavis-google-workspace-skill` |
+| **Skillurile Mavis** | `C:\Users\apviz\.minimax\agents\mavis\skills\` | 4 skilluri extinse aditiv: `mavis-optimus-continuous-integration-skill`, `mavis-cloud-bridge-skill`, `mavis-local-to-cloud-reporting`, `mavis-google-workspace-skill` — **extinse din nou 2026-10-27 ~02:45** cu contractul cozii, poarta lui, refuzul corpului trunchiat și `DUAL_CHANNEL` |
 | **Poarta de push (definiția comună)** | `C:\Users\apviz\.minimax-agent\projects\scripts\git-hooks\pre-push` | **o singură definiție**, partajată cu CD. Hook-ul din CI **delegă**, nu copiază |
 | **Hook-urile per-repo ale CI** | `E:\Google\GitData-Optimus-CI\hooks\` | `pre-commit` (scanner) + `pre-push` (delegat) |
 | **Folderul CD** | `…\Optimus_CD (by Jules)\` | **neatins** din CI. Documentele CD trăiesc în folderul CD |
