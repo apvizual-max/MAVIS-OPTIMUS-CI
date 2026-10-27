@@ -234,6 +234,26 @@ Cele 5 detalii sunt în `docs/CI-POLICY.md` (repo-ul CD) și în
 **Pe scurt:** `on: push` e interzis. Triggerul e `schedule: cron '0 3 * * *'`
 sau `workflow_dispatch`. Rolul lui e să raporteze, nu să oprească.
 
+### Starea reală a review-ului LiveReview — măsurat 2026-10-27
+
+`lrc review` se execută **după** ce push-ul e confirmat. La rularea de pe
+27 octombrie, 11:52, pe intervalul `d041fc4..efed54f`:
+
+- **review-ul S-A TRIMIS** — `Review submitted, ID: 13388`,
+  `https://livereview.hexmos.com/#/reviews/13388`
+- dar **review-ul a eșuat la evaluare**, cu mesajul scris de lrc:
+  *"the Free plan requires you to configure your own LLM API key (BYOK) for
+  your organization."* — plan `free_30k`, `ai_mode: BYOK required on free plan`
+
+Deci `lrc` **nu e limită de rată**: contul LiveReview al lui Popy nu are un
+cheie LLM configurată. E o setare de cont, în afara repo-ului — și nu
+înseamnă că nimic nu s-a trimis: trimiterea e dovedită de **ID-ul** din
+ieșire, nu de codul de ieșire.
+
+`git-autopush.ps1` tratează asta corect: raportează `review: limita` și
+continuă pe **calea 2** (push fără review), pentru că **push-ul era deja
+confirmat pe server**. Un review lipsă nu e o eroare și nu se prezintă ca una.
+
 ---
 
 ## 7. Ce nu se face niciodată
