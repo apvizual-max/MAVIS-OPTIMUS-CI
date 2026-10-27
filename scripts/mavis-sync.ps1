@@ -168,7 +168,14 @@ if ($schimbat) {
 
 # PASUL 2 - commit LOCAL, automat. Fara impingere.
 # cloud-ingest\ este in .gitignore: nu se dubleaza continutul personal si nu
-# se ingroapa un repo in alt repo. Se refera prin cale, nu prin copiere.
+# se ingroapa un repo in alt repo. Se refera prin referinta, nu prin copiere.
+#
+# MASURAT 2026-10-27: cloud-ingest/ e IGNORAT de git, deci PASUL 2 nu poate
+# comita niciun octet din MAVIS-CLOUD. Comitul se facea oricum, in radacina
+# CI, iar eticheta lui spunea "cloud: ingest ... (citire read-only din
+# MAVIS-CLOUD)". Eticheta afirma o provenienta pe care comitul nu o avea -
+# si prima rulare a umplut istoricul cu o reparatie de script etichetata ca
+# ingest. Eticheta spune acum ce s-a comitat efectiv.
 Set-Location $HQ
 $modificari = @((Invoke-Git @('status','--porcelain')).Linie.Trim() -split "`n" |
                 Where-Object { $_.Trim() })
@@ -178,7 +185,7 @@ if ($modificari.Count -eq 0) {
 } else {
     Write-Output ("PAS2_LOCAL|modificari=" + $modificari.Count)
     [void](Invoke-Git @('add','-A'))
-    $msg = "cloud: ingest " + (Get-Date -Format 'yyyy-MM-dd HH:mm') + " (citire read-only din MAVIS-CLOUD)"
+    $msg = "local: checkpoint " + (Get-Date -Format 'yyyy-MM-dd HH:mm') + " (commit automat CI; cloud-ingest/ e gitignored, deci nu continut din cloud)"
     [void](Invoke-Git @('commit','-m',$msg))
     Write-Output ("PAS2_LOCAL|commit=" + (Invoke-Git @('rev-parse','--short','HEAD')).Linie.Trim())
 }
@@ -189,3 +196,14 @@ if ($ramase -match '^\d+$' -and [int]$ramase -ge 50) {
 }
 
 Write-Output ("FINAL|cloud=" + $cloudAfter + "|local=" + (Invoke-Git @('rev-parse','--short','HEAD')).Linie.Trim() + "|impingere=NEEXECUTATA|poarta_R0=ramane_la_Popy")
+
+# CODUL DE IESIRE E PROPRIU, NU MOSTENIT.
+#
+# MASURAT 2026-10-27: scriptul se termina fara `exit`, deci mostenea
+# $LASTEXITCODE de la ultima comanda git. Un verdict mostenit apartine
+# portii precedente, nu acestei porti. Aici: 0 = puntea a mers, 4 = a fost
+# masurat un defect real (pull esuat), 1 = nu s-a putut masura.
+if ($rPull.Cod -ne 0) {
+    exit 4
+}
+exit 0
