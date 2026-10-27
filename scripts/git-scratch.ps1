@@ -27,6 +27,11 @@
 #
 # Override with the environment variable MAVIS_CI_SCRATCH.
 #
+# MAVIS_GITDIR: in containerul Mavis-Optimus-CI, pointerul .git din arbore
+# contine o cale Windows (E:/...), pe care git linux nu o poate rezolva.
+# Containerul transmite gitdir-ul direct, ca sa existe O singura
+# implementare a rezolvarii, valida in ambele medii.
+#
 # ASCII ONLY: executed by Windows PowerShell 5.1.
 
 function Get-GitScratchRoot {
@@ -39,14 +44,19 @@ function Get-GitScratchRoot {
     if ($override -and $override.Trim()) { return $override.Trim() }
 
     $gitDir = ''
-    $prev = $ErrorActionPreference
-    $ErrorActionPreference = 'Continue'
-    try {
-        $gitDir = ((& git -C $ProjectRoot rev-parse --absolute-git-dir 2>$null) -join '').Trim()
-    } catch {
-        $gitDir = ''
+    $envGitDir = [Environment]::GetEnvironmentVariable('MAVIS_GITDIR')
+    if ($envGitDir -and $envGitDir.Trim()) {
+        $gitDir = $envGitDir.Trim()
+    } else {
+        $prev = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+        try {
+            $gitDir = ((& git -C $ProjectRoot rev-parse --absolute-git-dir 2>$null) -join '').Trim()
+        } catch {
+            $gitDir = ''
+        }
+        $ErrorActionPreference = $prev
     }
-    $ErrorActionPreference = $prev
 
     if (-not $gitDir) {
         # Guessing a root would break the invariant this script exists to
@@ -67,7 +77,7 @@ function Get-GitScratchRoot {
 function Get-DriveMirrorRoot {
     param([Parameter(Mandatory = $true)][string]$Path)
 
-    $cur = [System.IO.Path]::GetFullPath($Path).TrimEnd('\')
+    $cur = [System.IO.Path]::GetFullPath($Path).TrimEnd('\','/')
     while ($cur) {
         if ((Split-Path -Leaf $cur) -eq 'GDrive') { return $cur }
         $parent = Split-Path -Parent $cur
@@ -86,8 +96,9 @@ function Assert-ScratchOutsideMirror {
         [Parameter(Mandatory = $true)][string]$ProjectRoot
     )
 
-    $s = [System.IO.Path]::GetFullPath($ScratchRoot).TrimEnd('\')
-    $p = [System.IO.Path]::GetFullPath($ProjectRoot).TrimEnd('\')
+    $sep = [System.IO.Path]::DirectorySeparatorChar
+    $s = [System.IO.Path]::GetFullPath($ScratchRoot).TrimEnd('\','/')
+    $p = [System.IO.Path]::GetFullPath($ProjectRoot).TrimEnd('\','/')
 
     $boundaries = @($p)
     $mirror = Get-DriveMirrorRoot -Path $p
@@ -97,7 +108,7 @@ function Assert-ScratchOutsideMirror {
         if ($s.Equals($b, [System.StringComparison]::OrdinalIgnoreCase)) {
             throw ('SCRATCH_ROOT_ON_BOUNDARY=' + $s)
         }
-        if ($s.StartsWith($b + '\', [System.StringComparison]::OrdinalIgnoreCase)) {
+        if ($s.StartsWith($b + $sep, [System.StringComparison]::OrdinalIgnoreCase)) {
             throw ('SCRATCH_ROOT_INSIDE_MIRROR=' + $s + ' boundary=' + $b)
         }
     }
