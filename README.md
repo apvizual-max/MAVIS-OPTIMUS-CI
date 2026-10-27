@@ -113,6 +113,7 @@ Inventarul complet, măsurat: `docs/INVENTAR-REPO-URI.md`.
 | `docs/CONFLICTE-DOZTRINA.md` | **cele conflicte găsite, și hotărâra** |
 | `docs/ARHITECTURA-CI-CD.md` | **convenția care separă CI de CD** |
 | `docs/GIT-GITHUB-PROCEDURI.md` | **procedurile Git/GitHub, cu mecanism și probe** |
+| `docs/PUBLISH-CI.md` | **publicarea pe GitHub**: instrumentul, codurile de ieșire, cele 12 probe |
 | `docs/CI-POLICY.md` | politica CI: puntea, guvernanța, verificarea |
 | `docs/STARE-MASURATA-CI.md` | **starea măsurată azi, cu cifre și metode** |
 | `docs/INVENTAR-REPO-URI.md` | toate repo-urile, locale și GitHub |
@@ -130,7 +131,7 @@ Inventarul complet, măsurat: `docs/INVENTAR-REPO-URI.md`.
 | `docs/arhiva/handoffs-vechi/` | handoff-uri consumate — **mutate, nu șterse** |
 | `blueprint/` | planul de execuție al proiectului |
 | `cloud-ingest/` | sursa clonată, neatinsă |
-| `scripts/` | puntea: `mavis-sync.ps1`, wrapper, snapshot, meta-prompt |
+| `scripts/` | puntea: `mavis-sync.ps1`, wrapper, snapshot, meta-prompt · `publish-ci.ps1` (publicarea) · `merge-check.ps1` (măsurătoarea) |
 | `logs/` | logul datat al fiecărei rulări a punții |
 | `.github/workflows/` | **plasa de siguranță a serverului**: `ci-verify.yml` |
 
@@ -138,12 +139,17 @@ Inventarul complet, măsurat: `docs/INVENTAR-REPO-URI.md`.
 
 ## Starea acum
 
-Repo: **public**, ramura `main`. **23 commituri neîmpinse** peste `origin/main`
-(`3da55ff`, ultim push `2026-10-24T23:55:56Z`). **Nimic împins** — corect,
-push-ul e blocat de poarta R0.
+Repo: **public**, ramura `main`. **Sincronizat cu `origin/main`** — măsurat
+`2026-10-27`: remote = `15c5353` = HEAD local, `DIVERGENCE_FINAL=0 0`,
+verificat prin `git ls-remote`.
 
-Divergența e **23 înainte / 5 înapoi**: cele 5 commituri remote sunt lucrarea
-sesiunii CD, care lucrează la acest repo în paralel.
+Commitul de combinare `86669d9` are **doi părinți** (`e9290f7` local +
+`3da55ff` remote): istoricul celuilalt AI a fost **inclus**, nu suprascris.
+Cel mai recent commit e `15c5353` (repararea emoji-ului din `mavis-sync.ps1`).
+
+Publicarea se face cu **un instrument**, nu cu comenzi manuale:
+`scripts\publish-ci.ps1` (măsoară → combină → împinge → verifică prin
+`ls-remote`). Fără `-Push` nu mută nimic. Detalii: `docs/PUBLISH-CI.md`.
 
 > Cifra se schimbă la fiecare commit automat, deci ar fi falsă în momentul
 > scrierii. **SHA-ul exact al HEAD:** `git -C "<repo>" log -1 --oneline`.

@@ -352,4 +352,78 @@ ambele sensuri: poarta **stricată pe copie** → `MERGE_GATE_PROBLEMS=3`,
 
 ---
 
+## W12 — Publicarea pe GitHub (aditiv, 2026-10-27)
+
+**Când:** când `main` local și `origin/main` au istorice diferite (alt AI
+lucrează în paralel) și Popy a dat R0 pentru push.
+
+```
+powershell -NoProfile -File scripts\publish-ci.ps1            # DOAR măsură
+powershell -NoProfile -File scripts\publish-ci.ps1 -Push      # operația R0
+```
+
+Instrumentul (`scripts/publish-ci.ps1`) face secvența în ordinea corectă:
+
+1. **fetch** — măsurătoarea pe ref vechi e o măsurătoare falsă.
+2. **arbore curat** pentru fișierele **urmărite**; cele **neurmărite** doar se
+   raportează (nu pot intra în conflict cu un merge).
+3. **verificare de rădăcină** — `git rev-parse --show-toplevel` trebuie să fie
+   calea dată. `rev-parse --git-dir` urcă în arbore, deci un subdirector ar
+   publica alt repo.
+4. **măsurătoarea e poarta** — `merge-check.ps1` decide, nu scriptul.
+5. **merge `--no-ff`** — ambele istorice rămân. Nimic rebased, nimic șters.
+6. **push** — poarta `pre-push` satisfăcută cu markerul `PUSH-ACORD`, consumat
+   și eliminat în `finally` (un acord nefolosit lăsat pe disc e o gaură).
+7. **verificare prin `git ls-remote`** — repetată de 4 ori cu 2s pauză,
+   pentru că serverul poate răspunde din cache.
+
+### Codurile de ieșire
+
+| Cod | Semnificație |
+|---|---|
+| 0 | împins **și verificat** (`VERDICT=publicat`) |
+| 1 | **conflict** — fișierele sunt numite, nimic schimbat |
+| 2 | nemăsurabil / nepublicabil — nimic împins, **UNKNOWN** |
+| 3 | împins dar neverificat — **UNKNOWN**, nu succes |
+| 4 | push **refuzat** — remote-ul nu poartă HEAD-ul, deci nimic publicat |
+
+**Proba:** `scripts/publish-ci-selfcheck.ps1` → `PUBLISH_GATE_PROBLEMS=0
+FALSIFIED=12` (12 probe pe repo-uri reale; falsificare pe copie pentru proba
+statică; fixture curat per rulare).
+
+Detalii complete: `docs/PUBLISH-CI.md`.
+
+---
+
+## W13 — Accesul Google fără re-autentificare (aditiv, 2026-10-27)
+
+**Când:** când un server MCP Google nu reușește să se autentifice.
+
+**NU se cere consentul întâi.** Mai întâi se măsoară:
+
+```
+node C:\Users\apviz\.minimax-agent\projects\google-layer\verify-google-credentials.js
+node C:\Users\apviz\.minimax-agent\projects\google-layer\google-auth-hub.js
+node C:\Users\apviz\.minimax-agent\projects\google-layer\mcp-probe.js
+```
+
+- `verify-google-credentials.js` — **măsoară** fiecare refresh token de pe
+  mașină (exchange la `oauth2.googleapis.com/token`). Nu afișează niciun
+  token: doar nume de chei, lungimi, coduri HTTP și motive.
+- `google-auth-hub.js` — găsește grantul **viu** și îl publică în toate
+  magazaurile pe care le citesc serverele. **Nu scrie nimic** dacă nu există
+  grant viu (falsificat: cu tokenuri moarte, `RESULT=NO_LIVE_GRANT` și
+  magazaurul rămâne neatins).
+- `mcp-probe.js` — handshake MCP **real** + apel de tool **real**. Un magazaur
+  populat nu înseamnă acces: handshake-ul trece și tool-ul pică.
+
+**Cazul în care chiar trebuie consent:** nu există **niciun** grant viu
+nicăieri pe mașină. Atunci, și numai atunci, `bun gdrive-oauth.js` cu consola
+în browserul lui Popy.
+
+**Launchere cu auto-vindecare** (se provisionează la fiecare pornire):
+`gdrive-launcher.js` · `gmail-launcher.js` · `calendar-launcher.js`.
+
+---
+
 *2026-10-27 · Mavis Local · măsurat · aditiv*
