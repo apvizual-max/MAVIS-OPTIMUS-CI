@@ -65,18 +65,12 @@ if (-not $RealRoot) { $RealRoot = $RealRootDefault }
 # A test that measures yesterday's fixture is not a test. Each run gets its
 # own directory, and the previous run's directories are removed - only the
 # ones this script itself created (the name prefix is checked).
+#
+# The cleanup block lives AFTER the Write-Out definition: PowerShell resolves
+# a function at CALL time, so a cleanup that calls Write-Out before the
+# function exists dies with "The term 'Write-Out' is not recognized" - and
+# that is a crash of the GATE, not a report. Measured 2026-10-27.
 $TmpRootBase = Join-Path $RealRootDefault 'state\tmp\publish-selfcheck'
-if (Test-Path -LiteralPath $TmpRootBase) {
-    foreach ($old in @(Get-ChildItem -LiteralPath $TmpRootBase -Directory -Force -ErrorAction SilentlyContinue)) {
-        if ($old.Name -like 'run-*') {
-            try {
-                [System.IO.Directory]::Delete($old.FullName, $true)
-            } catch {
-                Write-Out ('WARN nu pot curata fixture-ul vechi: ' + $old.FullName)
-            }
-        }
-    }
-}
 $runStamp = (Get-Date -Format 'yyyyMMdd-HHmmss-fff')
 $TmpRoot = Join-Path $TmpRootBase ('run-' + $runStamp)
 
@@ -87,6 +81,23 @@ $probeNo = 0
 function Write-Out {
     param([AllowEmptyString()][string]$Message)
     [Console]::Out.WriteLine($Message)
+}
+
+if (Test-Path -LiteralPath $TmpRootBase) {
+    foreach ($old in @(Get-ChildItem -LiteralPath $TmpRootBase -Directory -Force -ErrorAction SilentlyContinue)) {
+        if ($old.Name -like 'run-*') {
+            try {
+                # git marks its objects read-only, and Directory.Delete refuses
+                # a read-only file - so the cleanup silently failed and the old
+                # fixture survived (measured 2026-10-27: WARN on every run).
+                Get-ChildItem -LiteralPath $old.FullName -Recurse -Force -ErrorAction SilentlyContinue |
+                    ForEach-Object { try { $_.Attributes = 'Normal' } catch { /* best effort */ } }
+                [System.IO.Directory]::Delete($old.FullName, $true)
+            } catch {
+                Write-Out ('WARN nu pot curata fixture-ul vechi: ' + $old.FullName)
+            }
+        }
+    }
 }
 
 function Invoke-Git {
