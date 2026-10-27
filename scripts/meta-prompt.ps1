@@ -173,11 +173,31 @@ if ($Show) {
 }
 
 $dest = Join-Path $BASE $Output
-$dir = Split-Path -Parent $dest
+$fullDest = [System.IO.Path]::GetFullPath($dest)
+$fullBase = [System.IO.Path]::GetFullPath($BASE)
+
+# Ensure base path ends with a separator to prevent path traversal
+$sep = [System.IO.Path]::DirectorySeparatorChar.ToString()
+if (-not $fullBase.EndsWith($sep)) {
+    $fullBase += $sep
+}
+
+if (-not $fullDest.StartsWith($fullBase, [System.StringComparison]::OrdinalIgnoreCase)) {
+    Write-Output "SECURITY ERROR: Output path escapes the base directory."
+    exit 1
+}
+
+$relativePath = $fullDest.Substring($fullBase.Length).TrimStart('\', '/')
+if ($relativePath -match '^\.git[\\/]' -or $relativePath -match '^\.github[\\/]' -or $relativePath -match '^\.jules[\\/]' -or $relativePath -match '^scripts[\\/]' -or $relativePath -match '\.ps1$') {
+    Write-Output "SECURITY ERROR: Output path writes to a restricted directory or overrides an executable script."
+    exit 1
+}
+
+$dir = Split-Path -Parent $fullDest
 if ($dir -and -not (Test-Path $dir)) {
     New-Item -ItemType Directory -Force -Path $dir | Out-Null
 }
-[System.IO.File]::WriteAllText($dest, $text, (New-Object System.Text.UTF8Encoding($false)))
+[System.IO.File]::WriteAllText($fullDest, $text, (New-Object System.Text.UTF8Encoding($false)))
 
 $kb = [math]::Round((Get-Item $dest).Length / 1KB, 1)
 Write-Output ('OK  {0}' -f $dest)
