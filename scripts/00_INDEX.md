@@ -1,13 +1,13 @@
 ﻿# 00_INDEX — 02_Areas/02-2-AI-SOT/CASA/OPTIMUS - Prime/Optimus_CI (by Mavis)/scripts
 
-**20 fișiere · 232 KB · 0 subfoldere**
+**20 fișiere · 234 KB · 0 subfoldere**
 
 > Generat automat de `02_Areas/02-2-AI-SOT/02-2-1-AI-Kit/AI-Kit_manual/build-index.ps1` și `align-index.ps1`. Nu edita manual — rulează scriptul din nou.
 > Randul **De ce e aici** de mai sus, daca exista, se pastreaza la fiecare regenerare.
 
 ## Ce e aici
 
-Cele mai frecvente două extensii sunt `.ps1` (18 din 20 fișiere) și `.mjs` (1 din 20 fișiere). Cel mai mare element din folder e `publish-ci-selfcheck.ps1` (21 KB)
+Cele mai frecvente două extensii sunt `.ps1` (18 din 20 fișiere) și `.mjs` (1 din 20 fișiere). Cel mai mare element din folder e `publish-ci-selfcheck.ps1` (22 KB)
 
 ## Cuvinte cheie
 
@@ -27,7 +27,7 @@ Cele mai frecvente două extensii sunt `.ps1` (18 din 20 fișiere) și `.mjs` (1
 | `meta-prompt.ps1` | 8 KB | 2026-10-27 |
 | `notebooklm-cdp.mjs` | 6 KB | 2026-10-12 |
 | `publish-ci.ps1` | 14 KB | 2026-10-27 |
-| `publish-ci-selfcheck.ps1` | 21 KB | 2026-10-27 |
+| `publish-ci-selfcheck.ps1` | 22 KB | 2026-10-27 |
 | `queue-contract-check.ps1` | 13 KB | 2026-10-27 |
 | `queue-contract-check-selfcheck.ps1` | 13 KB | 2026-10-27 |
 | `queue-deliver.ps1` | 20 KB | 2026-10-27 |

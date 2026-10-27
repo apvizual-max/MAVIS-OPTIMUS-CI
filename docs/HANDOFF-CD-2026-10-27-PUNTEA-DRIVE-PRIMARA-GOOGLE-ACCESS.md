@@ -240,6 +240,25 @@ rămâne e §3.
    **Falsificare:** testele noi pică **5 din 8** contra implementării vechi și
    trec **8 din 8** contra celei noi. `describe()` raportează acum
    `client_source`, `mixed_env` și `client_pairing`.
+9. **Filtrele Gmail `MAVIS/*` — reparate, și scriptul reparat la sursă.**
+   Cloud-ul a raportat 5 filtre care nu loveau nimic (0 mesaje în 30 de zile,
+   în loc de ~3.737) și le-a pregătit un script. Dar scriptul apela `PATCH` pe
+   filtre — **metodă care nu există** în Gmail API (măsurat din discovery
+   document: pe `gmail.users.settings.filters` există doar DELETE, GET, LIST și
+   CREATE; singurele `patch` din tot API-ul sunt `labels.patch`,
+   `sendAs.patch`, `cse.identities.patch`). În plus, numele etichetelor erau
+   **hardcodate**, iar etichetele au fost rearanjate în noaptea, deci 4 din 5
+   filtre erau sărite cu „eticheta nu există" — deși filtrele erau prezente.
+   Reparat: `CREATE` cu criteriul și acțiunea noi, apoi `DELETE` al celui vechi
+   (ordinea aleasă intentionat: un CREATE eșuat să nu piardă filtrul vechi), iar
+   numele etichetelor se rezolvă **live** prin `taxonomy.js`. Aplicat de pe
+   această mașină, unde scope-ul `gmail.settings.basic` există: **5 din 5**
+   reparate, celelalte 14 neatinse. Verificat independent prin API: 19 filtre în
+   total, 5 cu acolade, fiecare cu eticheta sa vie. Commit `350f983` în
+   `MAVIS-CLOUD`.
+   **Regula pentru CD:** înainte de a te baza pe o metodă de API, verific-o în
+   discovery document. Un `PATCH` care „ar trebui să existe" a costat o
+   noapte de raporturi greșite — și un script care părea gata.
 
 ---
 
