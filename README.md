@@ -120,6 +120,7 @@ Inventarul complet, măsurat: `docs/INVENTAR-REPO-URI.md`.
 | `docs/MAPARE-FOLDERE.md` | **ce e în fiecare folder al proiectului**, măsurat |
 | `docs/WORKFLOWS.md` | **cum se lucrează**: fluxuri, porți, coduri de ieșire |
 | `docs/PUNTE-DRIVE-PRIMARA.md` | **canalul primar** Drive: arhitectură, măsurători |
+| `docs/CONTRACT-CLOUD-QUEUE.md` | **contractul cozii secundare**, citat de pe discul Cloud-ului |
 | `docs/PROTOCOL-DENUMIRE-LOCAL-CLOUD.md` | protocolul de denumire |
 | `docs/META-PROMPT.md` | generarea meta-promptului |
 | `docs/RECUPERARE-GIT.md` | starea măsurată a mașinii, cu cifre |
@@ -137,17 +138,19 @@ Inventarul complet, măsurat: `docs/INVENTAR-REPO-URI.md`.
 
 ## Starea acum
 
-Repo: **public**, ramura `main`, HEAD `65af38f`, **17 commituri neîmpinse**
-peste `origin/main` (`3da55ff`, ultim push `2026-10-24T23:55:56Z`).
-**Nimic împins** — corect, push-ul e blocat de poarta R0.
+Repo: **public**, ramura `main`. **23 commituri neîmpinse** peste `origin/main`
+(`3da55ff`, ultim push `2026-10-24T23:55:56Z`). **Nimic împins** — corect,
+push-ul e blocat de poarta R0.
 
-Divergența e **17 înainte / 5 înapoi**: cele 5 commituri remote sunt lucrarea
+Divergența e **23 înainte / 5 înapoi**: cele 5 commituri remote sunt lucrarea
 sesiunii CD, care lucrează la acest repo în paralel.
+
+> Cifra se schimbă la fiecare commit automat, deci ar fi falsă în momentul
+> scrierii. **SHA-ul exact al HEAD:** `git -C "<repo>" log -1 --oneline`.
+> Cifrele complete: `docs/STARE-MASURATA-CI-2026-10-27.md`.
 
 **Puntea e vie:** `MavisSyncBridge` 08:30, `LastTaskResult=0`,
 `exit_pull=0`, `local_dupa == remote`, `impingere=NEEXECUTATA`.
-
-Cifrele complete: `docs/STARE-MASURATA-CI-2026-10-27.md`.
 
 ---
 
@@ -195,7 +198,7 @@ per-rădăcină, lipsa oricărui anunț → `UNKNOWN` + exit 3, raport falsifica
 **respins**, raport adevarat **acceptat**, citesirea unui log neatins de
 >30 min → **FAIL**.
 
-**Starea după reparație:** `BRIDGE_PROBLEMS=0 UNKNOWN=0` (16 probe),
+**Starea după reparație:** `BRIDGE_PROBLEMS=0 UNKNOWN=0` (19 probe),
 `SECRET_PROBLEMS=0 UNKNOWN=0` (7 probe), `TRANSPORT=UP`,
 `PROPAGATION=STALE`, `ACTIVE_CHANNEL=GITHUB`, ieșire 4.
 
