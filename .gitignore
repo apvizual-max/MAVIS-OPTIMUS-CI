@@ -76,3 +76,25 @@ Google_Connect/
 # tuturor. Nu se comite.
 Mavis_Cloud_Artefacts_arhive-*/
 **/Mavis_Cloud_Artefacts_arhive-*/
+
+# --- Transcriptele de sesiune extrase (2026-10-27) ---------------------------
+# sessions/ = locul in care scriptul "extract-transcript.mjs" (skill
+# mavis-session-transcript-skill) depune transcriptul COMPLET al unei sesiuni
+# Mavis, in format .md + .jsonl + raw/.
+#
+# MASURAT 2026-10-27: o singura sesiune (mvs_dad1539226c34024bbba6dfae62a616e,
+# "Mavis - Google_Access", 2026-10-11 -> 2026-10-27) produce 49 fisiere,
+# 39.668.437 B: transcript text + transcript JSONL + 46 artefacte de tool-output
+# copiate verbatim.
+#
+# ACELASI MOTIV CA MAI SUS, MASURAT DIN NOU: MAVIS-OPTIMUS-CI este PUBLIC
+# (verificat cu "gh repo view": visibility=PUBLIC, isPrivate=false), iar
+# scripts/mavis-sync.ps1:189 ruleaza "git add -A" + commit automat in radacina
+# CI ($HQ = Split-Path -Parent $PSScriptRoot). Un folder neignorat ar fi fost
+# adaugat automat si publicat la urmatoarea rulare a puntii zilnice.
+#
+# Transcriptele contin si context personal, si rezultate de unelte din sesiunea
+# Google Access (scope-uri, token-uri de autorizare, URLs de consent) — deci nu
+# se comite. Artefactele de setup sunt deja in repo-ul operational
+# (MAVIS-CLOUD/mavis-tools/), deci nimic nu se pierde prin necomitare.
+/sessions/
