@@ -212,7 +212,7 @@ trebuie să fie în **hook**, nu într-un switch: o poartă în prohă sau
 
 `scripts\scan-staged-secrets.ps1` — citește **index-ul**, nu arborele de
 lucru. Rulează automat la **fiecare** commit, prin hook-ul `pre-commit` din
-`E:\Google\GitData-Optimus-CI\hooks`.
+`E:\Google\GitData-Optimus-CI/repo\hooks`.
 
 | Cod | Ce înseamnă |
 |---|---|

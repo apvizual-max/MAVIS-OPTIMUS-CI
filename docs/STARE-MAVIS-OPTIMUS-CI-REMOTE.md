@@ -87,7 +87,7 @@ Măsurătorile sunt aici; decizia e a lui Popy.
 | Ce | Unde |
 |---|---|
 | Copia locală (SOT CI) | `E:\…\CASA\OPTIMUS - Prime\Optimus_CI (by Mavis)\` |
-| Datele git (worktree link) | `E:\Google\GitData-Optimus-CI` |
+| Datele git (worktree link) | `E:\Google\GitData-Optimus-CI/repo` |
 | Canalul primar Local↔Cloud | `BRIDGE-DRIVE/` (Google Drive) — `docs/PUNTE-DRIVE-PRIMARA.md` |
 | Canalul secundar | `QUEUE/TASKS-FOR-CLOUD.md` |
 | Starea locală de azi | `docs/STARE-MASURATA-CI-2026-10-27.md` |

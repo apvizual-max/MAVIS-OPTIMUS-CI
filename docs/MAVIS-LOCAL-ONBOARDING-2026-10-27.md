@@ -32,36 +32,38 @@ e exact defectul pe care îl repară aici.
 E:\Google\GDrive\                                  ← RĂDĂCINA MIRRORULUI DriveFS
 └── GDrive-Second_Brain_PKMS\02_Areas\02-2-AI-SOT\CASA\OPTIMUS - Prime\
     └── Optimus_CI (by Mavis)\                     ← PROIECTUL (mirror)
-        ├── .git                                   ← FIȘIER pointer → E:\Google\GitData-Optimus-CI
+        ├── .git                                   ← FIȘIER pointer → E:\Google\GitData-Optimus-CI\repo
         ├── BRIDGE-DRIVE\                          ← canalul PRIMAR (Google Drive)
         ├── QUEUE\                                 ← canalul SECUNDAR (GitHub)
         ├── scripts\                              ← instrumentele + cele 7 porți
         ├── tools\google-access\                   ← sursa reconstruibilă a containerului
         ├── docs\                                 ← documentația
         ├── cloud-ingest\                          ← clonele (gitignored!)
-        │   ├── MAVIS-CLOUD\.git                   ← pointer → E:\Google\GitData-MAVIS-CLOUD
-        │   └── MAVIS-OPTIMUS-CI\.git              ← pointer → E:\Google\GitData-MAVIS-OPTIMUS-CI
+        │   ├── MAVIS-CLOUD\.git                   ← pointer → E:\Google\GitData-Optimus-CI\clone-MAVIS-CLOUD
+        │   └── MAVIS-OPTIMUS-CI\.git              ← pointer → E:\Google\GitData-Optimus-CI\clone-MAVIS-OPTIMUS-CI
         └── state\                                ← măsurători (gitignored)
 
 E:\Google\                                        ← ÎN AFARA mirrorului
-├── GitData-Optimus-CI\          gitdir-ul acestui repo
-├── GitData-MAVIS-CLOUD\         gitdir-ul clonei Cloud
-├── GitData-MAVIS-OPTIMUS-CI\    gitdir-ul clonei CI
-├── GitData-Optimus-CD\          gitdir-ul CD (proiect separat)
-├── GitData-PKMS\                gitdir-ul vaultului (proiect separat)
-└── GitScratch-Optimus-CI\       ← laboratorul porților: fixture-uri git
+├── GitData-Optimus-CI\               ← SINGURUL folder: tot ce e git, al acestui proiect
+│   ├── repo\                        gitdir-ul acestui repo (MAVIS-OPTIMUS-CI)
+│   ├── clone-MAVIS-CLOUD\            gitdir-ul clonei Cloud
+│   ├── clone-MAVIS-OPTIMUS-CI\       gitdir-ul clonei CI
+│   └── scratch\                      ← laboratorul porților: fixture-uri git
+├── GitData-Optimus-CD\               gitdir-ul CD (proiect separat)
+└── GitData-PKMS\                     gitdir-ul vaultului (proiect separat)
 ```
 
 ### De ce gitdata stă în afara mirrorului
 
 Google Drive for Desktop (DriveFS) **administrează spațiul** din
 `E:\Google\GDrive\` cât timp sincronizează: materializează, înlocuiește sau
-șterge fișiere. Un `.git\` e un fișierier viu — `index`, `refs`, `objects`,
+șterge fișiere. Un `.git\` e un fișier viu — `index`, `refs`, `objects`,
 `HEAD`. DriveFS nu știe că e un repository; pentru el sunt fișiere oarecare.
 
-Deci: **tot ce înseamnă date git local stă în afara mirrorului**, în
-`E:\Google\GitData-*`. În arborele proiectului, `.git` e **un fișier** de
-37–43 de octeți care spune `gitdir: E:/Google/GitData-<Nume>`.
+Deci: **tot ce înseamnă date git local stă în afara mirrorului**, într-un
+**singur folder** pe proiect: `E:\Google\GitData-Optimus-CI\`. În arborele
+proiectului, `.git` e **un fișier** de 38–43 de octeți care spune
+`gitdir: E:/Google/GitData-Optimus-CI/<subfolder>`.
 
 > **Măsurat înainte/după (2026-10-27):** în arborele CI erau **63 de
 > directorii `.git`** în plus față de cele ale proiectelor — toate erau
@@ -69,6 +71,12 @@ Deci: **tot ce înseamnă date git local stă în afara mirrorului**, în
 > mirror sunt în proiecte **surori** (CD: 21, `AI_Tools`: 8 clonelor
 > vendor, Plugins-Config: 2, PKMS: 1) — **în afara frontierei acestui
 > proiect**, deci neatinse.
+>
+> **Consolidare (2026-10-27, 11:40).** Gitdata acestui proiect a fost
+> adusă într-**un singur folder**, `E:\Google\GitData-Optimus-CI\`, cu patru
+> subfoldere: `repo\`, `clone-MAVIS-CLOUD\`, `clone-MAVIS-OPTIMUS-CI\`,
+> `scratch\`. CD și PKMS au rămas în folderele lor — sunt **alte proiecte**
+> (1 proiect = 1 folder), nu bucăți din acesta.
 
 ---
 
@@ -169,7 +177,7 @@ edite riscante:
 
 ```powershell
 # scripts\git-scratch.ps1
-Get-GitScratchRoot -ProjectRoot <proiect>   # → E:\Google\GitScratch-Optimus-CI
+Get-GitScratchRoot -ProjectRoot <proiect>   # → E:\Google\GitData-Optimus-CI\scratch
 ```
 
 Radicalul se **derivează din gitdir-ul repo-ului propriu** (care stă în afara

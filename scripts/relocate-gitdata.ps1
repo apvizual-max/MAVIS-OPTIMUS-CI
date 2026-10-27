@@ -23,17 +23,26 @@
 #   - the pointer file is written LAST, and the result is re-verified after
 #
 # USAGE
-#   powershell -File relocate-gitdata.ps1 -RepoPath <worktree> -GitDataRoot E:\Google
+#   powershell -File relocate-gitdata.ps1 -RepoPath <worktree> `
+#              -GitDataRoot E:\Google\GitData-Optimus-CI -GitDataName <subfolder>
 #
-# The gitdata folder name defaults to "GitData-" + the repository folder
-# name, which is the convention already used by the machine
-# (GitData-Optimus-CI, GitData-Optimus-CD, GitData-PKMS).
+# ONE ROOT PER PROJECT. All git data of a project lives under a single root
+# folder, each repository getting a subfolder of it:
+#
+#   E:\Google\GitData-Optimus-CI\
+#     repo\                    gitdir of the project repo
+#     clone-MAVIS-CLOUD\        gitdir of a clone
+#     clone-MAVIS-OPTIMUS-CI\   gitdir of a clone
+#     scratch\                  fixture scratch root
+#
+# The subfolder name defaults to the repository folder name; pass
+# -GitDataName 'repo' for the project repository itself.
 #
 # ASCII ONLY: executed by Windows PowerShell 5.1.
 
 param(
     [Parameter(Mandatory = $true)][string]$RepoPath,
-    [string]$GitDataRoot = 'E:\Google',
+    [string]$GitDataRoot = 'E:\Google\GitData-Optimus-CI',
     [string]$GitDataName = '',
     [switch]$KeepOriginal
 )
@@ -46,7 +55,7 @@ function Write-Bad  { param([string]$m) [Console]::Out.WriteLine('FAIL|' + $m) }
 
 $RepoPath = (Resolve-Path -LiteralPath $RepoPath).Path
 $leaf = Split-Path -Leaf $RepoPath
-if (-not $GitDataName) { $GitDataName = 'GitData-' + $leaf }
+if (-not $GitDataName) { $GitDataName = $leaf }
 
 $src = Join-Path $RepoPath '.git'
 $dst = Join-Path $GitDataRoot $GitDataName

@@ -170,7 +170,7 @@ moștenită, iar verdictul ei aparține porții precedente.
 
 | Repo | `core.hooksPath` (local) | Hook-uri |
 |---|---|---|
-| **CI** | `E:/Google/GitData-Optimus-CI/hooks` | `pre-commit` (scanner) + `pre-push` (**delegat**) |
+| **CI** | `E:/Google/GitData-Optimus-CI/repo/hooks` | `pre-commit` (scanner) + `pre-push` (**delegat**) |
 | **CD** | `C:/Users/apviz/.minimax-agent/projects/scripts/git-hooks` | `pre-push` (definiția comună) |
 
 **De ce CI are director propriu, dar nu copiază poarta de push:** definiția

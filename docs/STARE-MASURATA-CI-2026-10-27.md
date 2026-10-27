@@ -13,7 +13,7 @@
 |---|---|---|
 | Sursa fizică a proiectului CI | `E:\Google\GDrive\GDrive-Second_Brain_PKMS\02_Areas\02-2-AI-SOT\CASA\OPTIMUS - Prime\Optimus_CI (by Mavis)` | `Get-Item` + joncțiune |
 | Joncțiunea de pe C: | `C:\Users\apviz\.minimax-agent\projects\Optimus_CI (by Mavis)` → `E:\…\Optimus_CI (by Mavis)` | `LinkType=Junction`, `Target` |
-| `.git` | **fișier**, nu director → `gitdir: E:/Google/GitData-Optimus-CI` | citire conținut |
+| `.git` | **fișier**, nu director → `gitdir: E:/Google/GitData-Optimus-CI/repo` | citire conținut |
 | **G: NU e mount virtual** | volum fix; `G:\My Drive.lnk` → target `E:\Google\GDrive` | `WScript.Shell.CreateShortcut` + `fsutil fsinfo drivetype` |
 | DriveFS | rulează, `version 132.0.0.0`, startup 2026-10-26 **22:43** | `Get-Process`, `drive_fs_507.txt` |
 | Rădăcina mirrorului My Drive | `Google\GDrive`, `root_id=23`, `sync_type=MIRROR`, **connected=true** | `MirrorRoots`, anunțul cel mai recent, în toate logurile |
@@ -117,7 +117,7 @@ Canalul **secundar** al punții. Nu e atins de acest rând.
 | Ce | Stare |
 |---|---|
 | `core.hooksPath` per repo | instalat în CI și CD |
-| `core.hooksPath` **CI** | `E:/Google/GitData-Optimus-CI/hooks` — **director propriu**, cu `pre-commit` + `pre-push` **delegat** |
+| `core.hooksPath` **CI** | `E:/Google/GitData-Optimus-CI/repo/hooks` — **director propriu**, cu `pre-commit` + `pre-push` **delegat** |
 | `core.hooksPath` **CD** | `C:/Users/apviz/.minimax-agent/projects/scripts/git-hooks` — **neafectat** (poarta comună) |
 | Poarta de push, fără martor | **EXIT 1** (măsurat) |
 | Delegarea `pre-push` în repo-ul real | **EXIT 1** + mesajul porții comune (măsurat) |

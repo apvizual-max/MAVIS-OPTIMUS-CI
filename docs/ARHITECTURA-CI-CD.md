@@ -131,7 +131,7 @@ posibil canalul primar de mai jos.
 |---|---|
 | Sursa CI | `E:\Google\GDrive\GDrive-Second_Brain_PKMS\02_Areas\02-2-AI-SOT\CASA\OPTIMUS - Prime\Optimus_CI (by Mavis)` |
 | Joncțiune locală | `C:\Users\apviz\.minimax-agent\projects\Optimus_CI (by Mavis)` → `E:` (`LinkType=Junction`) |
-| `.git` | **fișier** (worktree link) → `gitdir: E:/Google/GitData-Optimus-CI` |
+| `.git` | **fișier** (worktree link) → `gitdir: E:/Google/GitData-Optimus-CI/repo` |
 | Calea veche | `…\projects\Mavis-Optimus-Continuous-Integration\` — **nu mai există** |
 | `G:` | volum fix, **nu** mount virtual; `G:\My Drive.lnk` → `E:\Google\GDrive` |
 | Rădăcina mirrorului | `Google\GDrive`, `root_id=23`, `sync_type=MIRROR` |

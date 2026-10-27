@@ -47,7 +47,7 @@ Drive. E un volum fix, iar `G:\My Drive.lnk` e o scurtătură cu ținta
 `E:\Google\GDrive`. Mirrorul real e pe `E:`.
 
 **Date git:** `.git` e un **fișier** (worktree link) →
-`gitdir: E:/Google/GitData-Optimus-CI`. Istoricul nu stă în folderul
+`gitdir: E:/Google/GitData-Optimus-CI/repo`. Istoricul nu stă în folderul
 sincronizat, ci pe `E:`, în afara mirrorului.
 
 ---

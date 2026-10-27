@@ -145,7 +145,7 @@ Gitdir CD: `E:/Google/GitData-Optimus-CD` — **separat** de cel al CI.
 
 ```
 E:\Google\GDrive\GDrive-Second_Brain_PKMS\02_Areas\02-2-AI-SOT\CASA\OPTIMUS - Prime\Optimus_CI (by Mavis)\
-├── .git                          ← FIȘIER (worktree link) → E:\Google\GitData-Optimus-CI
+├── .git                          ← FIȘIER (worktree link) → E:\Google\GitData-Optimus-CI\repo
 ├── README.md · DOCTRINA-CI.md · MAPARE-SISTEM.md
 ├── BRIDGE-DRIVE\                ← PUNTEA PRIMARĂ (Google Drive)
 │   ├── README-BRIDGE-DRIVE.md   protocolul
@@ -179,15 +179,23 @@ E:\Google\GDrive\GDrive-Second_Brain_PKMS\02_Areas\02-2-AI-SOT\CASA\OPTIMUS - Pr
 
 ### Unde stă datele git locale
 
-**Regula:** tot ce înseamnă date git local stă **în afara mirrorului**, în
-`E:\Google\GitData-*`. În arborele proiectului, `.git` e **un fișier**
-pointer, nu un director.
+**Regula:** tot ce înseamnă date git local stă **în afara mirrorului**, într-un
+**singur folder pe proiect**: `E:\Google\GitData-Optimus-CI\`. În arborele
+proiectului, `.git` e **un fișier** pointer, nu un director.
+
+```
+E:\Google\GitData-Optimus-CI\        ← SINGURUL folder de git al acestui proiect
+├── repo\                            gitdir-ul acestui repo (MAVIS-OPTIMUS-CI)
+├── clone-MAVIS-CLOUD\                gitdir-ul clonei cloud-ingest\MAVIS-CLOUD
+├── clone-MAVIS-OPTIMUS-CI\           gitdir-ul clonei cloud-ingest\MAVIS-OPTIMUS-CI
+└── scratch\                          fixture-urile porților (repository-uri de test)
+```
 
 | Repo | `.git` în arbore | Gitdir | Remote |
 |---|---|---|---|
-| Optimus CI | `.git` | `E:/Google/GitData-Optimus-CI` | `MAVIS-OPTIMUS-CI` |
-| Clona Cloud | `cloud-ingest\MAVIS-CLOUD\.git` | `E:/Google/GitData-MAVIS-CLOUD` | `MAVIS-CLOUD` |
-| Clona CI | `cloud-ingest\MAVIS-OPTIMUS-CI\.git` | `E:/Google/GitData-MAVIS-OPTIMUS-CI` | `MAVIS-OPTIMUS-CI` |
+| Optimus CI | `.git` | `E:/Google/GitData-Optimus-CI/repo` | `MAVIS-OPTIMUS-CI` |
+| Clona Cloud | `cloud-ingest\MAVIS-CLOUD\.git` | `E:/Google/GitData-Optimus-CI/clone-MAVIS-CLOUD` | `MAVIS-CLOUD` |
+| Clona CI | `cloud-ingest\MAVIS-OPTIMUS-CI\.git` | `E:/Google/GitData-Optimus-CI/clone-MAVIS-OPTIMUS-CI` | `MAVIS-OPTIMUS-CI` |
 | CD *(alt proiect)* | `.git` | `E:/Google/GitData-Optimus-CD` | de creat |
 | PKMS *(alt proiect)* | `.git` | `E:/Google/GitData-PKMS` | `pkms-vault-automation` |
 
@@ -196,7 +204,7 @@ sincronizează: materializează, înlocuiește, șterge. Un `.git\` viu n-are
 nicio problemă într-un arbore normal; într-un arbore sincronizat, are.
 
 **Fixture-urile porților** — repository-uri git de test — stau în
-`E:\Google\GitScratch-Optimus-CI`, tot în afara mirrorului. Radicalul se
+`E:\Google\GitData-Optimus-CI\scratch`, tot în afara mirrorului. Radicalul se
 derivează din gitdir-ul repo-ului propriu (`scripts\git-scratch.ps1`), deci
 laboratorul urmează repository-ul în loc să hard-codeze o cale de mașină.
 
@@ -215,7 +223,7 @@ proiect**, deci neatinse.
 
 **Calea veche** `…\projects\Mavis-Optimus-Continuous-Integration\` **nu mai
 există** — mutată pe `E:` la consolidarea din 2026-10-25, cu joncțiune în
-loc. Nimic nu s-a pierdut: istoricul e în `E:\Google\GitData-Optimus-CI`.
+loc. Nimic nu s-a pierdut: istoricul e în `E:\Google\GitData-Optimus-CI/repo`.
 
 ### Ce e nou în CI (2026-10-27)
 

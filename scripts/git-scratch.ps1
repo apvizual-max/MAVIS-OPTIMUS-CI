@@ -14,8 +14,16 @@
 # (E:\Google\GitData-Optimus-CI, -CD, -PKMS); the fixtures were not.
 #
 # The scratch root is derived from the repository's OWN gitdir, which lives
-# outside the mirror (E:\Google\GitData-Optimus-CI). The laboratory follows
-# the repository instead of hard-coding a machine path.
+# outside the mirror (E:\Google\GitData-Optimus-CI\repo). The laboratory
+# follows the repository instead of hard-coding a machine path: the gitdir's
+# parent IS the single root of this project's git data, and the scratch lives
+# beside the repositories inside it.
+#
+#   E:\Google\GitData-Optimus-CI\
+#     repo\                    gitdir of the project repo
+#     clone-MAVIS-CLOUD\        gitdir of the Cloud clone
+#     clone-MAVIS-OPTIMUS-CI\   gitdir of the CI clone
+#     scratch\                 <- this
 #
 # Override with the environment variable MAVIS_CI_SCRATCH.
 #
@@ -24,7 +32,7 @@
 function Get-GitScratchRoot {
     param(
         [Parameter(Mandatory = $true)][string]$ProjectRoot,
-        [string]$Name = 'GitScratch-Optimus-CI'
+        [string]$Name = 'scratch'
     )
 
     $override = [Environment]::GetEnvironmentVariable('MAVIS_CI_SCRATCH')
@@ -40,9 +48,16 @@ function Get-GitScratchRoot {
     }
     $ErrorActionPreference = $prev
 
-    $base = ''
-    if ($gitDir) { $base = Split-Path -Parent $gitDir }
-    if (-not $base) { $base = Join-Path ($env:SystemDrive) 'Google' }
+    if (-not $gitDir) {
+        # Guessing a root would break the invariant this script exists to
+        # protect: the scratch MUST live outside the mirrored tree.
+        throw ('GITDIR_UNRESOLVED for ' + $ProjectRoot + ' - cannot derive the scratch root')
+    }
+
+    $base = Split-Path -Parent $gitDir
+    if (-not $base) {
+        throw ('GITDIR_HAS_NO_PARENT: ' + $gitDir)
+    }
 
     return (Join-Path $base $Name)
 }

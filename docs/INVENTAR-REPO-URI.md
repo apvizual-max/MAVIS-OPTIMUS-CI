@@ -92,10 +92,10 @@
 
 | Cale locală | Remote | Stare |
 |---|---|---|
-| `E:\Google\GDrive\…\CASA\OPTIMUS - Prime\Optimus_CI (by Mavis)\` | `MAVIS-OPTIMUS-CI` | **acest proiect** · **0 commituri neîmpinse** (HEAD = remote) · gitdir `E:/Google/GitData-Optimus-CI` |
+| `E:\Google\GDrive\…\CASA\OPTIMUS - Prime\Optimus_CI (by Mavis)\` | `MAVIS-OPTIMUS-CI` | **acest proiect** · **0 commituri neîmpinse** (HEAD = remote) · gitdir `E:/Google/GitData-Optimus-CI/repo` |
 | `E:\Google\GDrive\…\CASA\OPTIMUS - Prime\Optimus_CD (by Jules)\` | `MAVIS-OPTIMUS-CD` | **SOT CD** · repo GitHub de creat la priming · gitdir `E:/Google/GitData-Optimus-CD` |
-| `E:\Google\GDrive\…\Optimus_CI (by Mavis)\cloud-ingest\MAVIS-CLOUD\` | `MAVIS-CLOUD` | clona **și copia de lucru a livrării**: contractul consumatorului cere „Local scrie sarcina aici" → `scripts/queue-deliver.ps1` scrie și împinge aici. **Aditiv** — nimic existent nu se rescrie · gitdir `E:/Google/GitData-MAVIS-CLOUD` |
-| `E:\Google\GDrive\…\Optimus_CI (by Mavis)\cloud-ingest\MAVIS-OPTIMUS-CI\` | `MAVIS-OPTIMUS-CI` | clonă de lucru a acestui repo · gitdir `E:/Google/GitData-MAVIS-OPTIMUS-CI` |
+| `E:\Google\GDrive\…\Optimus_CI (by Mavis)\cloud-ingest\MAVIS-CLOUD\` | `MAVIS-CLOUD` | clona **și copia de lucru a livrării**: contractul consumatorului cere „Local scrie sarcina aici" → `scripts/queue-deliver.ps1` scrie și împinge aici. **Aditiv** — nimic existent nu se rescrie · gitdir `E:/Google/GitData-Optimus-CI/clone-MAVIS-CLOUD` |
+| `E:\Google\GDrive\…\Optimus_CI (by Mavis)\cloud-ingest\MAVIS-OPTIMUS-CI\` | `MAVIS-OPTIMUS-CI` | clonă de lucru a acestui repo · gitdir `E:/Google/GitData-Optimus-CI/clone-MAVIS-OPTIMUS-CI` |
 | `~/.minimax/agents/mavis/skills` | `Optimus-Mavis-Skills` | skillurile |
 | `~/.minimax-agent/projects` | `OPTIMUS-Backbone` | consola OPTIMUS |
 
@@ -108,7 +108,7 @@
 
 > **Calea veche a dispărut.** `…\projects\Mavis-Optimus-Continuous-Integration\`
 > a fost eliminată prin Trash recuperabil (3 niveluri, EXIT 0) pe 27 oct.
-> Nimic nu s-a pierdut: istoricul e în `E:\Google\GitData-Optimus-CI`.
+> Nimic nu s-a pierdut: istoricul e în `E:\Google\GitData-Optimus-CI/repo`.
 
 **Măsurat 2026-10-27, ~05:30Z:** `git rev-list --left-right --count origin/main...main`
 → **0 înainte / 0 înapoi** — `refs/heads/main` **= HEAD local**,

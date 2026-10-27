@@ -22,7 +22,7 @@ Pentru cifrele de azi: `docs/STARE-MASURATA-CI-2026-10-27.md`.
 
 **Unde stă datele git:** în `E:\Google\GitData-*`, **în afara mirrorului
 DriveFS**. În arbore, `.git` e un fișier pointer. Fixture-urile porților stau
-în `E:\Google\GitScratch-Optimus-CI`. Instrumentele:
+în `E:\Google\GitData-Optimus-CI\scratch`. Instrumentele:
 `scripts/git-scratch.ps1` · `scripts/relocate-gitdata.ps1`.
 
 ---
