@@ -52,3 +52,14 @@ __pycache__/
 # deja in repo-ul operational (MAVIS-CLOUD/mavis-tools/), deci nimic nu se
 # pierde prin necomitare.
 chats/
+
+# Google_Connect/ = denumirea noua (renumerita in Drive pe 2026-10-27, 08:02)
+# a folderului "chats" de mai sus: transcrierile sesiunilor de lucru,
+# inclusiv setup-ul Google cu Mavis Cloud.
+# MASURAT: scripts/mavis-sync.ps1:189 ruleaza "git add -A" + commit automat
+# in radacina CI. Cu regula ancorata doar la numele vechi, transcriptul ar fi
+# intrat in MAVIS-OPTIMUS-CI (PUBLIC) la urmatoarea rulare a puntii zilnice.
+# De aceea regula acopera si numele curent, si numele marcant al raftului
+# (supravietuieste unei renumeriri viitoare a parintelui).
+Google_Connect/
+**/Mavis-Cloud_Google-Setup-Session/
