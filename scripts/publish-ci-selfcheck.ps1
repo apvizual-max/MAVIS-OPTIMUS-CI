@@ -84,17 +84,26 @@ function Write-Out {
 }
 
 if (Test-Path -LiteralPath $TmpRootBase) {
+    # The old fixture runs are moved to the RECOVERABLE trash, not deleted.
+    # That is the same rule the whole project uses (mavis-trash), and it is
+    # also what makes the cleanup work here: the fixture directory carries
+    # Attributes=ReadOnly,Directory (measured 2026-10-27) because DriveFS
+    # created it, and a plain filesystem delete is refused on a read-only
+    # directory. The trash launcher moves the whole tree, read-only files and
+    # all, and it is recoverable if the fixture ever needs to be inspected.
+    $trashExe = Join-Path $env:USERPROFILE '.minimax\bin\mavis-trash.cmd'
     foreach ($old in @(Get-ChildItem -LiteralPath $TmpRootBase -Directory -Force -ErrorAction SilentlyContinue)) {
         if ($old.Name -like 'run-*') {
-            try {
-                # git marks its objects read-only, and Directory.Delete refuses
-                # a read-only file - so the cleanup silently failed and the old
-                # fixture survived (measured 2026-10-27: WARN on every run).
-                Get-ChildItem -LiteralPath $old.FullName -Recurse -Force -ErrorAction SilentlyContinue |
-                    ForEach-Object { try { $_.Attributes = 'Normal' } catch { /* best effort */ } }
-                [System.IO.Directory]::Delete($old.FullName, $true)
-            } catch {
-                Write-Out ('WARN nu pot curata fixture-ul vechi: ' + $old.FullName)
+            if (Test-Path -LiteralPath $trashExe) {
+                $prev = $ErrorActionPreference
+                $ErrorActionPreference = 'Continue'
+                & $trashExe -- $old.FullName 2>&1 | Out-Null
+                $ErrorActionPreference = $prev
+                if (Test-Path -LiteralPath $old.FullName) {
+                    Write-Out ('WARN nu pot curata fixture-ul vechi: ' + $old.FullName)
+                }
+            } else {
+                Write-Out ('WARN nu pot curata fixture-ul vechi (lipseste ' + $trashExe + '): ' + $old.FullName)
             }
         }
     }
