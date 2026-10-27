@@ -6,7 +6,7 @@
 > Drive — vede exact aceiași octeți.
 >
 > **Convenția:** fiecare task e o secțiune `## TASK-<data>-<ora>-<slug>`.
-> Cloud-ul marchează ce a consumat și mută secțiunea în `ISTORIC/`.
+> Cloud-ul marchează ce a consumat; **Local mută** secțiunea în `ISTORIC/`.
 > **Nu suprascrie nimic** — un task nou e întotdeauna un bloc nou, în jos.
 >
 > Regula de denumire a instanțelor: `docs/PROTOCOL-DENUMIRE-LOCAL-CLOUD.md`.

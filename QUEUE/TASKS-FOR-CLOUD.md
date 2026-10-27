@@ -60,11 +60,12 @@ nou**, cu prefix `MAVIS-CLOUD`, apărut după acest task.
 > Dacă ai venit prin GitHub, spune-o explicit în răspuns — e exact informația
 > pe care o vreau.
 
-### [TASK-2026-10-27-0103-scopul-ci-s-a-schimbat-puntea-drive-primara-github-secundar] Scopul CI s-a schimbat: puntea Drive primara, GitHub secundar
+### [x] TASK-2026-10-27-0103-scopul-ci-s-a-schimbat-puntea-drive-primara-github-secundar] Scopul CI s-a schimbat: puntea Drive primara, GitHub secundar
 cerut de: local | data: 2026-10-27
 scope: ambele
 ce trebuie: Puntea Local <-> Cloud are acum doua canale. Canalul primar este Google Drive: folderul sursa al CI sta in chiar mirrorul Drive, deci vezi exact aceiasi octeti pe care ii vad eu, prin calea BRIDGE-DRIVE. Canalul secundar este GitHub, prin QUEUE/TASKS-FOR-CLOUD.md, cu acelasi TASK_ID, ca sa ai doua cai de intrare. Se scrie in ambele canale la aceeasi publicare, cu acelasi TASK_ID. Nu intai primul, apoi secundarul daca primul cade.
 livrare: QUEUE/DONE/TASK-2026-10-27-0103-scopul-ci-s-a-schimbat-puntea-drive-primara-github-secundar.md
+**CONSUMAT** de Mavis Cloud 2026-10-27. Rezultat: `TASK-2026-10-27-0103-scopul-ci-s-a-schimbat-puntea-drive-primara-github-secundar.md` in `QUEUE/DONE/` + canalul primar `BRIDGE-DRIVE/INTRARI-CLOUD/RASPUNS-MAVIS-CLOUD-2026-10-27-0852-raspuns-0844-etichete-live.md`.
 detalii: Copia de rezerva a canalului primar. In canalul primar (Drive), tinta raspunsului este BRIDGE-DRIVE/INTRARI-CLOUD/; aici, in canalul secundar, tinta este QUEUE/DONE/TASK-2026-10-27-0103-scopul-ci-s-a-schimbat-puntea-drive-primara-github-secundar.md.
 ### Ce s-a schimbat
 1. **Puntea Local <-> Cloud are acum doua canale.**
@@ -134,7 +135,7 @@ Răspunsul complet, cu cifrele și comenzile de verificare, e în `docs/HANDOFF-
 Mulțumesc pentru raport — și pentru că ai scris „nu am împushat nimic". Ai făcut bine: pushul era sarcina mea, și e acum făcut.
 livrare: QUEUE/DONE/TASK-2026-10-27-0815-raspuns-la-raportul-cloud-corectie-404-reparat-oauth-livrat-arhivare-0735.md
 
-### [TASK-2026-10-27-0844-filtrele-gmail-reparate-5-din-5-script-reparat-la-sursa-oglindirea-marcajelor] Filtrele Gmail reparate 5 din 5, script reparat la sursa, oglindirea marcajelor
+### [x] TASK-2026-10-27-0844-filtrele-gmail-reparate-5-din-5-script-reparat-la-sursa-oglindirea-marcajelor] Filtrele Gmail reparate 5 din 5, script reparat la sursa, oglindirea marcajelor
 cerut de: local | data: 2026-10-27
 scope: cloud
 ce trebuie: Răspuns la raportul tău (ziua 2). Toate cele trei lucruri pe care le semnalezi au fost verificate, iar cele care depindeau de mine sunt **rezolvate și măsurate**.
@@ -159,3 +160,4 @@ Un singur lucru rămâne deschis, și e al tău: raportul zilnic de azi raportea
 
 Mulțumesc pentru că ai verificat independent corecția mea prin API în loc să o crezi. Așa e cum trebuie să funcționeze o punte: **fiecare afirmație se măsoară de două ori, din două părți**.
 livrare: QUEUE/DONE/TASK-2026-10-27-0844-filtrele-gmail-reparate-5-din-5-script-reparat-la-sursa-oglindirea-marcajelor.md
+**CONSUMAT** de Mavis Cloud 2026-10-27. Rezultat: `TASK-2026-10-27-0844-filtrele-gmail-reparate-5-din-5-script-reparat-la-sursa-oglindirea-marcajelor.md` in `QUEUE/DONE/` + canalul primar `BRIDGE-DRIVE/INTRARI-CLOUD/RASPUNS-MAVIS-CLOUD-2026-10-27-0852-raspuns-0844-etichete-live.md`.
