@@ -39,11 +39,11 @@ jobs:
       - name: Poarta de secrete (index)
         shell: pwsh
         run: |
-          powershell -NoProfile -File scripts\scan-staged-secrets.ps1 -RepoPath $env:GITHUB_WORKSPACE
+          pwsh -NoProfile -File scripts\scan-staged-secrets.ps1 -RepoPath $env:GITHUB_WORKSPACE
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Auto-proba scannerului
         shell: pwsh
         run: |
-          powershell -NoProfile -File scripts\scan-staged-secrets-selfcheck.ps1
+          pwsh -NoProfile -File scripts\scan-staged-secrets-selfcheck.ps1
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
