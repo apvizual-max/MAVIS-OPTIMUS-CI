@@ -25,6 +25,7 @@ import {
   repoById,
   git,
   gitLines,
+  gitConfigValue,
   gh,
   evidence,
   evidenceTail,
@@ -419,12 +420,56 @@ export function doctor() {
     return s;
   });
 
+  // --- Anomalii: igiena configului gitdir-ului si autorii commiturilor -----
+  // Doua clase de accident, ambele masurate pe 2026-10-27:
+  //   1. `git init` pe un gitdir real rescrie configul lui (core.worktree,
+  //      core.filemode, user.*) - si apoi un commit ajunge in main cu
+  //      identitatea celui care a rulat comanda.
+  //   2. Un self-check care rezolva drumul gresit scrie fixture-ul in
+  //      repository-ul de productie.
+  // Doctorul nu repara nimic: face anomaliile VISIBILE. Istoricul nu se
+  // rescrie niciodata, deci o anomalie din trecut ramane in trecut - dar una
+  // noua nu mai poate trece neobservata.
+  const anomalies = [];
+  const knownAuthors = ['sentinel.prime@optimus.local', 'mavis-ci@local'];
+  for (const r of REPOS) {
+    const wt = gitConfigValue(r, 'core.worktree');
+    const fm = gitConfigValue(r, 'core.filemode');
+    const un = gitConfigValue(r, 'user.name');
+    const ue = gitConfigValue(r, 'user.email');
+    if (wt) anomalies.push({ code: 'GITDIR_WORKTREE_SET', repo: r.id, detail: wt });
+    if (fm !== 'false') anomalies.push({ code: 'GITDIR_FILEMODE_NOT_FALSE', repo: r.id, detail: fm || '(unset)' });
+    if (un || ue) anomalies.push({ code: 'GITDIR_IDENTITY_SET', repo: r.id, detail: (un + ' <' + ue + '>').trim() });
+    // Conteaza doar commiturile NEPUBLICATE: ce e deja pe origin/main e
+    // istoricul publicat al celorlalti agenti, nu o anomalie.
+    const hasOrigin = gitLines(r, ['rev-parse', '--verify', 'origin/main']).length > 0;
+    const unpublished = hasOrigin
+      ? gitLines(r, ['log', '--format=%an|%ae', 'origin/main..main', '-n', '50'])
+      : gitLines(r, ['log', '--format=%an|%ae', '-n', '20']);
+    const foreign = [];
+    for (const a of unpublished) {
+      const parts = a.split('|');
+      const email = (parts[1] || '').toLowerCase();
+      if (email && knownAuthors.indexOf(email) === -1) foreign.push((parts[0] || '?') + ' <' + email + '>');
+    }
+    if (foreign.length) {
+      anomalies.push({
+        code: 'FOREIGN_AUTHORS',
+        repo: r.id,
+        detail:
+          foreign.slice(0, 5).join(', ') + (foreign.length > 5 ? ' (+' + (foreign.length - 5) + ' mai multe)' : ''),
+      });
+    }
+  }
+
   return {
     ts: new Date().toISOString(),
     container: 'Mavis-Optimus-CI',
     version: CFG.version,
     checks,
     green: checks.every((c) => c.ok),
+    anomalyCount: anomalies.length,
+    anomalies,
     grant,
     repos,
   };

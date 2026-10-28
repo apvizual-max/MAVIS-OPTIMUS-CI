@@ -120,6 +120,15 @@ export function gitLines(repo, args, opts = {}) {
   return r.out.split('\n').map((s) => s.trim()).filter(Boolean);
 }
 
+// Valoarea unei chei din configul gitdir-ului. O cheie ABSENTA inseamna ''
+// (git config --get iese cu cod 1), nu o valoare inventata: un instrument
+// care masoara trebuie sa distinga "absent" de "setat pe false".
+export function gitConfigValue(repo, key) {
+  const r = git(repo, ['config', '--get', key]);
+  if (r.code !== 0) return '';
+  return r.out.trim();
+}
+
 export function readToken() {
   try {
     const t = fs.readFileSync(CFG.tokenFile, 'utf8').trim();

@@ -12,9 +12,21 @@
 #
 # Semantica e aceeasi cu a host-ului: continutul se compara dupa normalizare
 # CRLF -> LF, exact cum face gitul de pe host.
+# filemode = false: in container, the volumes are Windows bind mounts, where
+# every file looks executable (0755). With filemode=true (the Linux default)
+# a commit made in the container records 0755 for the WHOLE tree and the
+# history fills with false mode changes. MEASURED 2026-10-27: one self-check
+# left a commit in main with 127 files and all the modes flipped 644 -> 755.
+#
+# safe.directory = *: the mounted volumes belong to another UID than root.
+# Without this, git refuses the operation ("dubious ownership") and the
+# scripts look for fallbacks that can write into the real repository.
 [core]
 	autocrlf = true
 	longpaths = true
+	filemode = false
+[safe]
+	directory = *
 [init]
 	defaultBranch = main
 [pull]

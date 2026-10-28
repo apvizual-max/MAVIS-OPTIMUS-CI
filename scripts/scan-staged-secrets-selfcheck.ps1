@@ -228,11 +228,59 @@ $example = @(
 [System.IO.File]::WriteAllText((Join-Path $diffRepo 'docs-existing.md'), $example, $enc)
 $prev = $ErrorActionPreference
 $ErrorActionPreference = 'Continue'
+# THE FIXTURE MUST OWN ITS OWN GITDIR. MEASURED 2026-10-27: this very file
+# wrote a commit into the PRODUCTION repository - author "Fixture
+# <fixture@localhost>", message "fixture: pre-existing documentation", 127
+# files, every mode flipped 644 -> 755. Cause: `git init` landed on a real
+# worktree (the scratch resolver had no usable gitdir inside the container),
+# re-initialized the shared gitdir and committed the whole tree into main.
+#
+# The guard below refuses to continue the moment the fixture directory can
+# still REACH a real repository. It runs BEFORE any write, so there is
+# nothing to undo afterwards: a self-check that can damage production must
+# fail loudly, not silently repair itself afterwards.
+$guardPrev = $ErrorActionPreference
+$ErrorActionPreference = 'Continue'
+$reachable = ''
+try {
+    $reachable = ((& git -C $diffRepo rev-parse --absolute-git-dir 2>$null) -join '').Trim()
+} catch {
+    $reachable = ''
+}
+$ErrorActionPreference = $guardPrev
+if ($reachable) {
+    Write-Output ('FAIL proba-dif-control - FIXTURE INSIDE A REAL REPO: ' + $diffRepo + ' -> ' + $reachable)
+    Write-Output 'The fixture would rewrite the history of a real repository. Aborting before any write.'
+    exit 1
+}
+
 & git -C $diffRepo init -b main 2>&1 | Out-Null
 & git -C $diffRepo config user.name 'Fixture' | Out-Null
 & git -C $diffRepo config user.email 'fixture@localhost' | Out-Null
 & git -C $diffRepo add -A | Out-Null
 & git -C $diffRepo commit -m 'fixture: pre-existing documentation' 2>&1 | Out-Null
+# After init: the gitdir must live INSIDE the fixture directory. A gitdir
+# somewhere else means `git init` re-initialized a REAL repository, and the
+# commit above did not land where it was supposed to land.
+$ownPrev = $ErrorActionPreference
+$ErrorActionPreference = 'Continue'
+$ownGitDir = ''
+try {
+    $ownGitDir = ((& git -C $diffRepo rev-parse --absolute-git-dir 2>$null) -join '').Trim()
+} catch {
+    $ownGitDir = ''
+}
+$ErrorActionPreference = $ownPrev
+# Comparatia trebuie sa fie AGNOSTICA de separator: git intoarce calea cu '/',
+# iar $diffRepo o construieste cu '\'. Un check care compara altceva decat
+# cea ce intentioneaza e un check care nu poate fi de incredere.
+$ownNorm = ($ownGitDir -replace '\\', '/').TrimEnd('/')
+$repoNorm = ($diffRepo -replace '\\', '/').TrimEnd('/')
+if ($ownNorm -and $ownNorm.StartsWith($repoNorm + '/', [System.StringComparison]::OrdinalIgnoreCase)) {
+    Write-Out ('OK   proba-dif-control - fixture-ul are propriul gitdir: ' + $ownGitDir)
+} else {
+    Fail ('proba-dif-control - fixture-ul NU are propriul gitdir: ' + $ownGitDir + ' (asteptat sub ' + $diffRepo + ')')
+}
 [System.IO.File]::WriteAllText((Join-Path $diffRepo 'clean.md'), 'nothing to see here', $enc)
 & git -C $diffRepo add -- clean.md | Out-Null
 $ErrorActionPreference = $prev

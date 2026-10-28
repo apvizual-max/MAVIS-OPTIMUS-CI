@@ -36,6 +36,7 @@ E:\Google\GDrive\                                  ← RĂDĂCINA MIRRORULUI Dri
         ├── BRIDGE-DRIVE\                          ← canalul PRIMAR (Google Drive)
         ├── QUEUE\                                 ← canalul SECUNDAR (GitHub)
         ├── scripts\                              ← instrumentele + cele 7 porți
+        ├── ci-server\                            ← serverul de git (Dockerfile + motor)
         ├── tools\google-access\                   ← sursa reconstruibilă a containerului
         ├── docs\                                 ← documentația
         ├── cloud-ingest\                          ← clonele (gitignored!)
@@ -48,9 +49,13 @@ E:\Google\                                        ← ÎN AFARA mirrorului
 │   ├── repo\                        gitdir-ul acestui repo (MAVIS-OPTIMUS-CI)
 │   ├── clone-MAVIS-CLOUD\            gitdir-ul clonei Cloud
 │   ├── clone-MAVIS-OPTIMUS-CI\       gitdir-ul clonei CI
-│   └── scratch\                      ← laboratorul porților: fixture-uri git
+│   ├── scratch\                      ← laboratorul porților: fixture-uri git
+│   └── evidence\                     ← jurnalul serverului (JSONL + log)
 ├── GitData-Optimus-CD\               gitdir-ul CD (proiect separat)
 └── GitData-PKMS\                     gitdir-ul vaultului (proiect separat)
+
+Docker (nu e folder):
+└── Mavis-Optimus-CI                  ← serverul de git · API 127.0.0.1:8790
 ```
 
 ### De ce gitdata stă în afara mirrorului
@@ -360,6 +365,50 @@ lucrarea ei e făcută, dar raportul nu s-a scris. Ce s-a întâmplat, măsurat:
 | Starea măsurată de azi | `docs\STARE-MASURATA-CI-2026-10-27.md` |
 | Repo-urile lui Popy | `docs\INVENTAR-REPO-URI.md` |
 | Ce se știe despre remote | `docs\STARE-MAVIS-OPTIMUS-CI-REMOTE.md` |
+| Serverul de git (containerul) | `docs\CI-SERVER.md` |
+
+---
+
+## 12. Serverul de git — containerul `Mavis-Optimus-CI`
+
+Containerul Docker care ține **toată** data git locală și o sincronizează cu
+GitHub. Localul e autonom (fetch → integrare → commit, mereu pe `main`);
+**push-ul cere acordul lui Popy** și nimic altceva.
+
+| Ce | Măsurat 2026-10-27 |
+|---|---|
+| Imagine | `mavis/optimus-ci:1.0.0` · container `Mavis-Optimus-CI` |
+| API | `127.0.0.1:8790` — `/health` `/doctor` `/status` `/plan` `/sync` `/push` `/arm-r0` `/evidence` |
+| Monturi | proiect rw · gitdata rw · poarta ro · token ro · consent ro |
+| Doctor | **15/15 verde** + 1 anomalie vizibilă (vezi mai jos) |
+| Autotest | **7/7 verde** (`T7` = „autotestul nu atinge repo-urile reale") |
+| Plugin MCP | `optimus-ci-server` — 7 unelte: `ci_status`, `ci_plan`, `ci_sync`, `ci_arm_push`, `ci_push`, `ci_doctor`, `ci_evidence` |
+
+### După un an: 5 minute
+
+```powershell
+# 1. pornește containerul (dacă nu rulează)
+docker start Mavis-Optimus-CI
+
+# 2. dacă imaginea nu mai există, reconstruiește-o
+docker build -t mavis/optimus-ci:1.0.0 "<proiect>\ci-server"
+
+# 3. reface porțile și verifică
+powershell -NoProfile -ExecutionPolicy Bypass -File "<proiect>\ci-server\bootstrap.ps1"
+docker exec Mavis-Optimus-CI node /opt/optimus-ci/engine/cli.mjs doctor
+docker exec Mavis-Optimus-CI node /opt/optimus-ci/engine/cli.mjs selftest
+```
+
+Re-autentificarea e **rare**: tokenul GitHub e refăcut automat din `gh auth`;
+grantul Google se citește din volumul montat, și **doar dacă nu există niciun
+grant viu** se cere consent.
+
+> **Anomalia vizibilă e o lecție, nu o daună ascunsă.** În `main` există un
+> commit cu autorul `Fixture <fixture@localhost>` (127 de fișiere, moduri
+> 644→755): un self-check a ajuns în repository-ul de producție. Istoricul **nu
+> se rescrie** (regula lui Popy: niciodată `reset --hard`, niciodată rebase
+> forțat, niciodată ștergere de commituri). În schimb, clasa de accident are
+> acum patru garde — măsurate, nu promise: detalii în `docs\CI-SERVER.md` §11.
 
 ---
 

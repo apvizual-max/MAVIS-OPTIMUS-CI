@@ -47,8 +47,6 @@ ENV CI_PROJECT_DIR=/workspace/project \
     MAVIS_SECRET_SCANNER=/workspace/project/scripts/scan-staged-secrets.ps1 \
     MAVIS_PUSH_GATE=/workspace/gate/pre-push \
     MAVIS_GITDIR=/workspace/gitdata/repo \
-    GIT_DIR=/workspace/gitdata/repo \
-    GIT_WORK_TREE=/workspace/project \
     NODE_ENV=production
 
 EXPOSE 8790

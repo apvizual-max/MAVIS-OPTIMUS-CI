@@ -67,6 +67,14 @@ async function main() {
       print({ ok: true, container: 'Mavis-Optimus-CI', version: CFG.version });
       break;
     }
+    case 'selftest': {
+      // Autotestul motorului: ca o poarta care poate esua, nu doar semnalizeaza.
+      const { spawnSync } = await import('node:child_process');
+      const here = new URL('./selftest.mjs', import.meta.url).pathname;
+      const r = spawnSync(process.execPath, [here], { stdio: 'inherit' });
+      process.exit(r.status === null ? 1 : r.status);
+      break;
+    }
     case 'serve': {
       serve();
       break;
