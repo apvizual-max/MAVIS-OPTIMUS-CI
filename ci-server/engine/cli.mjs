@@ -16,6 +16,7 @@ import {
   doctor,
   planAll,
   pushAll,
+  armPush,
   statusAll,
   syncAll,
   evidenceTail,
@@ -54,6 +55,18 @@ async function main() {
       const p = await pushAll();
       print(p);
       process.exit(p.ok ? 0 : 1);
+      break;
+    }
+    case 'arm-r0': {
+      // Armeaza acordul R0. NU impinge. Un acord = o impingere: markerul
+      // PUSH-ACORD e consumat de poarta comuna la primul push reusit.
+      //   node cli.mjs arm-r0 [ci,cloud,ciclone] [cine acorda]
+      const repos = process.argv[3]
+        ? process.argv[3].split(',').map((s) => s.trim()).filter(Boolean)
+        : null;
+      const by = process.argv[4] || 'operator';
+      print(armPush(repos, by));
+      process.exit(0);
       break;
     }
     case 'evidence': {
@@ -132,6 +145,24 @@ function serve() {
       if (route === '/push' && req.method === 'POST') {
         const p = await pushAll();
         send(res, p.ok ? 200 : 409, p);
+        return;
+      }
+      if (route === '/arm-r0' && req.method === 'POST') {
+        // Instrumentul `ci_arm_push` al pluginului apeleaza EXACT ruta asta.
+        // Fara ea, pluginul raspundea 404 si acordul R0 nu putea fi dat prin
+        // interfata documentata (masurat 2026-10-28).
+        let body = {};
+        try {
+          let raw = '';
+          for await (const chunk of req) raw += chunk;
+          if (raw.trim()) body = JSON.parse(raw);
+        } catch {
+          body = {};
+        }
+        const repos = Array.isArray(body.repos) && body.repos.length ? body.repos : null;
+        const by = typeof body.by === 'string' && body.by.trim() ? body.by.trim() : 'operator';
+        const a = armPush(repos, by);
+        send(res, 200, a);
         return;
       }
       if (route === '/evidence') {
