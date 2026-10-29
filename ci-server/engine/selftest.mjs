@@ -130,7 +130,7 @@ const probe = path.join(root, 'probe.txt');
 const plantedToken = 'ghp_' + 'A'.repeat(36);
 fs.writeFileSync(probe, 'client_secret = "' + plantedToken + '"\n');
 const scanner = path.join(CFG.project, 'scripts', 'scan-staged-secrets.ps1');
-const t1 = run('powershell', ['-NoProfile', '-File', scanner, '-ProbeFile', probe]);
+const t1 = run('pwsh', ['-NoProfile', '-File', scanner, '-ProbeFile', probe]);
 report('T1', 'scannerul refuza o cheie plantata', t1.code === 1, 'exit=' + t1.code + ' ' + (t1.out || '').split('\n').slice(-2).join(' '));
 
 // --- T2/T3: poarta de push refuza fara R0, accepta cu R0 ---------------------
